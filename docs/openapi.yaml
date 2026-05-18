@@ -1,0 +1,482 @@
+openapi: 3.1.0
+info:
+  title: FrameLane API
+  version: "1.0.0"
+  description: Video editing API for AI agents. Ingest assets, define edits, render at scale.
+servers:
+  - url: https://api.framelane.dev/v1
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  schemas:
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ast_abc123
+        filename:
+          type: string
+          example: raw-footage.mp4
+        mime_type:
+          type: string
+          example: video/mp4
+        duration:
+          type: number
+          description: Duration in seconds
+          example: 120.5
+        resolution:
+          type: string
+          example: 1920x1080
+        codec:
+          type: string
+          example: h264
+        size_bytes:
+          type: integer
+          example: 52428800
+        created_at:
+          type: string
+          format: date-time
+
+    Edit:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [trim, caption, overlay, audio_mix, watermark, concat, transition, resize]
+        start:
+          type: number
+        end:
+          type: number
+        style:
+          type: string
+        language:
+          type: string
+        src:
+          type: string
+        position:
+          type: string
+        opacity:
+          type: number
+
+    OutputConfig:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [mp4, webm, mov]
+          default: mp4
+        resolution:
+          type: string
+          enum: ["720p", "1080p", "4k"]
+          default: "1080p"
+        bitrate:
+          type: string
+        codec:
+          type: string
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          example: job_xyz789
+        status:
+          type: string
+          enum: [queued, processing, completed, failed, cancelled]
+        assets:
+          type: array
+          items:
+            type: string
+        edits:
+          type: array
+          items:
+            $ref: "#/components/schemas/Edit"
+        output:
+          $ref: "#/components/schemas/OutputConfig"
+        output_url:
+          type: string
+          nullable: true
+        progress_pct:
+          type: integer
+          nullable: true
+        error:
+          type: object
+          nullable: true
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: string
+          example: wh_def456
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+            enum: [job.queued, job.processing, job.progress, job.completed, job.failed, job.cancelled]
+        secret:
+          type: string
+          description: HMAC secret for signature verification
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            param:
+              type: string
+              nullable: true
+
+paths:
+  /assets:
+    post:
+      operationId: uploadAsset
+      summary: Upload Asset
+      description: Upload a media file to create a new asset.
+      tags: [Assets]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Asset created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      operationId: listAssets
+      summary: List Assets
+      description: List all assets in your account.
+      tags: [Assets]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Asset list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Asset"
+                  has_more:
+                    type: boolean
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /assets/{asset_id}:
+    get:
+      operationId: getAsset
+      summary: Get Asset
+      description: Retrieve a single asset by ID.
+      tags: [Assets]
+      parameters:
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Asset details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      operationId: deleteAsset
+      summary: Delete Asset
+      description: Permanently delete an asset and free storage.
+      tags: [Assets]
+      parameters:
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /jobs:
+    post:
+      operationId: createJob
+      summary: Create Job
+      description: Submit a new render job.
+      tags: [Jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assets, edits, output]
+              properties:
+                assets:
+                  type: array
+                  items:
+                    type: string
+                edits:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Edit"
+                output:
+                  $ref: "#/components/schemas/OutputConfig"
+                template_id:
+                  type: string
+                  nullable: true
+                variables:
+                  type: object
+                  nullable: true
+                client_id:
+                  type: string
+                  nullable: true
+                  description: Idempotency key
+      responses:
+        "201":
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      operationId: listJobs
+      summary: List Jobs
+      description: List all jobs in your account.
+      tags: [Jobs]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, processing, completed, failed, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Job"
+                  has_more:
+                    type: boolean
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /jobs/{job_id}:
+    get:
+      operationId: getJob
+      summary: Get Job
+      description: Retrieve a single job by ID.
+      tags: [Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /jobs/{job_id}/cancel:
+    post:
+      operationId: cancelJob
+      summary: Cancel Job
+      description: Cancel a queued or processing job.
+      tags: [Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Job already completed or cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /webhooks:
+    post:
+      operationId: createWebhook
+      summary: Create Webhook
+      description: Register a new webhook endpoint.
+      tags: [Webhooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+                    enum: [job.queued, job.processing, job.progress, job.completed, job.failed, job.cancelled]
+      responses:
+        "201":
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Webhook"
+
+    get:
+      operationId: listWebhooks
+      summary: List Webhooks
+      description: List all registered webhooks.
+      tags: [Webhooks]
+      responses:
+        "200":
+          description: Webhook list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Webhook"
+
+  /webhooks/{webhook_id}:
+    delete:
+      operationId: deleteWebhook
+      summary: Delete Webhook
+      description: Remove a webhook endpoint.
+      tags: [Webhooks]
+      parameters:
+        - name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

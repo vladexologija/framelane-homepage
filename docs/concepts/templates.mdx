@@ -1,0 +1,40 @@
+---
+title: "Templates"
+description: "Learn how to create reusable edit templates that agents can apply consistently across many source videos."
+---
+
+# Templates
+
+A **Template** is a saved list of edits with optional variable slots. Instead of defining edits per job, reference a template by ID and let FrameLane fill in the operations.
+
+## Creating a template
+
+```python
+template = client.templates.create(
+    name="branded-short",
+    edits=[
+        {"type": "trim", "start": "{{start}}", "end": "{{end}}"},
+        {"type": "caption", "style": "subtitles"},
+        {"type": "overlay", "src": "ast_logo123", "position": "bottom-right"},
+        {"type": "watermark", "text": "© 2026 Acme"},
+    ],
+)
+```
+
+## Using a template in a job
+
+```python
+job = client.jobs.create(
+    assets=[asset.id],
+    template_id=template.id,
+    variables={"start": 0, "end": 30},
+    output={"format": "mp4", "resolution": "1080p"},
+)
+```
+
+Templates ensure consistency across campaigns and reduce payload size for agents submitting many similar jobs.
+
+## Next steps
+
+- Learn about [edit types](/concepts/edits)
+- See [long-running jobs](/guides/long-running-jobs) for batch workflows

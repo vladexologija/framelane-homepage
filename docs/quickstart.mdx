@@ -1,0 +1,108 @@
+---
+title: "Quickstart"
+description: "Follow this guide to make your first FrameLane render in under 5 minutes."
+---
+
+# Quickstart
+
+This guide walks you through creating an asset, submitting a render job, and retrieving the output URL.
+
+## Prerequisites
+
+- A FrameLane API key (get one from the [Console](https://console.framelane.dev))
+- Python 3.9+ or Node.js 18+
+
+## 1. Install the SDK
+
+<CodeGroup>
+
+```bash Python
+pip install framelane
+```
+
+```bash TypeScript
+npm install framelane
+```
+
+</CodeGroup>
+
+## 2. Upload an asset
+
+<CodeGroup>
+
+```python Python
+from framelane import FrameLane
+
+client = FrameLane()  # reads FRAMELANE_API_KEY from env
+
+asset = client.assets.upload("raw-footage.mp4")
+print(f"Asset ID: {asset.id}")
+```
+
+```typescript TypeScript
+import { FrameLane } from "framelane";
+
+const client = new FrameLane(); // reads FRAMELANE_API_KEY from env
+
+const asset = await client.assets.upload("raw-footage.mp4");
+console.log(`Asset ID: ${asset.id}`);
+```
+
+</CodeGroup>
+
+## 3. Create a render job
+
+<CodeGroup>
+
+```python Python
+job = client.jobs.create(
+    assets=[asset.id],
+    edits=[
+        {"type": "trim", "start": 0, "end": 30},
+        {"type": "caption", "style": "subtitles"},
+    ],
+    output={"format": "mp4", "resolution": "1080p"},
+)
+print(f"Job ID: {job.id}")
+```
+
+```typescript TypeScript
+const job = await client.jobs.create({
+  assets: [asset.id],
+  edits: [
+    { type: "trim", start: 0, end: 30 },
+    { type: "caption", style: "subtitles" },
+  ],
+  output: { format: "mp4", resolution: "1080p" },
+});
+console.log(`Job ID: ${job.id}`);
+```
+
+</CodeGroup>
+
+## 4. Wait for completion
+
+<CodeGroup>
+
+```python Python
+result = client.jobs.wait(job.id)
+print(f"Output: {result.output_url}")
+```
+
+```typescript TypeScript
+const result = await client.jobs.wait(job.id);
+console.log(`Output: ${result.outputUrl}`);
+```
+
+</CodeGroup>
+
+<Tip>
+  For production use, configure [webhooks](/concepts/webhooks) instead of
+  polling so your agent reacts to events in real-time.
+</Tip>
+
+## Next steps
+
+- Learn about [assets](/concepts/assets), [jobs](/concepts/jobs), and [edits](/concepts/edits)
+- Set up [webhooks](/concepts/webhooks) for event-driven workflows
+- Browse the [API Reference](/api-reference/overview)

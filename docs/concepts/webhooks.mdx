@@ -1,0 +1,59 @@
+---
+title: "Webhooks"
+description: "Learn how to use webhooks for real-time render job lifecycle events — queued, processing, completed, failed."
+---
+
+# Webhooks
+
+**Webhooks** let your agent react to job events in real-time instead of polling. FrameLane sends an HTTP POST to your endpoint whenever a job changes state.
+
+## Supported events
+
+| Event               | Fired when                         |
+|---------------------|------------------------------------|
+| `job.queued`        | Job accepted into the queue        |
+| `job.processing`    | Render has started                 |
+| `job.progress`      | Periodic progress update (%)       |
+| `job.completed`     | Render finished, output ready      |
+| `job.failed`        | Render failed with an error        |
+
+## Registering a webhook
+
+<CodeGroup>
+
+```python Python
+webhook = client.webhooks.create(
+    url="https://your-agent.example.com/hooks/framelane",
+    events=["job.completed", "job.failed"],
+)
+```
+
+```typescript TypeScript
+const webhook = await client.webhooks.create({
+  url: "https://your-agent.example.com/hooks/framelane",
+  events: ["job.completed", "job.failed"],
+});
+```
+
+</CodeGroup>
+
+## Payload shape
+
+```json
+{
+  "event": "job.completed",
+  "job_id": "job_abc123",
+  "output_url": "https://cdn.framelane.dev/renders/job_abc123.mp4",
+  "duration_seconds": 29.8,
+  "timestamp": "2026-05-09T12:00:00Z"
+}
+```
+
+## Verification
+
+Each webhook request includes a `X-FrameLane-Signature` header. Verify it using your webhook secret to ensure the payload is authentic.
+
+## Next steps
+
+- [API: Create Webhook](/api-reference/webhooks/create)
+- [Guide: Long-running jobs](/guides/long-running-jobs)

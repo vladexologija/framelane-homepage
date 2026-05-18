@@ -1,26 +1,51 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #1f274a;
+  --color-foreground: #fafafa;
+  --color-muted: #c0c6da;
+  --color-muted-foreground: #8d96b8;
+  --color-border: #3a4470;
+  --color-card: #222b52;
+  --color-card-hover: #2a3461;
+  --color-accent: #faa329;
+  --color-accent-foreground: #ffd38a;
+  --color-success: #22c55e;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --animate-marquee: marquee 30s linear infinite;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  background-image: url("/video-pattern.svg");
+  background-size: 320px 320px;
+  background-repeat: repeat;
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.font-logo {
+  font-family:
+    var(--font-eurostile),
+    var(--font-geist-sans),
+    system-ui,
+    sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: none;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: white;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }

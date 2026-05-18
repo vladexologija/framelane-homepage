@@ -1,0 +1,55 @@
+---
+title: "TypeScript SDK"
+description: "Install and use the official FrameLane TypeScript SDK."
+---
+
+# TypeScript SDK
+
+## Installation
+
+```bash
+npm install framelane
+```
+
+## Authentication
+
+Set your API key as an environment variable:
+
+```bash
+export FRAMELANE_API_KEY=fl_live_...
+```
+
+Or pass it directly:
+
+```typescript
+import { FrameLane } from "framelane";
+
+const client = new FrameLane({ apiKey: "fl_live_..." });
+```
+
+## Quick example
+
+```typescript
+import { FrameLane } from "framelane";
+
+const client = new FrameLane();
+
+const asset = await client.assets.upload("input.mp4");
+
+const job = await client.jobs.create({
+  assets: [asset.id],
+  edits: [
+    { type: "trim", start: 0, end: 15 },
+    { type: "caption", style: "subtitles" },
+  ],
+  output: { format: "mp4", resolution: "1080p" },
+});
+
+const result = await client.jobs.wait(job.id);
+console.log(result.outputUrl);
+```
+
+## Resources
+
+- [API Reference](/api-reference/overview)
+- [Quickstart](/quickstart)

@@ -1,0 +1,55 @@
+---
+title: "Long-Running Jobs"
+description: "Best practices for managing render jobs that take minutes to hours — retries, idempotency, and progress tracking."
+---
+
+# Long-Running Jobs
+
+Video rendering can take seconds to hours depending on source length, edit complexity, and output resolution. This guide covers patterns for robust job management.
+
+## Progress tracking
+
+Subscribe to `job.progress` webhook events to receive periodic updates with a percentage and ETA.
+
+```json
+{
+  "event": "job.progress",
+  "job_id": "job_abc123",
+  "progress_pct": 45,
+  "eta_seconds": 120
+}
+```
+
+## Idempotency
+
+Pass a `client_id` when creating a job. If you retry the same request (e.g. after a network timeout), FrameLane returns the existing job instead of creating a duplicate.
+
+```python
+job = client.jobs.create(
+    client_id="my-unique-request-id-123",
+    assets=[asset.id],
+    edits=[{"type": "trim", "start": 0, "end": 60}],
+    output={"format": "mp4", "resolution": "1080p"},
+)
+```
+
+## Cancellation
+
+Cancel a queued or processing job:
+
+```python
+client.jobs.cancel(job.id)
+```
+
+Cancelled jobs emit a `job.cancelled` webhook event.
+
+## Timeouts and retries
+
+- FrameLane automatically retries transient infrastructure failures.
+- Jobs that exceed the maximum render time for your plan are failed with `error.code: "render_timeout"`.
+- Your agent should handle `job.failed` events and decide whether to retry with different parameters.
+
+## Next steps
+
+- Set up [webhooks](/concepts/webhooks) for event-driven orchestration
+- Use [templates](/concepts/templates) to standardize batch jobs

@@ -1,0 +1,43 @@
+---
+title: "MCP Integration"
+description: "Use FrameLane as a tool in any MCP-compatible AI agent."
+---
+
+# MCP Integration
+
+FrameLane provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server so AI agents can discover and call video editing tools natively.
+
+## Setup
+
+Add the FrameLane MCP server to your agent's configuration:
+
+```json
+{
+  "mcpServers": {
+    "framelane": {
+      "command": "npx",
+      "args": ["-y", "@framelane/mcp-server"],
+      "env": {
+        "FRAMELANE_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+## Available tools
+
+The MCP server exposes these tools:
+
+| Tool              | Description                          |
+|-------------------|--------------------------------------|
+| `upload_asset`    | Upload a media file                  |
+| `create_job`      | Submit a render job                  |
+| `get_job`         | Check job status                     |
+| `list_assets`     | List uploaded assets                 |
+| `list_jobs`       | List recent jobs                     |
+
+## Next steps
+
+- [Python SDK](/integrations/sdk-python) for programmatic access
+- [TypeScript SDK](/integrations/sdk-typescript) for Node.js agents

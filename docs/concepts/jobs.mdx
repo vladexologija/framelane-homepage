@@ -1,0 +1,58 @@
+---
+title: "Jobs"
+description: "Learn how FrameLane Jobs orchestrate the render pipeline — from edit definition to finished output."
+---
+
+# Jobs
+
+A **Job** is a render request. It references one or more assets, a list of edits to apply, and output settings. FrameLane queues, processes, and delivers the result.
+
+## Creating a job
+
+<CodeGroup>
+
+```python Python
+job = client.jobs.create(
+    assets=[asset.id],
+    edits=[
+        {"type": "trim", "start": 0, "end": 30},
+        {"type": "caption", "style": "subtitles"},
+    ],
+    output={"format": "mp4", "resolution": "1080p"},
+)
+```
+
+```typescript TypeScript
+const job = await client.jobs.create({
+  assets: [asset.id],
+  edits: [
+    { type: "trim", start: 0, end: 30 },
+    { type: "caption", style: "subtitles" },
+  ],
+  output: { format: "mp4", resolution: "1080p" },
+});
+```
+
+</CodeGroup>
+
+## Job lifecycle
+
+Jobs progress through these states:
+
+1. **queued** — Accepted, waiting for a render slot
+2. **processing** — Actively rendering
+3. **completed** — Output ready at `output_url`
+4. **failed** — An error occurred; check `error` field
+
+## Polling vs webhooks
+
+You can poll `GET /v1/jobs/{id}` or use the SDK's `wait()` helper. For production, configure [webhooks](/concepts/webhooks) to receive events as they happen.
+
+## Output
+
+Completed jobs expose an `output_url` — a signed URL to the rendered file, valid for 24 hours by default (configurable).
+
+## Next steps
+
+- Define [edits](/concepts/edits) for your jobs
+- Set up [webhooks](/concepts/webhooks) for real-time notifications

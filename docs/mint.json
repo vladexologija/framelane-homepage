@@ -1,0 +1,104 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "FrameLane Docs",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#6d5aed",
+    "light": "#c4b5fd",
+    "dark": "#6d5aed",
+    "anchors": {
+      "from": "#6d5aed",
+      "to": "#8b7cf7"
+    }
+  },
+  "topbarLinks": [
+    { "name": "Console", "url": "https://console.framelane.dev" }
+  ],
+  "topbarCtaButton": {
+    "name": "Start for free",
+    "url": "https://console.framelane.dev"
+  },
+  "tabs": [
+    { "name": "API Reference", "url": "api-reference" },
+    { "name": "Guides", "url": "guides" },
+    { "name": "Integrations", "url": "integrations" }
+  ],
+  "anchors": [
+    { "name": "GitHub", "icon": "github", "url": "https://github.com/framelane" },
+    { "name": "Discord", "icon": "discord", "url": "https://discord.gg/framelane" }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart"]
+    },
+    {
+      "group": "Core Concepts",
+      "pages": [
+        "concepts/assets",
+        "concepts/jobs",
+        "concepts/edits",
+        "concepts/templates",
+        "concepts/webhooks"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/captions",
+        "guides/overlays",
+        "guides/long-running-jobs"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/mcp",
+        "integrations/sdk-python",
+        "integrations/sdk-typescript"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/overview"
+      ]
+    },
+    {
+      "group": "Assets",
+      "pages": [
+        "api-reference/assets/upload",
+        "api-reference/assets/get",
+        "api-reference/assets/list",
+        "api-reference/assets/delete"
+      ]
+    },
+    {
+      "group": "Jobs",
+      "pages": [
+        "api-reference/jobs/create",
+        "api-reference/jobs/get",
+        "api-reference/jobs/list",
+        "api-reference/jobs/cancel"
+      ]
+    },
+    {
+      "group": "Webhooks",
+      "pages": [
+        "api-reference/webhooks/create",
+        "api-reference/webhooks/list",
+        "api-reference/webhooks/delete"
+      ]
+    }
+  ],
+  "openapi": "openapi.yaml",
+  "footerSocials": {
+    "github": "https://github.com/framelane",
+    "discord": "https://discord.gg/framelane",
+    "x": "https://x.com/framelane"
+  }
+}
