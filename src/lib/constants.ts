@@ -41,10 +41,10 @@ export const SITE = {
   name: "FrameLane",
   tagline: "Give your AI agent a video editor",
   description:
-    "FrameLane lets agents turn raw footage into finished videos. Generate edit plans, preview frames, and render production-ready output through API or MCP.",
+    "FrameLane lets agents turn raw footage into finished videos. Create edit plans, preview frames, and render production-ready output through API or MCP.",
   docsUrl: "https://docs.framelane.io",
-  consoleUrl: "https://console.framelane.io",
-  githubUrl: "https://github.com/framelane",
+  consoleUrl: "/login",
+  githubUrl: "https://github.com/ITIShq",
   discordUrl: "https://discord.gg/framelane",
 } as const;
 

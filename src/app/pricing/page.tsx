@@ -339,9 +339,6 @@ export default function PricingPage() {
           >
             All plans include the JSON-based editing API and MCP server. Pro
             overages billed at $0.08 / render-minute.{" "}
-            <a href="#" style={{ color: "var(--fg-mute)" }}>
-              See full pricing details →
-            </a>
           </p>
 
           {/* FAQ teaser */}

@@ -24,7 +24,7 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "FrameLane — Video Editing API for AI Agents",
   description:
-    "FrameLane lets agents turn raw footage into finished videos. Generate edit plans, preview frames, and render production-ready output through API or MCP.",
+    "FrameLane lets agents turn raw footage into finished videos. Create edit plans, preview frames, and render production-ready output through API or MCP.",
 };
 
 export default function RootLayout({

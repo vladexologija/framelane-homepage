@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE } from "@/lib/constants";
 import { useState, useEffect, useRef } from "react";
 
 function CopyIcon() {
@@ -341,10 +342,10 @@ function DemoConsole({ aspect }: { aspect: string }) {
                       downloading assets: 1.2 GB
                     </LogLine>
                     <LogLine t="00:03" c="ok">
-                      1920×1080 h264 23.976 fps
+                      1920×1080 h264 30 fps
                     </LogLine>
                     <LogLine t="00:03" c="ok">
-                      gpu: NVIDIA A100 · cuda 
+                      gpu: NVIDIA L4 
                     </LogLine>
                     <LogLine t="00:04" c="ok">
                       hdr detected
@@ -458,7 +459,7 @@ export function Hero() {
           >
             <span className="pill">
               <span className="dot" />
-              v0.1 · public beta
+              v0.1 · closed beta
             </span>
             <span className="eyebrow">Video editing API for AI agents</span>
           </div>
@@ -492,7 +493,7 @@ export function Hero() {
               flexWrap: "wrap",
             }}
           >
-            <a className="btn btn-primary" href="#get-started">
+            <a className="btn btn-primary" href={SITE.consoleUrl}>
               Start rendering <span style={{ marginLeft: 2 }}>→</span>
             </a>
             <button className="btn btn-ghost" onClick={copyPrompt}>

@@ -1,69 +1,148 @@
 "use client";
 
+import { SITE } from "@/lib/constants";
 import { useState } from "react";
 
 const CODE_SAMPLES = {
-  python: `from framelane import FrameLane
-
-client = FrameLane()
-
-# Upload a source asset
-asset = client.assets.upload("raw-footage.mp4")
-
-# Create a render job
-job = client.jobs.create(
-    source=[asset.id],
-    edits=[
-        {"type": "trim", "start": 0, "end": 30},
-        {"type": "caption", "style": "karaoke"},
-        {"type": "overlay", "src": "logo.png", "position": "bottom-right"},
-    ],
-    output={"format": "mp4", "resolution": "1080p"},
-)
-
-# Poll or use webhooks for completion
-result = client.jobs.wait(job.id)
-print(result.output_url)`,
-
-  typescript: `import { FrameLane } from "framelane";
-
-const client = new FrameLane();
-
-// Upload a source asset
-const asset = await client.assets.upload("raw-footage.mp4");
-
-// Create a render job
-const job = await client.jobs.create({
-  source: [asset.id],
-  edits: [
-    { type: "trim",    start: 0, end: 30 },
-    { type: "caption", style: "karaoke" },
-    { type: "overlay", src: "logo.png", position: "bottom-right" },
-  ],
-  output: { format: "mp4", resolution: "1080p" },
-});
-
-const result = await client.jobs.wait(job.id);
-console.log(result.outputUrl);`,
-
-  curl: `# Upload a source asset
-curl -X POST https://api.framelane.io/v1/assets \\
-  -H "Authorization: Bearer $FRAMELANE_KEY" \\
-  -F "file=@raw-footage.mp4"
-
-# Create a render job
-curl -X POST https://api.framelane.io/v1/jobs \\
-  -H "Authorization: Bearer $FRAMELANE_KEY" \\
+  curl: `# 1. Create render
+curl -X POST https://api.framelane.com/v1/renders \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "source": ["asset_01HX5DG"],
-    "edits": [
-      { "type": "trim", "start": 0, "end": 30 },
-      { "type": "caption", "style": "karaoke" },
-      { "type": "overlay", "src": "logo.png", "position": "bottom-right" }
-    ],
-    "output": { "format": "mp4", "resolution": "1080p" }
-  }'`,
+    "width": 1920,
+    "height": 1080,
+    "duration": 30,
+    "output_format": "mp4",
+    "elements": [
+      {
+        "type": "video",
+        "source_url": "https://storage.example.com/raw-footage.mp4",
+        "time": 0, "duration": 30,
+        "trim_start": 0, "trim_end": 30
+      },
+      {
+        "type": "text",
+        "text": "Hello World",
+        "font_family": "Inter",
+        "font_size": 48,
+        "text_color": "#ffffff",
+        "caption_animation": "karaoke",
+        "time": 0, "duration": 30,
+        "x": "50%", "y": "90%"
+      },
+      {
+        "type": "image",
+        "source_url": "https://storage.example.com/logo.png",
+        "time": 0, "duration": 30,
+        "x": "90%", "y": "90%",
+        "width": "10%", "height": "10%"
+      }
+    ]
+  }'
+
+# 2. Poll until completed
+curl https://api.framelane.com/v1/renders/{id} \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY"
+
+# 3. Download (redirects to signed GCS URL)
+curl -L https://api.framelane.com/v1/renders/{id}/download \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
+  -o output.mp4`,
+
+  typescript: `import { Framelane } from "framelane";
+
+const client = new Framelane({ apiKey: process.env.FRAMELANE_API_KEY });
+
+const render = await client.renders.create({
+  width: 1920,
+  height: 1080,
+  duration: 30,
+  output_format: "mp4",
+  elements: [
+    {
+      type: "video",
+      source_url: "https://cdn.framelane.io/raw-footage.mp4",
+      time: 0,
+      duration: 30,
+      trim_start: 0,
+      trim_end: 30,
+    },
+    {
+      type: "text",
+      text: "Hello World",
+      font_family: "Inter",
+      font_size: 48,
+      text_color: "#ffffff",
+      caption_animation: "karaoke",
+      time: 0,
+      duration: 30,
+      x: "50%",
+      y: "90%",
+    },
+    {
+      type: "image",
+      source_url: "https://cdn.framelane.io/logo.png",
+      time: 0,
+      duration: 30,
+      x: "90%",
+      y: "90%",
+      width: "10%",
+      height: "10%",
+    },
+  ],
+});
+
+const downloadUrl = await client.renders.download(render.id);
+console.log(downloadUrl);`,
+
+  python: `import asyncio, os
+from framelane import AsyncFramelane
+
+async def main():
+    client = AsyncFramelane(api_key=os.environ["FRAMELANE_API_KEY"])
+    render = await client.renders.create(
+        width=1920,
+        height=1080,
+        duration=30,
+        output_format="mp4",
+        elements=[
+            {
+                "type": "video",
+                "source_url": "https://cdn.framelane.io/raw-footage.mp4",
+                "time": 0,
+                "duration": 30,
+                "trim_start": 0,
+                "trim_end": 30,
+            },
+            {
+                "type": "text",
+                "text": "Hello World",
+                "font_family": "Inter",
+                "font_size": 48,
+                "text_color": "#ffffff",
+                "caption_animation": "karaoke",
+                "time": 0,
+                "duration": 30,
+                "x": "50%",
+                "y": "90%",
+            },
+            {
+                "type": "image",
+                "source_url": "https://cdn.framelane.io/logo.png",
+                "time": 0,
+                "duration": 30,
+                "x": "90%",
+                "y": "90%",
+                "width": "10%",
+                "height": "10%",
+            },
+        ],
+    )
+
+    download_url = await client.renders.download(render.id)
+    print(download_url)
+
+asyncio.run(main())`,
 } as const;
 
 type Lang = keyof typeof CODE_SAMPLES;
@@ -75,25 +154,41 @@ function highlightCode(code: string, lang: Lang): string {
       /\b(import|from|const|let|await|async|new|function|return|if|else|console)\b/g,
     curl: /\b(curl|GET|POST|PUT|DELETE)\b/g,
   };
-  return code
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(
-      /(#.*$|^\s*#.*$)/gm,
-      '<span style="color:var(--fg-dim)">$1</span>'
-    )
-    .replace(
-      /("(?:[^"\\]|\\.)*")/g,
-      '<span style="color:#A3CFFF">$1</span>'
-    )
-    .replace(
-      /(\b\d+\b)/g,
-      '<span style="color:#FFB87A">$1</span>'
-    )
-    .replace(
-      keywords[lang],
-      '<span style="color:var(--orange)">$1</span>'
-    );
+
+  // Use placeholder slots so each regex pass can't corrupt previously
+  // inserted <span> tags (e.g. the string regex matching style attributes,
+  // or the comment regex matching #rrggbb colour values inside strings).
+  const slots: string[] = [];
+  // Prefix index with "s" so \b(\d+)\b can't match the digit inside the placeholder.
+  const slot = (html: string) => {
+    slots.push(html);
+    return `\x01s${slots.length - 1}\x01`;
+  };
+
+  let out = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  // Comments: only lines whose first non-whitespace char is #
+  out = out.replace(/^\s*#.*$/gm, (m) =>
+    slot(`<span style="color:var(--fg-dim)">${m}</span>`)
+  );
+
+  // Strings
+  out = out.replace(/("(?:[^"\\]|\\.)*")/g, (m) =>
+    slot(`<span style="color:#A3CFFF">${m}</span>`)
+  );
+
+  // Numbers
+  out = out.replace(/\b(\d+)\b/g, (m) =>
+    slot(`<span style="color:#FFB87A">${m}</span>`)
+  );
+
+  // Keywords
+  out = out.replace(keywords[lang], (m) =>
+    slot(`<span style="color:var(--orange)">${m}</span>`)
+  );
+
+  // Restore all slots
+  return out.replace(/\x01s(\d+)\x01/g, (_, i) => slots[parseInt(i)]);
 }
 
 function CopyIcon() {
@@ -119,7 +214,7 @@ function CopyIcon() {
 }
 
 export function GetStarted() {
-  const [lang, setLang] = useState<Lang>("python");
+  const [lang, setLang] = useState<Lang>("curl");
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
@@ -129,7 +224,7 @@ export function GetStarted() {
   };
 
   const installCmd =
-    lang === "python" ? "pip install" : lang === "curl" ? "brew install" : "npm install";
+    lang === "python" ? "pip install" : lang === "curl" ? "curl" : "npm install";
 
   return (
     <section id="get-started">
@@ -162,10 +257,10 @@ export function GetStarted() {
               render in a single API call.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
-              <a className="btn btn-primary" href="#">
+              <a className="btn btn-primary" href={SITE.consoleUrl}>
                 Start for free →
               </a>
-              <a className="btn btn-ghost" href="#">
+              <a className="btn btn-ghost" href={SITE.docsUrl}>
                 Read the docs
               </a>
             </div>
@@ -217,28 +312,56 @@ export function GetStarted() {
               }}
             >
               <div style={{ display: "flex" }}>
-                {(Object.keys(CODE_SAMPLES) as Lang[]).map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => setLang(k)}
-                    className="mono"
-                    style={{
-                      padding: "12px 18px",
-                      fontSize: 12,
-                      color: lang === k ? "var(--fg)" : "var(--fg-mute)",
-                      background:
-                        lang === k ? "var(--bg-elev)" : "transparent",
-                      borderRight: "1px solid var(--line)",
-                      borderBottom:
-                        lang === k
+                {(Object.keys(CODE_SAMPLES) as Lang[]).map((k) => {
+                  const disabled = k !== "curl";
+                  const active = lang === k;
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => !disabled && setLang(k)}
+                      disabled={disabled}
+                      className="mono"
+                      style={{
+                        padding: "12px 18px",
+                        fontSize: 12,
+                        color: active
+                          ? "var(--fg)"
+                          : disabled
+                          ? "var(--fg-mute)"
+                          : "var(--fg-mute)",
+                        background: active ? "var(--bg-elev)" : "transparent",
+                        borderRight: "1px solid var(--line)",
+                        borderBottom: active
                           ? "2px solid var(--orange)"
                           : "2px solid transparent",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {k}
-                  </button>
-                ))}
+                        letterSpacing: "0.04em",
+                        cursor: disabled ? "default" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        opacity: disabled ? 0.45 : 1,
+                      }}
+                    >
+                      {k}
+                      {disabled && (
+                        <span
+                          style={{
+                            fontSize: 9,
+                            letterSpacing: "0.06em",
+                            padding: "2px 5px",
+                            borderRadius: 3,
+                            background: "var(--bg-elev)",
+                            color: "var(--fg-dim)",
+                            border: "1px solid var(--line)",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          soon
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               <button
                 onClick={copy}

@@ -84,8 +84,7 @@ export function Footer() {
                 display: "inline-block",
               }}
             >
-              <span style={{ color: "var(--orange)" }}>$</span> npx framelane
-              init
+              <span style={{ color: "var(--orange)" }}>$</span> npm install framelane
             </div>
           </div>
 
