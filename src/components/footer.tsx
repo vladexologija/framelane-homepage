@@ -1,116 +1,143 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 import { SITE } from "@/lib/constants";
 
-const groups = [
-  {
-    title: "Product",
-    links: [
-      { label: "Pricing", href: "/pricing" },
-      { label: "Docs", href: SITE.docsUrl },
-      { label: "Console", href: SITE.consoleUrl },
-      { label: "Changelog", href: `${SITE.docsUrl}/changelog` },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "/blog" },
-      { label: "API Reference", href: `${SITE.docsUrl}/api-reference` },
-      { label: "Status", href: "https://status.framelane.dev" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Careers", href: "/careers" },
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-    ],
-  },
-];
+function FooterCol({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <div
+        className="mono"
+        style={{
+          fontSize: 11,
+          color: "var(--fg-dim)",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          marginBottom: 16,
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map((it) => (
+          <Link
+            key={it.href}
+            href={it.href}
+            style={{ fontSize: 14, color: "var(--fg-2)" }}
+          >
+            {it.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Footer() {
   return (
-    <footer className="border-t border-dashed border-muted-foreground/20">
-      <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+    <footer style={{ borderTop: "1px solid var(--line)", padding: "80px 0 40px" }}>
+      <div className="wrap">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.4fr) repeat(3, minmax(0, 1fr))",
+            gap: 48,
+            marginBottom: 60,
+          }}
+        >
           <div>
-            <Link
-              href="/"
-              className="inline-flex"
-              aria-label={`${SITE.name} home`}
-            >
-              <Image
-                src="/logo.png"
-                alt={SITE.name}
-                width={1024}
-                height={576}
-                className="h-auto w-[160px] sm:w-[190px]"
-              />
+            <Link href="/" aria-label={`${SITE.name} home`}>
+              <Logo width={150} />
             </Link>
-            <p className="mt-4 max-w-xs text-sm text-muted">
+            <p
+              style={{
+                color: "var(--fg-2)",
+                fontSize: 14,
+                lineHeight: 1.6,
+                marginTop: 18,
+                maxWidth: "34ch",
+              }}
+            >
               {SITE.description}
             </p>
-            <p className="mt-4 font-mono text-xs text-muted-foreground">
-              hello@framelane.dev
-            </p>
-            <div className="mt-4 inline-flex items-center gap-2 border border-dashed border-muted-foreground/20 px-3 py-1.5">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-success">
-                SOC 2
-              </span>
-              <span className="font-mono text-[10px] text-muted-foreground">
-                Type II Compliant
-              </span>
+            <div
+              className="mono"
+              style={{ fontSize: 12, color: "var(--fg-mute)", marginTop: 22 }}
+            >
+              hello@framelane.io
+            </div>
+            <div
+              className="mono"
+              style={{
+                fontSize: 12,
+                color: "var(--fg-2)",
+                marginTop: 8,
+                padding: "8px 12px",
+                background: "rgba(0,0,0,0.3)",
+                border: "1px solid var(--line)",
+                borderRadius: 4,
+                display: "inline-block",
+              }}
+            >
+              <span style={{ color: "var(--orange)" }}>$</span> npx framelane
+              init
             </div>
           </div>
 
-          {groups.map((g) => (
-            <div key={g.title}>
-              <h3 className="mb-4 font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {g.title}
-              </h3>
-              <ul className="space-y-2.5">
-                {g.links.map((l) => (
-                  <li key={l.href}>
-                    <Link
-                      href={l.href}
-                      className="text-sm text-muted transition-colors hover:text-foreground"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <FooterCol
+            title="Product"
+            items={[
+              { label: "Pricing", href: "/pricing" },
+              { label: "Docs", href: SITE.docsUrl },
+            ]}
+          />
+          <FooterCol
+            title="Resources"
+            items={[
+              { label: "Blog", href: "/blog" },              
+              { label: "Status", href: "https://status.framelane.io" },
+            ]}
+          />
+          <FooterCol
+            title="Company"
+            items={[
+              { label: "Privacy", href: "/privacy" },
+              { label: "Terms", href: "/terms" },
+            ]}
+          />
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-dashed border-muted-foreground/20 pt-8 sm:flex-row">
-          <p className="font-mono text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} FrameLane, Inc. All rights
-            reserved.
-          </p>
-          <div className="flex gap-6">
-            <Link
-              href={SITE.githubUrl}
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              GitHub
-            </Link>
-            <Link
-              href={SITE.discordUrl}
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Discord
-            </Link>
-            <Link
-              href="https://x.com/framelane"
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              X
-            </Link>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingTop: 24,
+            borderTop: "1px solid var(--line)",
+            fontSize: 12,
+            color: "var(--fg-mute)",
+          }}
+        >
+          <div className="mono">
+            © 2026 ITIS, Ltd. All rights reserved.
+          </div>
+          <div style={{ display: "flex", gap: 22 }}>
+            {[
+              ["GitHub", SITE.githubUrl],
+            ].map(([label, href]) => (
+              <Link
+                key={label}
+                href={href}
+                style={{ color: "var(--fg-mute)" }}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

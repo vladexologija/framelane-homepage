@@ -4,21 +4,21 @@
 
 ## Docs
 
-- [Introduction](https://docs.framelane.dev/introduction): Welcome to FrameLane — the video editing API for AI agents.
-- [Quickstart](https://docs.framelane.dev/quickstart): Make your first render in under 5 minutes.
-- [Assets](https://docs.framelane.dev/concepts/assets): Source media management — upload, metadata, lifecycle.
-- [Jobs](https://docs.framelane.dev/concepts/jobs): Render pipeline — create, track, and retrieve output.
-- [Edits](https://docs.framelane.dev/concepts/edits): Composable edit operations — trim, caption, overlay, mix, watermark.
-- [Templates](https://docs.framelane.dev/concepts/templates): Reusable edit lists with variable slots.
-- [Webhooks](https://docs.framelane.dev/concepts/webhooks): Real-time job lifecycle events.
-- [Captions Guide](https://docs.framelane.dev/guides/captions): Generate, style, and burn-in subtitles.
-- [Overlays Guide](https://docs.framelane.dev/guides/overlays): Position logos, lower-thirds, and graphics.
-- [Long-Running Jobs](https://docs.framelane.dev/guides/long-running-jobs): Retries, idempotency, and progress tracking.
-- [MCP Integration](https://docs.framelane.dev/integrations/mcp): Use FrameLane tools from any MCP-compatible agent.
-- [Python SDK](https://docs.framelane.dev/integrations/sdk-python): Official Python client.
-- [TypeScript SDK](https://docs.framelane.dev/integrations/sdk-typescript): Official TypeScript/Node.js client.
-- [API Reference](https://docs.framelane.dev/api-reference/overview): REST API overview, auth, errors.
+- [Introduction](https://docs.framelane.io/introduction): Welcome to FrameLane — the video editing API for AI agents.
+- [Quickstart](https://docs.framelane.io/quickstart): Make your first render in under 5 minutes.
+- [Assets](https://docs.framelane.io/concepts/assets): Source media management — upload, metadata, lifecycle.
+- [Jobs](https://docs.framelane.io/concepts/jobs): Render pipeline — create, track, and retrieve output.
+- [Edits](https://docs.framelane.io/concepts/edits): Composable edit operations — trim, caption, overlay, mix, watermark.
+- [Templates](https://docs.framelane.io/concepts/templates): Reusable edit lists with variable slots.
+- [Webhooks](https://docs.framelane.io/concepts/webhooks): Real-time job lifecycle events.
+- [Captions Guide](https://docs.framelane.io/guides/captions): Generate, style, and burn-in subtitles.
+- [Overlays Guide](https://docs.framelane.io/guides/overlays): Position logos, lower-thirds, and graphics.
+- [Long-Running Jobs](https://docs.framelane.io/guides/long-running-jobs): Retries, idempotency, and progress tracking.
+- [MCP Integration](https://docs.framelane.io/integrations/mcp): Use FrameLane tools from any MCP-compatible agent.
+- [Python SDK](https://docs.framelane.io/integrations/sdk-python): Official Python client.
+- [TypeScript SDK](https://docs.framelane.io/integrations/sdk-typescript): Official TypeScript/Node.js client.
+- [API Reference](https://docs.framelane.io/api-reference/overview): REST API overview, auth, errors.
 
 ## OpenAPI Specification
 
-- [OpenAPI YAML](https://docs.framelane.dev/openapi.yaml)
+- [OpenAPI YAML](https://docs.framelane.io/openapi.yaml)

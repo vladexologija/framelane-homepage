@@ -1,61 +1,550 @@
-import Link from "next/link";
-import { SITE } from "@/lib/constants";
-import { CodeTabs } from "@/components/code-tabs";
+"use client";
 
-export function Hero() {
+import { useState, useEffect, useRef } from "react";
+
+function CopyIcon() {
   return (
-    <section className="relative">
-      <div className="border-b border-dashed border-muted-foreground/20 px-6 py-2">
-        <span className="font-mono text-xs text-muted-foreground">
-          [ Video editing API ]
-        </span>
-      </div>
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <rect
+        x="3.5"
+        y="3.5"
+        width="9"
+        height="9"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <path
+        d="M5.5 3V2.5C5.5 1.7 6.2 1 7 1H11C11.8 1 12.5 1.7 12.5 2.5V8"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
-      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <div className="inline-block border border-dashed border-muted-foreground/20 px-3 py-1">
-              <span className="font-mono text-xs text-accent-foreground">
-                Video production primitives for agents
+function LogLine({
+  t,
+  c,
+  pulse,
+  children,
+}: {
+  t: string;
+  c: "ok" | "active" | "pending" | "warn";
+  pulse?: boolean;
+  children: React.ReactNode;
+}) {
+  const colors = {
+    ok: "var(--green)",
+    active: "var(--orange)",
+    pending: "var(--fg-dim)",
+    warn: "var(--orange)",
+  };
+  const icons = {
+    ok: "✓",
+    active: "▸",
+    pending: "·",
+    warn: "⚠",
+  };
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        color: c === "pending" ? "var(--fg-dim)" : "var(--fg-2)",
+      }}
+    >
+      <span style={{ color: "var(--fg-dim)", minWidth: 36 }}>{t}</span>
+      <span style={{ color: colors[c], minWidth: 8 }}>{icons[c]}</span>
+      <span
+        style={{
+          animation: pulse ? "pulse 1.4s ease-in-out infinite" : "none",
+        }}
+      >
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function DemoConsole({ aspect }: { aspect: string }) {
+  const [time, setTime] = useState(134);
+  const [playing, setPlaying] = useState(true);
+  const total = 254;
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => {
+      setTime((t) => (t + 1) % total);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [playing]);
+
+  const fmt = (s: number) =>
+    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  const pct = (time / total) * 100;
+
+  const aspectRatio: Record<string, number> = {
+    "16:9": 16 / 9,
+    "9:16": 9 / 16,
+    "1:1": 1,
+  };
+
+  return (
+    <div style={{ marginTop: 60, position: "relative" }}>
+      <div
+        className="card"
+        style={{
+          padding: 0,
+          overflow: "hidden",
+          borderRadius: 8,
+          background: "var(--bg-elev)",
+        }}
+      >
+        {/* Header strip */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "10px 14px",
+            borderBottom: "1px solid var(--line)",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "flex", gap: 6 }}>
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: 11,
+                  height: 11,
+                  borderRadius: "50%",
+                  background: "#3b3f55",
+                }}
+              />
+            ))}
+          </div>
+          <div
+            className="mono"
+            style={{
+              flex: 1,
+              textAlign: "center",
+              fontSize: 11.5,
+              color: "var(--fg-mute)",
+            }}
+          >
+            <span style={{ color: "var(--fg-dim)" }}>
+              console.framelane.io/render/
+            </span>
+            <span style={{ color: "var(--fg-2)" }}>job_01HX5DG</span>
+          </div>
+          <span className="pill" style={{ padding: "2px 8px" }}>
+            <span className="dot" style={{ background: "var(--green)" }} />
+            live
+          </span>
+        </div>
+
+        {/* Body */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) 280px",
+            minHeight: 420,
+          }}
+        >
+          {/* Player */}
+          <div
+            style={{
+              padding: 32,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                "radial-gradient(circle at 50% 40%, rgba(255,122,26,0.04), transparent 60%)",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                aspectRatio: aspectRatio[aspect],
+                maxHeight: 340,
+                width: aspect === "9:16" ? "auto" : "100%",
+                maxWidth: aspect === "9:16" ? 220 : "100%",
+                background:
+                  "linear-gradient(135deg, #2A2540, #1A1E40, #2A3050)",
+                borderRadius: 6,
+                position: "relative",
+                overflow: "hidden",
+                border: "1px solid var(--line)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 12px, transparent 12px 24px)",
+                }}
+              />
+              <button
+                onClick={() => setPlaying((p) => !p)}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.92)",
+                  color: "#0A0E1F",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {playing ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14">
+                    <rect x="2" y="1" width="3" height="12" fill="currentColor" />
+                    <rect x="9" y="1" width="3" height="12" fill="currentColor" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 14 14">
+                    <path d="M3 1 L12 7 L3 13 Z" fill="currentColor" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Karaoke captions */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: aspect === "9:16" ? 60 : 40,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  gap: 4,
+                  fontSize: aspect === "9:16" ? 11 : 14,
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {["Find", "the", "best", "moment"].map((w, i) => (
+                  <span
+                    key={w}
+                    style={{
+                      color:
+                        i === Math.floor((time / 2) % 4)
+                          ? "var(--orange)"
+                          : "white",
+                      transition: "color 0.2s",
+                    }}
+                  >
+                    {w}
+                  </span>
+                ))}
+              </div>
+
+              {/* Progress bar */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 3,
+                  background: "rgba(255,255,255,0.15)",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${pct}%`,
+                    height: "100%",
+                    background: "var(--orange)",
+                    transition: "width 1s linear",
+                  }}
+                />
+              </div>
+
+              {/* Watermark */}
+              <div
+                className="mono"
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  fontSize: 9,
+                  color: "rgba(255,255,255,0.6)",
+                  background: "rgba(0,0,0,0.4)",
+                  padding: "2px 6px",
+                  borderRadius: 2,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                FRAMELANE
+              </div>
+            </div>
+
+            {/* Timecode */}
+            <div
+              className="mono"
+              style={{
+                position: "absolute",
+                bottom: 14,
+                left: 32,
+                right: 32,
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 11,
+                color: "var(--fg-mute)",
+              }}
+            >
+              <span>project_demo.mp4</span>
+              <span>
+                {fmt(time)} / {fmt(total)}
               </span>
             </div>
-
-            <h1 className="font-logo mt-6 text-4xl sm:text-5xl lg:text-6xl">
-              {SITE.tagline}
-            </h1>
-
-            <p className="mt-6 text-lg leading-relaxed text-muted">
-              {SITE.description}
-            </p>
-
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href={SITE.consoleUrl}
-                className="inline-flex items-center justify-center bg-accent px-6 py-3 font-mono text-sm font-medium uppercase tracking-wider text-white transition-colors hover:bg-accent/80"
-              >
-                Start for free
-              </Link>
-              <Link
-                href={SITE.docsUrl}
-                className="group relative inline-flex items-center justify-center border border-muted-foreground/30 px-6 py-3 font-mono text-sm uppercase tracking-wider text-muted transition-colors hover:border-foreground hover:text-foreground"
-              >
-                <span className="absolute -left-px -top-px h-2.5 w-2.5 border-l border-t border-foreground/50 group-hover:border-foreground" />
-                <span className="absolute -right-px -top-px h-2.5 w-2.5 border-r border-t border-foreground/50 group-hover:border-foreground" />
-                <span className="absolute -bottom-px -left-px h-2.5 w-2.5 border-b border-l border-foreground/50 group-hover:border-foreground" />
-                <span className="absolute -bottom-px -right-px h-2.5 w-2.5 border-b border-r border-foreground/50 group-hover:border-foreground" />
-                Read the docs
-              </Link>
-            </div>
-
-            <p className="mt-4 font-mono text-xs text-muted-foreground">
-              No credit card required
-            </p>
           </div>
 
-          <div className="relative pt-2">
-            <CodeTabs />
+          {/* Log panel */}
+          <div
+            style={{
+              borderLeft: "1px solid var(--line)",
+              background: "var(--bg-2)",
+              padding: "14px 16px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              className="mono"
+              style={{
+                fontSize: 10,
+                color: "var(--fg-dim)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: 10,
+              }}
+            >
+              Render log
+            </div>
+            <div className="mono" style={{ fontSize: 11, lineHeight: 1.65 }}>
+              {(() => {
+                const stage = pct < 33 ? 0 : pct < 66 ? 1 : 2;
+                return (
+                  <>
+                    <LogLine t="00:00" c="ok">
+                      downloading assets: 1.2 GB
+                    </LogLine>
+                    <LogLine t="00:03" c="ok">
+                      1920×1080 h264 23.976 fps
+                    </LogLine>
+                    <LogLine t="00:03" c="ok">
+                      gpu: NVIDIA A100 · cuda 
+                    </LogLine>
+                    <LogLine t="00:04" c="ok">
+                      hdr detected
+                    </LogLine>
+                    <LogLine t="00:04" c="ok">
+                      stereo · loudness −14 LUFS
+                    </LogLine>
+                    <LogLine t="00:05" c="warn">
+                      dropped transition (×2)
+                    </LogLine>
+                    <LogLine t="00:05" c="ok">
+                      init decoders · 720 frames
+                    </LogLine>
+                    <LogLine
+                      t="00:06"
+                      c={stage > 0 ? "ok" : "active"}
+                      pulse={stage === 0}
+                    >
+                      render frame 72 / 720
+                    </LogLine>
+                    <LogLine
+                      t="00:08"
+                      c={stage > 1 ? "ok" : stage === 1 ? "active" : "pending"}
+                      pulse={stage === 1}
+                    >
+                      render frame 288 / 720
+                    </LogLine>
+                    <LogLine
+                      t="00:11"
+                      c={stage === 2 ? "active" : "pending"}
+                      pulse={stage === 2}
+                    >
+                      render frame 623 / 720
+                    </LogLine>
+                    <LogLine t="00:--" c="pending">
+                      encode → mp4 1080p
+                    </LogLine>
+                    <LogLine t="00:--" c="pending">
+                      upload
+                    </LogLine>
+                    <LogLine t="00:--" c="pending">
+                      done · total 38.2s 
+                    </LogLine>
+                    <LogLine t="00:--" c="pending">
+                      deliver via webhook
+                    </LogLine>
+                  </>
+                );
+              })()}
+            </div>
+            <div
+              style={{
+                marginTop: "auto",
+                paddingTop: 14,
+                borderTop: "1px solid var(--line)",
+              }}
+            >
+              <div
+                className="mono"
+                style={{
+                  fontSize: 10,
+                  color: "var(--fg-dim)",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                EST. COMPLETION
+              </div>
+              <div style={{ fontSize: 22, letterSpacing: "-0.02em", marginTop: 4 }}>
+                00:18s
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function Hero() {
+  const [aspect, setAspect] = useState("16:9");
+  const [copied, setCopied] = useState(false);
+
+  const promptText =
+    "Find the best 45-second moment, crop to vertical, add karaoke captions, blur the background, add a progress bar, and render for TikTok.";
+
+  const copyPrompt = () => {
+    navigator.clipboard?.writeText(promptText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+
+  return (
+    <section style={{ paddingTop: 80, paddingBottom: 60, overflow: "hidden" }}>
+      <div className="wrap">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr)",
+            gap: 24,
+            alignItems: "start",
+          }}
+        >
+          {/* Eyebrow */}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <span className="pill">
+              <span className="dot" />
+              v0.1 · public beta
+            </span>
+            <span className="eyebrow">Video editing API for AI agents</span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{ maxWidth: "14ch" }}>
+            Give your AI agent
+            <br />a{" "}
+            <span
+              className="serif-i"
+              style={{ color: "var(--orange-hi)" }}
+            >
+              video editor
+            </span>
+            .
+          </h1>
+
+          {/* Lede */}
+          <p className="lede" style={{ marginTop: 18, maxWidth: "52ch" }}>
+          Your agent writes the edit plan. FrameLane renders the video.
+          GPU native. Real footage. No React. No browser. No Lambda
+          </p>
+
+          {/* CTAs */}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              marginTop: 28,
+              flexWrap: "wrap",
+            }}
+          >
+            <a className="btn btn-primary" href="#get-started">
+              Start rendering <span style={{ marginLeft: 2 }}>→</span>
+            </a>
+            <button className="btn btn-ghost" onClick={copyPrompt}>
+              <CopyIcon />
+              {copied ? "Copied" : "Copy prompt"}
+            </button>
+            <div
+              style={{
+                display: "flex",
+                border: "1px solid var(--line-strong)",
+                borderRadius: 4,
+                overflow: "hidden",
+                height: 44,
+              }}
+            >
+              {(["Agent", "MCP", "NPM"] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setAspect(r)}
+                  className="mono"
+                  style={{
+                    padding: "0 14px",
+                    fontSize: 12,
+                    color:
+                      aspect === r ? "var(--orange)" : "var(--fg-mute)",
+                    background:
+                      aspect === r ? "rgba(255,122,26,0.08)" : "transparent",
+                    borderRight: r !== "Agent" ? "1px solid var(--line-strong)" : "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 18,
+              fontSize: 13,
+              color: "var(--fg-mute)",
+              display: "flex",
+              gap: 20,
+              flexWrap: "wrap",
+            }}
+          >
+            <span>● No credit card needed</span>
+          </div>
+        </div>
+
+        <DemoConsole aspect={aspect} />
       </div>
     </section>
   );

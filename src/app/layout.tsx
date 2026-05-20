@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import "./globals.css";
@@ -15,18 +14,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const eurostile = localFont({
-  src: "../../public/eurostile-bold-extended.otf",
-  variable: "--font-eurostile",
-  display: "swap",
-  weight: "800",
-  style: "normal",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
   title: "FrameLane — Video Editing API for AI Agents",
   description:
-    "FrameLane gives AI agents their own video production pipeline. Ingest assets, define edits, render at scale — all via API.",
+    "FrameLane lets agents turn raw footage into finished videos. Generate edit plans, preview frames, and render production-ready output through API or MCP.",
 };
 
 export default function RootLayout({
@@ -37,14 +35,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${eurostile.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
     >
-      <body className="flex min-h-screen flex-col bg-background sm:p-4 md:p-6 lg:px-8">
-        <div className="relative flex flex-1 flex-col sm:border sm:border-muted-foreground/20">
-          <Nav />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+      <body>
+        <Nav />
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

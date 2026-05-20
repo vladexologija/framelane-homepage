@@ -55,12 +55,12 @@ console.log(result.outputUrl);`,
   {
     lang: "cURL",
     code: `# Upload an asset
-curl -X POST https://api.framelane.dev/v1/assets \\
+curl -X POST https://api.framelane.io/v1/assets \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -F file=@raw-footage.mp4
 
 # Create a render job
-curl -X POST https://api.framelane.dev/v1/jobs \\
+curl -X POST https://api.framelane.io/v1/jobs \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

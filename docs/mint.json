@@ -16,11 +16,11 @@
     }
   },
   "topbarLinks": [
-    { "name": "Console", "url": "https://console.framelane.dev" }
+    { "name": "Console", "url": "https://console.framelane.io" }
   ],
   "topbarCtaButton": {
     "name": "Start for free",
-    "url": "https://console.framelane.dev"
+    "url": "https://console.framelane.io"
   },
   "tabs": [
     { "name": "API Reference", "url": "api-reference" },

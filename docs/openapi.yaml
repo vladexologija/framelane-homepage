@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   description: Video editing API for AI agents. Ingest assets, define edits, render at scale.
 servers:
-  - url: https://api.framelane.dev/v1
+  - url: https://api.framelane.io/v1
 security:
   - bearerAuth: []
 

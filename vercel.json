@@ -4,12 +4,12 @@
   "redirects": [
     {
       "source": "/docs",
-      "destination": "https://docs.framelane.dev",
+      "destination": "https://docs.framelane.io",
       "permanent": false
     },
     {
       "source": "/docs/:path*",
-      "destination": "https://docs.framelane.dev/:path*",
+      "destination": "https://docs.framelane.io/:path*",
       "permanent": false
     }
   ],
