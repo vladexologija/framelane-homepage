@@ -224,7 +224,7 @@ export function GetStarted() {
   };
 
   const installCmd =
-    lang === "python" ? "pip install" : lang === "curl" ? "curl" : "npm install";
+    lang === "python" ? "pip install" : lang !== "curl" ? "npm install" : null;
 
   return (
     <section id="get-started">
@@ -265,7 +265,7 @@ export function GetStarted() {
               </a>
             </div>
 
-            <div
+            {installCmd && (<div
               style={{
                 marginTop: 38,
                 padding: "18px 20px",
@@ -291,7 +291,7 @@ export function GetStarted() {
                 <span style={{ color: "var(--orange)" }}>{installCmd}</span>{" "}
                 framelane
               </div>
-            </div>
+            </div>)}
           </div>
 
           {/* Code panel */}

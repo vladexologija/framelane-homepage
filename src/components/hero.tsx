@@ -459,7 +459,7 @@ export function Hero() {
           >
             <span className="pill">
               <span className="dot" />
-              v0.1 · closed beta
+              v0.1 · open beta
             </span>
             <span className="eyebrow">Video editing API for AI agents</span>
           </div>
@@ -478,9 +478,10 @@ export function Hero() {
           </h1>
 
           {/* Lede */}
-          <p className="lede" style={{ marginTop: 18, maxWidth: "52ch" }}>
+          <p className="lede" style={{ marginTop: 18, maxWidth: "56ch" }}>
           Your agent writes the edit plan. FrameLane renders the video.
-          GPU native. Real footage. No React. No browser. No Lambda
+          <br />
+          Built with Rust. GPU native.  No React. No browser. No Lambda
           </p>
 
           {/* CTAs */}

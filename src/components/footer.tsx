@@ -67,12 +67,6 @@ export function Footer() {
             </p>
             <div
               className="mono"
-              style={{ fontSize: 12, color: "var(--fg-mute)", marginTop: 22 }}
-            >
-              hello@framelane.io
-            </div>
-            <div
-              className="mono"
               style={{
                 fontSize: 12,
                 color: "var(--fg-2)",
@@ -81,10 +75,9 @@ export function Footer() {
                 background: "rgba(0,0,0,0.3)",
                 border: "1px solid var(--line)",
                 borderRadius: 4,
-                display: "inline-block",
-              }}
+                display: "inline-block", }}
             >
-              <span style={{ color: "var(--orange)" }}>$</span> npm install framelane
+              <span style={{ color: "var(--orange)" }}>hello</span>@framelane.io              
             </div>
           </div>
 
@@ -127,7 +120,7 @@ export function Footer() {
           </div>
           <div style={{ display: "flex", gap: 22 }}>
             {[
-              ["GitHub", SITE.githubUrl],
+              ["", ""],
             ].map(([label, href]) => (
               <Link
                 key={label}

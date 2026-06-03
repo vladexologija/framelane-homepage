@@ -217,7 +217,7 @@ export function Comparisons() {
                 tag: "AI Agents",
                 title: "Agents have to write React",
                 quote:
-                  "If your team works in Python, PHP, Go, or any other stack, you need to spin up a separate React project just for video generation.",
+                  "No React, no proprietary DSL. AI-first — agents already speak HTML/JSON.",
                 counter:
                   "FrameLane is JSON-in, video-out. Any agent, any language, one API call.",
               },
