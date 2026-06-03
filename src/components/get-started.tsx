@@ -40,14 +40,9 @@ curl -X POST https://api.framelane.com/v1/renders \\
     ]
   }'
 
-# 2. Poll until completed
+# 2. Poll until completed and download the result
 curl https://api.framelane.com/v1/renders/{id} \\
-  -H "Authorization: Bearer $FRAMELANE_API_KEY"
-
-# 3. Download (redirects to signed GCS URL)
-curl -L https://api.framelane.com/v1/renders/{id}/download \\
-  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
-  -o output.mp4`,
+  -H "Authorization: Bearer $FRAMELANE_API_KEY"`,
 
   typescript: `import { Framelane } from "framelane";
 
@@ -257,8 +252,8 @@ export function GetStarted() {
               render in a single API call.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
-              <a className="btn btn-primary" href={SITE.consoleUrl}>
-                Start for free →
+              <a className="btn btn-primary" href={SITE.waitlistUrl} target="_blank" rel="noreferrer">
+                Request access →
               </a>
               <a className="btn btn-ghost" href={SITE.docsUrl}>
                 Read the docs

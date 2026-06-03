@@ -77,7 +77,7 @@ export function Footer() {
                 borderRadius: 4,
                 display: "inline-block", }}
             >
-              <span style={{ color: "var(--orange)" }}>hello</span>@framelane.io              
+              {/* <span style={{ color: "var(--orange)" }}>hello</span>@framelane.io               */}
             </div>
           </div>
 

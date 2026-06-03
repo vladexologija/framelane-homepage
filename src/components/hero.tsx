@@ -459,29 +459,30 @@ export function Hero() {
           >
             <span className="pill">
               <span className="dot" />
-              v0.1 · open beta
+              v0.1 · closed beta
             </span>
-            <span className="eyebrow">Video editing API for AI agents</span>
+            <span className="eyebrow">Professional video production API for agents</span>
           </div>
 
           {/* Headline */}
           <h1 style={{ maxWidth: "14ch" }}>
             Give your AI agent
-            <br />a{" "}
+            <br />a professional{" "}
             <span
               className="serif-i"
               style={{ color: "var(--orange-hi)" }}
             >
-              video editor
+              video production engine
             </span>
             .
           </h1>
 
           {/* Lede */}
-          <p className="lede" style={{ marginTop: 18, maxWidth: "56ch" }}>
-          Your agent writes the edit plan. FrameLane renders the video.
-          <br />
-          Built with Rust. GPU native.  No React. No browser. No Lambda
+          <p className="lede" style={{ marginTop: 18, maxWidth: "52ch" }}>
+            Your agent writes the edit plan. FrameLane renders the video.
+            <br />
+            Built with Rust. GPU native.
+            No React. No browser. No Lambda.
           </p>
 
           {/* CTAs */}
@@ -494,42 +495,12 @@ export function Hero() {
               flexWrap: "wrap",
             }}
           >
-            <a className="btn btn-primary" href={SITE.consoleUrl}>
-              Start rendering <span style={{ marginLeft: 2 }}>→</span>
+            <a className="btn btn-primary" href={SITE.waitlistUrl} target="_blank" rel="noreferrer">
+              Request access →
             </a>
-            <button className="btn btn-ghost" onClick={copyPrompt}>
-              <CopyIcon />
-              {copied ? "Copied" : "Copy prompt"}
-            </button>
-            <div
-              style={{
-                display: "flex",
-                border: "1px solid var(--line-strong)",
-                borderRadius: 4,
-                overflow: "hidden",
-                height: 44,
-              }}
-            >
-              {(["Agent", "MCP", "NPM"] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setAspect(r)}
-                  className="mono"
-                  style={{
-                    padding: "0 14px",
-                    fontSize: 12,
-                    color:
-                      aspect === r ? "var(--orange)" : "var(--fg-mute)",
-                    background:
-                      aspect === r ? "rgba(255,122,26,0.08)" : "transparent",
-                    borderRight: r !== "Agent" ? "1px solid var(--line-strong)" : "none",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
+            <a className="btn btn-ghost" href={SITE.docsUrl}>
+              View docs
+            </a>
           </div>
 
           <div
@@ -538,11 +509,11 @@ export function Hero() {
               fontSize: 13,
               color: "var(--fg-mute)",
               display: "flex",
-              gap: 20,
+              gap: 8,
               flexWrap: "wrap",
             }}
           >
-            <span>● No credit card needed</span>
+            <span>No credit card required · API + MCP · Preview before render </span>
           </div>
         </div>
 

@@ -47,15 +47,14 @@ export function Nav() {
               {label}
             </Link>
           ))}
-          <Link
-            href={SITE.consoleUrl}
-            style={{ fontSize: 14, color: "var(--fg-2)" }}
+          <a
+            className="btn btn-primary btn-sm"
+            href={SITE.waitlistUrl}
+            target="_blank"
+            rel="noreferrer"
           >
-            Sign in
-          </Link>
-          <Link className="btn btn-primary btn-sm" href={SITE.consoleUrl}>
-            Start for free →
-          </Link>
+            Request access →
+          </a>
         </div>
       </div>
     </nav>

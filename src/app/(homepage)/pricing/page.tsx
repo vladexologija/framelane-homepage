@@ -36,8 +36,8 @@ const tiers: Tier[] = [
       "MCP server included",
       "CPU rendering",
     ],
-    cta: "Start Building Free",
-    href: SITE.consoleUrl,
+    cta: "Request access",
+    href: SITE.waitlistUrl,
   },
   {
     name: "Pro",
@@ -56,8 +56,8 @@ const tiers: Tier[] = [
       "GPU rendering on every job",
       "Email support",
     ],
-    cta: "Start Free Trial",
-    href: SITE.consoleUrl,
+    cta: "Request access",
+    href: SITE.waitlistUrl,
     highlighted: true,
   },
   {

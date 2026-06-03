@@ -1,63 +1,70 @@
 const COMPARISON_ROWS: [string, [string, string?][], [string, string?][], [string, string?][], [string, string?][]][] = [
   [
-    "Works with real footage",
+    "Timeline editing",
     [["yes"]],
-    [["limited", "Slow >30 min"]],
+    [["limited"]],
+    [["yes", "Template only"]],
     [["yes", "Manual"]],
+  ],
+  [
+    "GPU effects and animations",
+    [["yes"]],
+    [["no", "CSS only"]],
+    [["no"]],
+    [["no"]],
+  ],
+  [
+    "AI background removal",
+    [["yes", "In pipeline"]],
+    [["no"]],
+    [["no"]],
+    [["no", "Separate"]],
+  ],
+  [
+    "Gaze correction",
+    [["yes"]],
+    [["no"]],
+    [["no"]],
+    [["no"]],
+  ],
+  [
+    "Preview = render output",
+    [["yes", "WASM"]],
+    [["yes", "Sometimes wrong"]],
+    [["no"]],
+    [["no"]],
+  ],
+  [
+    "MCP / agent native",
+    [["yes"]],
+    [["no"]],
+    [["no"]],
+    [["no"]],
+  ],
+  [
+    "4K + HDR tonemapping",
+    [["yes"]],
+    [["no", "Browser bound"]],
     [["limited"]],
+    [["limited", "Manual"]],
   ],
   [
-    "GPU-accelerated rendering",
+    "No browser required",
     [["yes"]],
-    [["no", "CPU only on Lambda"]],
-    [["no", "Manual setup"]],
-    [["no"]],
-  ],
-  [
-    "Agent / MCP native",
-    [["yes"]],
-    [["no", "Requires React"]],
-    [["no"]],
-    [["no"]],
-  ],
-  [
-    "Animations",
-    [["yes"]],
-    [["limited"]],
-    [["n/a"]],
-    [["limited"]],
-  ],
-  [
-    "AI effects (bg removal, gaze)",
-    [["yes"]],
-    [["no"]],
-    [["no", "Separate pipeline"]],
-    [["no"]],
-  ],
-  [
-    "JSON / API-first",
-    [["yes"]],
-    [["no", "React components"]],
-    [["no", "CLI scripts"]],
-    [["yes"]],
-  ],
-  [
-    "No licensing fees",
-    [["yes"]],
-    [["no", "Commercial license required"]],
+    [["no", "Core architecture"]],
     [["yes"]],
     [["yes"]],
   ],
   [
-    "Simple setup",
-    [["yes"]],
-    [["no", "10+ steps, IAM, Lambda"]],
-    [["no", "Complex"]],
-    [["yes"]],
+    "Built with",
+    [["Rust/WGPU"]],
+    [["React"]],
+    [["FFmpeg wrapper"]],
+    [["C"]],
   ],
 ];
 
-const COMPARISON_COLS = ["FrameLane", "Remotion", "FFmpeg", "Shotstack"];
+const COMPARISON_COLS = ["FrameLane", "Remotion", "Shotstack", "FFmpeg"];
 
 function Check({ color }: { color: string }) {
   return (

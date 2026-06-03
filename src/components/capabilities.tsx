@@ -151,26 +151,26 @@ const CAPS: Cap[] = [
     key: "captions",
     label: "Captions & text",
     icon: "Aa",
-    desc: "Add styled text, captions, per-word timing, animations and custom fonts to any layer.",
+    desc: "Add styled text, captions, per-text timing, motion and custom fonts to any layer.",
     pills: [
       {
         label: "Subtitles / Captions",
-        param: "type + word_timings",
+        param: "type + words",
         on: "text element",
         example: {
           type: "text",
           text: "Hello world",
-          word_timings: [
-            { word: "Hello", start_time: 0.0, end_time: 0.5 },
-            { word: "world", start_time: 0.5, end_time: 1.0 },
+          words: [
+            { text: "Hello", start: 0.0, end: 0.5 },
+            { text: "world", start: 0.5, end: 1.0 },
           ],
         },
       },
       {
         label: "Word-level timing",
-        param: "word_timings",
+        param: "words",
         on: "text element",
-        example: { word_timings: [{ word: "Hello", start_time: 0.0, end_time: 0.4 }] },
+        example: { words: [{ text: "Hello", start: 0.0, end: 0.4 }] },
       },
       {
         label: "Font size",
@@ -209,17 +209,17 @@ const CAPS: Cap[] = [
         example: { stroke_color: "#ffffff", stroke_width: 2 },
       },
       {
-        label: "Text animations",
-        param: "animations[].type + scope: element",
+        label: "Text motion",
+        param: "motion[].type + scope: element",
         on: "text element",
-        example: { animations: [{ type: "fade", time: 0, duration: 0.5, scope: "element" }] },
+        example: { motion: [{ type: "fade", time: 0, duration: 0.5, scope: "element" }] },
       },
       {
-        label: "Character animations",
-        param: "animations[].type + scope: character",
+        label: "Character motion",
+        param: "motion[].type + scope: character",
         on: "text element",
         example: {
-          animations: [{ type: "slide_up", time: 0, duration: 0.3, scope: "character" }],
+          motion: [{ type: "slide_up", time: 0, duration: 0.3, scope: "character" }],
         },
       },
       {
@@ -229,7 +229,7 @@ const CAPS: Cap[] = [
         example: { text_wrap: "wrap" },
       },
       {
-        label: "Active word color",
+        label: "Active text color",
         param: "caption_animation",
         on: "text element",
         example: { caption_animation: "karaoke" },
@@ -1035,7 +1035,7 @@ export function Capabilities() {
                     fontSize: 12,
                     lineHeight: 1.6,
                     whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
+                    wordBreak: "break-text",
                     fontFamily: "inherit",
                   }}
                 >
