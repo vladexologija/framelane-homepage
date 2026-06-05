@@ -45,7 +45,7 @@ export function Footer() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1.4fr) repeat(3, minmax(0, 1fr))",
+            gridTemplateColumns: "minmax(0, 1.4fr) repeat(2, minmax(0, 1fr))",
             gap: 48,
             marginBottom: 60,
           }}
@@ -77,7 +77,7 @@ export function Footer() {
                 borderRadius: 4,
                 display: "inline-block", }}
             >
-              {/* <span style={{ color: "var(--orange)" }}>hello</span>@framelane.io               */}
+              <span style={{ color: "var(--orange)" }}>info</span>@itis.ba              
             </div>
           </div>
 
@@ -92,16 +92,16 @@ export function Footer() {
             title="Resources"
             items={[
               { label: "Blog", href: "/blog" },              
-              { label: "Status", href: "https://status.framelane.io" },
+              { label: "Status", href: SITE.statusUrl },
             ]}
           />
-          <FooterCol
+          {/* <FooterCol
             title="Company"
             items={[
               { label: "Privacy", href: "/privacy" },
               { label: "Terms", href: "/terms" },
             ]}
-          />
+          /> */}
         </div>
 
         <div

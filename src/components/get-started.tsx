@@ -5,20 +5,18 @@ import { useState } from "react";
 
 const CODE_SAMPLES = {
   curl: `# 1. Create render
-curl -X POST https://api.framelane.com/v1/renders \\
+curl -X POST https://api.framelane.io/v1/renders \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "width": 1920,
     "height": 1080,
     "duration": 30,
-    "output_format": "mp4",
     "elements": [
       {
         "type": "video",
         "source_url": "https://storage.example.com/raw-footage.mp4",
-        "time": 0, "duration": 30,
-        "trim_start": 0, "trim_end": 30
+        "in_point": 0, "out_point": 30
       },
       {
         "type": "text",
@@ -26,22 +24,24 @@ curl -X POST https://api.framelane.com/v1/renders \\
         "font_family": "Inter",
         "font_size": 48,
         "text_color": "#ffffff",
-        "caption_animation": "karaoke",
+        "animation_preset": "typewriter",
         "time": 0, "duration": 30,
         "x": "50%", "y": "90%"
       },
       {
         "type": "image",
+        "id": "logo",
         "source_url": "https://storage.example.com/logo.png",
         "time": 0, "duration": 30,
-        "x": "90%", "y": "90%",
-        "width": "10%", "height": "10%"
+        "x": "90%", "y": "10%",
+        "width": "10%", "height": "10%",
+        "z_index": 1
       }
     ]
   }'
 
 # 2. Poll until completed and download the result
-curl https://api.framelane.com/v1/renders/{id} \\
+curl https://api.framelane.io/v1/renders/{id} \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY"`,
 
   typescript: `import { Framelane } from "framelane";
@@ -52,15 +52,12 @@ const render = await client.renders.create({
   width: 1920,
   height: 1080,
   duration: 30,
-  output_format: "mp4",
   elements: [
     {
       type: "video",
       source_url: "https://cdn.framelane.io/raw-footage.mp4",
-      time: 0,
-      duration: 30,
-      trim_start: 0,
-      trim_end: 30,
+      in_point: 0,
+      out_point: 30,
     },
     {
       type: "text",
@@ -68,7 +65,7 @@ const render = await client.renders.create({
       font_family: "Inter",
       font_size: 48,
       text_color: "#ffffff",
-      caption_animation: "karaoke",
+      animation_preset: "typewriter",
       time: 0,
       duration: 30,
       x: "50%",
@@ -76,13 +73,15 @@ const render = await client.renders.create({
     },
     {
       type: "image",
+      id: "logo",
       source_url: "https://cdn.framelane.io/logo.png",
       time: 0,
       duration: 30,
       x: "90%",
-      y: "90%",
+      y: "10%",
       width: "10%",
       height: "10%",
+      z_index: 1,
     },
   ],
 });
@@ -99,15 +98,12 @@ async def main():
         width=1920,
         height=1080,
         duration=30,
-        output_format="mp4",
         elements=[
             {
                 "type": "video",
                 "source_url": "https://cdn.framelane.io/raw-footage.mp4",
-                "time": 0,
-                "duration": 30,
-                "trim_start": 0,
-                "trim_end": 30,
+                "in_point": 0,
+                "out_point": 30,
             },
             {
                 "type": "text",
@@ -115,7 +111,7 @@ async def main():
                 "font_family": "Inter",
                 "font_size": 48,
                 "text_color": "#ffffff",
-                "caption_animation": "karaoke",
+                "animation_preset": "typewriter",
                 "time": 0,
                 "duration": 30,
                 "x": "50%",
@@ -123,13 +119,15 @@ async def main():
             },
             {
                 "type": "image",
+                "id": "logo",
                 "source_url": "https://cdn.framelane.io/logo.png",
                 "time": 0,
                 "duration": 30,
                 "x": "90%",
-                "y": "90%",
+                "y": "10%",
                 "width": "10%",
                 "height": "10%",
+                "z_index": 1,
             },
         ],
     )

@@ -27,12 +27,9 @@ const CAPS: Cap[] = [
     pills: [
       { label: "MP4", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip.mp4" } },
       { label: "MOV", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip.mov" } },
-      { label: "WebM", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip.webm" } },
-      { label: "MKV", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip.mkv" } },
       { label: "ProRes", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip_prores.mov" } },
       { label: "H.264", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip_h264.mp4" } },
       { label: "H.265", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip_h265.mp4" } },
-      { label: "AV1", param: "source_url", on: "video element", example: { source_url: "https://cdn.example.com/clip_av1.mp4" } },
       { label: "JPEG", param: "source_url", on: "image element", example: { source_url: "https://cdn.example.com/photo.jpg" } },
       { label: "PNG", param: "source_url", on: "image element", example: { source_url: "https://cdn.example.com/overlay.png" } },
       { label: "WebP", param: "source_url", on: "image element", example: { source_url: "https://cdn.example.com/thumb.webp" } },
@@ -57,21 +54,15 @@ const CAPS: Cap[] = [
     pills: [
       {
         label: "Trim",
-        param: "trim_start / trim_end",
+        param: "in_point / out_point",
         on: "video | audio element",
-        example: { trim_start: 5.0, trim_end: 30.0 },
+        example: { in_point: 5.0, out_point: 30.0 },
       },
       {
         label: "Cut",
         param: "time / duration",
         on: "any element",
         example: { time: 0, duration: 10.0 },
-      },
-      {
-        label: "Loop",
-        param: "loop_enabled",
-        on: "video | audio element",
-        example: { loop_enabled: true },
       },
       {
         label: "Crop",
@@ -93,9 +84,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Flip",
-        param: "x_flip / y_flip",
+        param: "flip_horizontal / flip_vertical",
         on: "any visual element",
-        example: { x_flip: true },
+        example: { flip_horizontal: true },
       },
       {
         label: "Scale",
@@ -105,15 +96,15 @@ const CAPS: Cap[] = [
       },
       {
         label: "Speed change",
-        param: "playback_rate",
+        param: "speed",
         on: "video | audio element",
-        example: { playback_rate: 2.0 },
+        example: { speed: 2.0 },
       },
       {
         label: "Frame-accurate cuts",
-        param: "trim_start / trim_end",
+        param: "in_point / out_point",
         on: "video element",
-        example: { trim_start: 12.033, trim_end: 45.5 },
+        example: { in_point: 12.033, out_point: 45.5 },
       },
       {
         label: "Aspect ratio conversion",
@@ -155,22 +146,30 @@ const CAPS: Cap[] = [
     pills: [
       {
         label: "Subtitles / Captions",
-        param: "type + words",
+        param: "word_animation",
         on: "text element",
         example: {
           type: "text",
           text: "Hello world",
-          words: [
-            { text: "Hello", start: 0.0, end: 0.5 },
-            { text: "world", start: 0.5, end: 1.0 },
-          ],
+          word_animation: {
+            style: "karaoke",
+            words: [
+              { text: "Hello", start: 0.0, end: 0.5 },
+              { text: "world", start: 0.5, end: 1.0 },
+            ],
+          },
         },
       },
       {
         label: "Word-level timing",
-        param: "words",
+        param: "word_animation.words",
         on: "text element",
-        example: { words: [{ text: "Hello", start: 0.0, end: 0.4 }] },
+        example: {
+          word_animation: {
+            style: "box_highlight",
+            words: [{ text: "Hello", start: 0.0, end: 0.4 }],
+          },
+        },
       },
       {
         label: "Font size",
@@ -186,15 +185,15 @@ const CAPS: Cap[] = [
       },
       {
         label: "Letter spacing",
-        param: "letter_spacing",
+        param: "tracking",
         on: "text element",
-        example: { letter_spacing: 2 },
+        example: { tracking: 2 },
       },
       {
         label: "Line height",
-        param: "line_height",
+        param: "leading",
         on: "text element",
-        example: { line_height: 1.5 },
+        example: { leading: 1.5 },
       },
       {
         label: "Text shadow",
@@ -229,10 +228,15 @@ const CAPS: Cap[] = [
         example: { text_wrap: "wrap" },
       },
       {
-        label: "Active text color",
-        param: "caption_animation",
+        label: "Box highlight",
+        param: "word_animation.style: box_highlight",
         on: "text element",
-        example: { caption_animation: "karaoke" },
+        example: {
+          text_color: "#ffffff",
+          background_color: "#8B2FC9",
+          text_effect: "normal",
+          word_animation: { style: "box_highlight", words: [{ text: "word", start: 0, end: 0.5 }] },
+        },
       },
     ],
   },
@@ -395,9 +399,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Hue",
-        param: "hue_shift",
+        param: "hue_rotate",
         on: "video | image element",
-        example: { hue_shift: 45 },
+        example: { hue_rotate: 45 },
       },
       {
         label: "Vignette",
@@ -425,15 +429,15 @@ const CAPS: Cap[] = [
       },
       {
         label: "Sharpen",
-        param: "sharpen",
+        param: "sharpness",
         on: "video | image element",
-        example: { sharpen: 0.7 },
+        example: { sharpness: 0.7 },
       },
       {
         label: "Blur",
-        param: "blur_radius",
+        param: "blur",
         on: "video | image element",
-        example: { blur_radius: 10 },
+        example: { blur: 10 },
       },
       {
         label: "Bokeh blur",
@@ -449,9 +453,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Fisheye",
-        param: "effects[].type: fish_eye",
+        param: "effects[].type: fisheye",
         on: "video | image element",
-        example: { effects: [{ type: "fish_eye", intensity: 60 }] },
+        example: { effects: [{ type: "fisheye", intensity: 60 }] },
       },
       {
         label: "Chromatic aberration",
@@ -486,8 +490,8 @@ const CAPS: Cap[] = [
             {
               type: "cross_dissolve",
               duration: 0.5,
-              start_target: "clip_01",
-              end_target: "clip_02",
+              from_id: "clip_01",
+              to_id: "clip_02",
             },
           ],
         },
@@ -498,7 +502,7 @@ const CAPS: Cap[] = [
         on: "render request",
         example: {
           transitions: [
-            { type: "wipe_left", duration: 0.5, start_target: "clip_01", end_target: "clip_02" },
+            { type: "wipe_left", duration: 0.5, from_id: "clip_01", to_id: "clip_02" },
           ],
         },
       },
@@ -510,9 +514,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Zoom",
-        param: "transitions[].type: simple_zoom",
+        param: "transitions[].type: zoom",
         on: "render request",
-        example: { transitions: [{ type: "simple_zoom", duration: 0.4 }] },
+        example: { transitions: [{ type: "zoom", duration: 0.4 }] },
       },
       {
         label: "Spin",
@@ -547,13 +551,7 @@ const CAPS: Cap[] = [
         example: { remove_background: true },
       },
       {
-        label: "Gaze correction",
-        param: "gaze_redirect",
-        on: "video element",
-        example: { gaze_redirect: true },
-      },
-      {
-        label: "Eye contact redirect",
+        label: "Gaze redirect",
         param: "gaze_redirect",
         on: "video element",
         example: { gaze_redirect: true },
@@ -616,25 +614,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Trim audio",
-        param: "trim_start / trim_end",
+        param: "in_point / out_point",
         on: "audio element",
-        example: { trim_start: 10.0, trim_end: 60.0 },
-      },
-      {
-        label: "Replace audio",
-        param: "POST /v1/tasks/replace-audio",
-        on: "task endpoint",
-        example: {
-          video_url: "https://...",
-          audio_url: "https://...",
-          keep_original_audio: false,
-        },
-      },
-      {
-        label: "Extract audio",
-        param: "POST /v1/tasks/extract-audio",
-        on: "task endpoint",
-        example: { source_url: "https://...", format: "mp3", bitrate_kbps: 192 },
+        example: { in_point: 10.0, out_point: 60.0 },
       },
       {
         label: "Mute track",
@@ -650,9 +632,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Audio speed",
-        param: "playback_rate",
+        param: "speed",
         on: "audio element",
-        example: { playback_rate: 1.5 },
+        example: { speed: 1.5 },
       },
       {
         label: "Add music",
@@ -679,12 +661,6 @@ const CAPS: Cap[] = [
         param: "fade_out_duration + fade_in_duration",
         on: "audio element",
         example: { fade_out_duration: 0.5, fade_in_duration: 0.5 },
-      },
-      {
-        label: "Loop audio",
-        param: "loop_enabled",
-        on: "audio element",
-        example: { loop_enabled: true },
       },
     ],
   },
@@ -737,34 +713,10 @@ const CAPS: Cap[] = [
         example: { width: 1280, height: 720 },
       },
       {
-        label: "H.264",
-        param: "codec: h264",
-        on: "POST /v1/tasks/transcode",
-        example: { source_url: "https://...", codec: "h264" },
-      },
-      {
-        label: "H.265",
-        param: "codec: h265",
-        on: "POST /v1/tasks/transcode",
-        example: { source_url: "https://...", codec: "h265" },
-      },
-      {
-        label: "VP9",
-        param: "codec: vp9",
-        on: "POST /v1/tasks/transcode",
-        example: { source_url: "https://...", codec: "vp9" },
-      },
-      {
-        label: "AV1",
-        param: "codec: av1",
-        on: "POST /v1/tasks/transcode",
-        example: { source_url: "https://...", codec: "av1" },
-      },
-      {
-        label: "Configurable bitrate",
-        param: "bitrate_kbps",
-        on: "POST /v1/tasks/transcode",
-        example: { source_url: "https://...", codec: "h264", bitrate_kbps: 8000 },
+        label: "frame_rate",
+        param: "frame_rate",
+        on: "render request",
+        example: { frame_rate: 30 },
       },
     ],
   },
