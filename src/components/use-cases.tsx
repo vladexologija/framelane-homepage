@@ -4,6 +4,24 @@ import { useState } from "react";
 
 const USE_CASES = [
   {
+    key: "layered",
+    tab: "Layered video composition",
+    title: "Layered video composition",
+    prompt:
+      "Stack two full-frame clips with vintage and bokeh effects, drop in a bordered PiP at second 30, sequence four text layers with fade, difference, overlay, and evaporate motion — export 3840×2160.",
+    chips: [
+      "Vintage effect",
+      "Bokeh blur",
+      "PiP overlay",
+      "Text motion",
+      "Difference blend",
+      "4K export",
+    ],
+    desc: "Stack video layers with effects, add a picture-in-picture overlay, and sequence text with blend and dissolve motion — one render job.",
+    videoUrl: "https://cdn-user.framelane.io/render/2b8b409a-b706-4f5a-a2b0-caf391740eae.mp4",
+    aspectRatio: "16 / 9",
+  },
+  {
     key: "podcast",
     tab: "Video → TikTok captions",
     title: "Video → TikTok captions",
@@ -21,24 +39,6 @@ const USE_CASES = [
     videoUrl:
       "https://cdn-user.framelane.io/render/90860287-1407-4090-a025-120cb3b02180.mp4",
     aspectRatio: "9 / 16",
-  },
-  {
-    key: "talking",
-    tab: "Talking-head cleanup",
-    title: "Webcam recording → studio-grade clip",
-    prompt:
-      "Remove the green-room background, fix uneven audio, generate burned-in subtitles, color-grade to neutral, export 4K MP4.",
-    chips: [
-      "Background removal",
-      "Audio level",
-      "Burned-in subs",
-      "Neutral LUT",
-      "4K export",
-      "Noise reduction",
-    ],
-    desc: "Clean up creator and webcam footage with background removal, gaze correction, subtitles, color, and high-bitrate export.",
-    videoUrl: "https://cdn-assets.framelane.io/shared/videos/clip1.mp4",
-    aspectRatio: "16 / 9",
   },
   {
     key: "ad",
