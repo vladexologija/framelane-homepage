@@ -207,7 +207,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {rendersData?.items?.length > 0 ? (
+        {rendersData && rendersData.items.length > 0 ? (
           <div style={{ border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
             {rendersData.items.slice(0, 5).map((render, i) => (
               <div
