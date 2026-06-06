@@ -69,22 +69,28 @@ function LogLine({
   );
 }
 
+const DEMO_VIDEO_URL =
+  "https://cdn-user.framelane.io/render/029302df-94be-4b1d-a60f-604342794d87.mp4";
+
 function DemoConsole({ aspect }: { aspect: string }) {
-  const [time, setTime] = useState(134);
+  const [time, setTime] = useState(0);
+  const [total, setTotal] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const total = 254;
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!playing) return;
-    const id = setInterval(() => {
-      setTime((t) => (t + 1) % total);
-    }, 1000);
-    return () => clearInterval(id);
+    const video = videoRef.current;
+    if (!video) return;
+    if (playing) {
+      void video.play();
+    } else {
+      video.pause();
+    }
   }, [playing]);
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const pct = (time / total) * 100;
+  const pct = total > 0 ? (time / total) * 100 : 0;
 
   const aspectRatio: Record<string, number> = {
     "16:9": 16 / 9,
@@ -172,8 +178,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 maxHeight: 340,
                 width: aspect === "9:16" ? "auto" : "100%",
                 maxWidth: aspect === "9:16" ? 220 : "100%",
-                background:
-                  "linear-gradient(135deg, #2A2540, #1A1E40, #2A3050)",
+                background: "#0A0E1F",
                 borderRadius: 6,
                 position: "relative",
                 overflow: "hidden",
@@ -181,12 +186,20 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 transition: "all 0.3s ease",
               }}
             >
-              <div
+              <video
+                ref={videoRef}
+                src={DEMO_VIDEO_URL}
+                autoPlay
+                loop
+                muted
+                playsInline
+                onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+                onLoadedMetadata={(e) => setTotal(e.currentTarget.duration)}
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 12px, transparent 12px 24px)",
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
                 }}
               />
               <button
@@ -218,38 +231,6 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 )}
               </button>
 
-              {/* Karaoke captions */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: aspect === "9:16" ? 60 : 40,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  display: "flex",
-                  gap: 4,
-                  fontSize: aspect === "9:16" ? 11 : 14,
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {["Find", "the", "best", "moment"].map((w, i) => (
-                  <span
-                    key={w}
-                    style={{
-                      color:
-                        i === Math.floor((time / 2) % 4)
-                          ? "var(--orange)"
-                          : "white",
-                      transition: "color 0.2s",
-                    }}
-                  >
-                    {w}
-                  </span>
-                ))}
-              </div>
-
               {/* Progress bar */}
               <div
                 style={{
@@ -266,7 +247,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
                     width: `${pct}%`,
                     height: "100%",
                     background: "var(--orange)",
-                    transition: "width 1s linear",
+                    transition: "width 0.1s linear",
                   }}
                 />
               </div>
@@ -304,7 +285,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 color: "var(--fg-mute)",
               }}
             >
-              <span>project_demo.mp4</span>
+              <span>029302df.mp4</span>
               <span>
                 {fmt(time)} / {fmt(total)}
               </span>

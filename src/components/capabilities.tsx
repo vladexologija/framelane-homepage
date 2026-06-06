@@ -987,7 +987,7 @@ export function Capabilities() {
                     fontSize: 12,
                     lineHeight: 1.6,
                     whiteSpace: "pre-wrap",
-                    wordBreak: "break-text",
+                    wordBreak: "break-all",
                     fontFamily: "inherit",
                   }}
                 >

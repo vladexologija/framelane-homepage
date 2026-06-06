@@ -41,21 +41,21 @@ const USE_CASES = [
     aspectRatio: "9 / 16",
   },
   {
-    key: "ad",
-    tab: "Product ad variants",
-    title: "One product shot → 12 ad variants",
+    key: "text-behind",
+    tab: "Text behind the speaker",
+    title: "Text behind the speaker",
     prompt:
-      "From this product video and copy spreadsheet, generate twelve 6-second ads with different hooks, formats, and CTAs. Export 9:16, 1:1, 16:9.",
+      "Stack background video, giant title text, and a transparent speaker cutout with z-index layering, burn in color word-animation captions, and fade out a logo sting — export 3840×2160.",
     chips: [
-      "Variant matrix",
-      "Dynamic text",
-      "Layouts ×3",
-      "Music beds",
-      "Export ×3",
-      "Per-locale",
+      "z-index layering",
+      "WebM cutout",
+      "Word animation",
+      "Title fade",
+      "Logo sting",
+      "4K export",
     ],
-    desc: "Generate high-volume product, UGC, and paid-social variants from structured inputs — text, layout, music, and CTA permutations.",
-    videoUrl: "https://cdn-assets.framelane.io/shared/videos/clip1.mp4",
+    desc: "Giant title text sits behind a cutout speaker, karaoke captions float on top, and a logo sting opens the clip — one render job.",
+    videoUrl: "https://cdn-user.framelane.io/render/029302df-94be-4b1d-a60f-604342794d87.mp4",
     aspectRatio: "16 / 9",
   },
 ] as const;
@@ -120,7 +120,7 @@ function VideoPreview({
 }
 
 export function UseCases() {
-  const [active, setActive] = useState<string>("podcast");
+  const [active, setActive] = useState<string>("layered");
   const data = USE_CASES.find((u) => u.key === active) ?? USE_CASES[0];
 
   return (

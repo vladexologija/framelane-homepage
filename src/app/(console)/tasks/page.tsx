@@ -56,7 +56,7 @@ export default async function TasksPage({
         </p>
       </div>
 
-      {data?.items?.length > 0 ? (
+      {(data?.items?.length ?? 0) > 0 ? (
         <>
           <div style={{ border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
             {/* Table header */}
@@ -81,7 +81,7 @@ export default async function TasksPage({
               ))}
             </div>
 
-            {data.items.map((task, i) => (
+            {data?.items?.map((task, i) => (
               <div
                 key={task.id}
                 style={{
@@ -91,7 +91,7 @@ export default async function TasksPage({
                   alignItems: "center",
                   padding: "14px 20px",
                   borderBottom:
-                    i < data.items.length - 1 ? "1px solid var(--line)" : "none",
+                    i < (data?.items?.length ?? 0) - 1 ? "1px solid var(--line)" : "none",
                   background: "var(--bg-2)",
                 }}
               >
@@ -127,7 +127,7 @@ export default async function TasksPage({
             ))}
           </div>
 
-          {data.total > 20 && (
+          {(data?.total ?? 0) > 20 && (
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
               <a
                 href={`/tasks?page=${pageNum - 1}`}
@@ -140,14 +140,14 @@ export default async function TasksPage({
                 ← Previous
               </a>
               <span className="mono" style={{ fontSize: 12, color: "var(--fg-mute)" }}>
-                Page {pageNum} of {Math.ceil(data.total / 20)}
+                Page {pageNum} of {Math.ceil((data?.total ?? 0) / 20)}
               </span>
               <a
                 href={`/tasks?page=${pageNum + 1}`}
                 style={{
                   fontSize: 13,
-                  color: pageNum < Math.ceil(data.total / 20) ? "var(--orange)" : "var(--fg-dim)",
-                  pointerEvents: pageNum < Math.ceil(data.total / 20) ? "auto" : "none",
+                  color: pageNum < Math.ceil((data?.total ?? 0) / 20) ? "var(--orange)" : "var(--fg-dim)",
+                  pointerEvents: pageNum < Math.ceil((data?.total ?? 0) / 20) ? "auto" : "none",
                 }}
               >
                 Next →
