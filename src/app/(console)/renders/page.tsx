@@ -56,7 +56,7 @@ export default async function RendersPage({
         </p>
       </div>
 
-      {data?.items?.length > 0 ? (
+      {data && data.items.length > 0 ? (
         <>
           <div style={{ border: "1px solid var(--line)", borderRadius: 6, overflow: "hidden" }}>
             {/* Table header */}
