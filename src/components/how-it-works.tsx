@@ -536,12 +536,8 @@ export function HowItWorks() {
       </div>
       <div className="wrap">
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr)",
-            gap: 64,
-            alignItems: "start",
-          }}
+          className="two-col-grid"
+          style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr)" }}
         >
           {/* Left */}
           <div>

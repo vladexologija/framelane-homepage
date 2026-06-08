@@ -42,7 +42,7 @@ export const SITE = {
   tagline: "Give your AI agent a video editor",
   description:
     "FrameLane lets agents turn raw footage into finished videos. Create edit plans, preview frames, and render production-ready output through API or MCP.",
-  docsUrl: "https://itis-c7dc7146.mintlify.app/",
+  docsUrl: "https://docs.framelane.io/",
   statusUrl: "https://framelane.betteruptime.com/",
   consoleUrl: process.env.NEXT_PUBLIC_CONSOLE_URL ?? "/signup",
   waitlistUrl: process.env.NEXT_PUBLIC_WAITLIST_URL ?? "#",

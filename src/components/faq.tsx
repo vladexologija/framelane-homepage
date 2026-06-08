@@ -135,12 +135,8 @@ export function FAQ() {
       </div>
       <div className="wrap">
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
-            gap: 80,
-            alignItems: "start",
-          }}
+          className="two-col-grid"
+          style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)", gap: 80 }}
         >
           <div>
             <h2>

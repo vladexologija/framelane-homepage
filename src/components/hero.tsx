@@ -153,13 +153,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
         </div>
 
         {/* Body */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 280px",
-            minHeight: 420,
-          }}
-        >
+        <div className="console-body-grid">
           {/* Player */}
           <div
             style={{
@@ -294,6 +288,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
 
           {/* Log panel */}
           <div
+            className="console-log-panel"
             style={{
               borderLeft: "1px solid var(--line)",
               background: "var(--bg-2)",

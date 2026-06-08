@@ -173,14 +173,9 @@ export function UseCases() {
         </div>
 
         <div
-          className="fade-in"
+          className="fade-in two-col-grid"
           key={active}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)",
-            gap: 48,
-            alignItems: "start",
-          }}
+          style={{ gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr)", gap: 48 }}
         >
           {/* Left */}
           <div>

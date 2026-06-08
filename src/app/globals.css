@@ -308,3 +308,99 @@ html {
   background: var(--orange);
   color: #0a0e1f;
 }
+
+/* ── Responsive two-column grid ── */
+.two-col-grid {
+  display: grid;
+  align-items: start;
+  gap: 64px;
+}
+
+/* ── Capabilities layout ── */
+.cap-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+/* ── Hero console ── */
+.console-body-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  min-height: 420px;
+}
+
+/* ── Footer grid ── */
+.footer-cols-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  gap: 48px;
+  margin-bottom: 60px;
+}
+
+/* ── Mobile breakpoint ── */
+@media (max-width: 767px) {
+  section {
+    padding: 80px 0;
+  }
+
+  .two-col-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  .cap-layout-grid {
+    grid-template-columns: 1fr;
+  }
+  .cap-sidebar {
+    border-right: none !important;
+    border-bottom: 1px solid var(--line);
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cap-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  .cap-sidebar button {
+    width: auto !important;
+    flex-shrink: 0;
+    padding: 10px 14px !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent;
+  }
+  .cap-sidebar button[data-active="true"] {
+    border-bottom: 2px solid var(--orange) !important;
+  }
+  .cap-detail-panel {
+    padding: 24px 20px !important;
+    min-height: auto !important;
+  }
+
+  .console-body-grid {
+    grid-template-columns: 1fr;
+  }
+  .console-log-panel {
+    display: none;
+  }
+
+  .footer-cols-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+
+  .comp-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .comp-table-inner {
+    min-width: 560px;
+  }
+}
