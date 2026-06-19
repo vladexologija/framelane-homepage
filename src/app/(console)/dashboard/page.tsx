@@ -121,7 +121,7 @@ export default async function DashboardPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(2, 1fr)",
           gap: 16,
           marginBottom: 40,
         }}
@@ -140,11 +140,6 @@ export default async function DashboardPage() {
         <StatCard
           label="Renders"
           value={usageData?.renders_count ?? "—"}
-          sub="this billing period"
-        />
-        <StatCard
-          label="Tasks"
-          value={usageData?.tasks_count ?? "—"}
           sub="this billing period"
         />
       </div>

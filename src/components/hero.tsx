@@ -25,6 +25,44 @@ function CopyIcon() {
   );
 }
 
+function VolumeOffIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 5 6 9H2v6h4l5 4z" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  );
+}
+
+function VolumeOnIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 5 6 9H2v6h4l5 4z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  );
+}
+
 function LogLine({
   t,
   c,
@@ -76,6 +114,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
   const [time, setTime] = useState(0);
   const [total, setTotal] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -87,6 +126,12 @@ function DemoConsole({ aspect }: { aspect: string }) {
       video.pause();
     }
   }, [playing]);
+
+  // The `muted` attribute is only honored on initial mount, so sync it imperatively.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) video.muted = muted;
+  }, [muted]);
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -245,6 +290,29 @@ function DemoConsole({ aspect }: { aspect: string }) {
                   }}
                 />
               </div>
+
+              {/* Mute / unmute */}
+              <button
+                onClick={() => setMuted((m) => !m)}
+                aria-label={muted ? "Unmute" : "Mute"}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 4,
+                  background: "rgba(0,0,0,0.4)",
+                  color: "rgba(255,255,255,0.85)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {muted ? <VolumeOffIcon /> : <VolumeOnIcon />}
+              </button>
 
               {/* Watermark */}
               <div

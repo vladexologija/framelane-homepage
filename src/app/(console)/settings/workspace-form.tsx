@@ -76,7 +76,7 @@ export function DeleteWorkspaceForm() {
   return (
     <div>
       <p style={{ fontSize: 13, color: "var(--fg-2)", marginBottom: 16, lineHeight: 1.5 }}>
-        Permanently deletes your workspace, all API keys, renders, and tasks.
+        Permanently deletes your workspace, all API keys, and renders.
         This cannot be undone.
       </p>
       <label
