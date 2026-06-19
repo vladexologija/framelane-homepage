@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# design-sync (FrameLane brand kit)
+/ds-bundle/
+/.ds-sync/node_modules/
+/.ds-sync/.entry/
+/.ds-sync/package.json
+/.ds-sync/package-lock.json
+/.design-sync/.cache/

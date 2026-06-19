@@ -1,0 +1,27 @@
+/* FrameLane brand-kit theme bridge.
+ *
+ * Several draft components (Examples, ScaleBlock, Testimonials, CtaBanner,
+ * CodeTabs) were written against a shadcn-style Tailwind token vocabulary
+ * (text-muted-foreground, bg-accent, font-logo, …) that the app's globals.css
+ * never defines — so in the live repo those utilities don't generate and the
+ * components render colorless/with fallback artifacts.
+ *
+ * This @theme maps that vocabulary onto FrameLane's real palette (from
+ * src/app/globals.css) so the components render as intended and on-brand.
+ * Additive only: the live homepage components don't use these classes, so
+ * their rendering is unaffected. Human-editable; committed.
+ */
+@theme {
+  --color-background: #0a0e1f; /* --bg */
+  --color-foreground: #f2efe6; /* --fg */
+  --color-muted: #7c7f95; /* --fg-mute */
+  --color-muted-foreground: #7c7f95; /* --fg-mute */
+  --color-card: #0e1226; /* --bg-2 */
+  --color-accent: #ff7a1a; /* --orange */
+  --color-accent-foreground: #1a0e00; /* btn-primary ink */
+  --color-success: #7be0aa; /* --green */
+  --color-border: rgba(255, 255, 255, 0.1); /* --line-strong-ish */
+
+  --font-logo: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
