@@ -179,13 +179,8 @@ export function Comparisons() {
       </div>
       <div className="wrap">
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
-            gap: 64,
-            alignItems: "start",
-            marginBottom: 56,
-          }}
+          className="two-col-grid"
+          style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)", marginBottom: 56 }}
         >
           <h2>
             Built for real video,
@@ -304,7 +299,9 @@ export function Comparisons() {
           </ul>
         </div>
 
+        <div className="comp-table-wrap">
         <div
+          className="comp-table-inner"
           style={{
             border: "1px solid var(--line)",
             borderRadius: 8,
@@ -380,6 +377,7 @@ export function Comparisons() {
               ))}
             </div>
           ))}
+        </div>
         </div>
       </div>
     </section>

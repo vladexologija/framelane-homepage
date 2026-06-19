@@ -126,34 +126,15 @@ export default async function UsagePage({
           </div>
 
           {/* Activity summary */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 16,
-            }}
-          >
-            <div className="card" style={{ padding: "24px 28px" }}>
-              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--fg-dim)", marginBottom: 10 }}>
-                Renders
-              </div>
-              <div className="mono" style={{ fontSize: 36, fontWeight: 500, letterSpacing: "-0.04em" }}>
-                {usage.renders_count ?? "—"}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--fg-mute)", marginTop: 4 }}>
-                render jobs submitted
-              </div>
+          <div className="card" style={{ padding: "24px 28px" }}>
+            <div className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--fg-dim)", marginBottom: 10 }}>
+              Renders
             </div>
-            <div className="card" style={{ padding: "24px 28px" }}>
-              <div className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--fg-dim)", marginBottom: 10 }}>
-                Tasks
-              </div>
-              <div className="mono" style={{ fontSize: 36, fontWeight: 500, letterSpacing: "-0.04em" }}>
-                {usage.tasks_count}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--fg-mute)", marginTop: 4 }}>
-                edit operations executed
-              </div>
+            <div className="mono" style={{ fontSize: 36, fontWeight: 500, letterSpacing: "-0.04em" }}>
+              {usage.renders_count ?? "—"}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--fg-mute)", marginTop: 4 }}>
+              render jobs submitted
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ description: "Follow this guide to make your first FrameLane render in under 5 m
 
 # Quickstart
 
-This guide walks you through creating an asset, submitting a render job, and retrieving the output URL.
+This guide walks you through submitting a render job and retrieving the output URL.
 
 ## Prerequisites
 
@@ -26,7 +26,9 @@ npm install framelane
 
 </CodeGroup>
 
-## 2. Upload an asset
+## 2. Create a render job
+
+Reference your source media by URL — FrameLane fetches it directly, no upload step required.
 
 <CodeGroup>
 
@@ -35,28 +37,8 @@ from framelane import FrameLane
 
 client = FrameLane()  # reads FRAMELANE_API_KEY from env
 
-asset = client.assets.upload("raw-footage.mp4")
-print(f"Asset ID: {asset.id}")
-```
-
-```typescript TypeScript
-import { FrameLane } from "framelane";
-
-const client = new FrameLane(); // reads FRAMELANE_API_KEY from env
-
-const asset = await client.assets.upload("raw-footage.mp4");
-console.log(`Asset ID: ${asset.id}`);
-```
-
-</CodeGroup>
-
-## 3. Create a render job
-
-<CodeGroup>
-
-```python Python
 job = client.jobs.create(
-    assets=[asset.id],
+    assets=["https://cdn.framelane.io/raw-footage.mp4"],
     edits=[
         {"type": "trim", "start": 0, "end": 30},
         {"type": "caption", "style": "subtitles"},
@@ -67,8 +49,12 @@ print(f"Job ID: {job.id}")
 ```
 
 ```typescript TypeScript
+import { FrameLane } from "framelane";
+
+const client = new FrameLane(); // reads FRAMELANE_API_KEY from env
+
 const job = await client.jobs.create({
-  assets: [asset.id],
+  assets: ["https://cdn.framelane.io/raw-footage.mp4"],
   edits: [
     { type: "trim", start: 0, end: 30 },
     { type: "caption", style: "subtitles" },
@@ -80,7 +66,13 @@ console.log(`Job ID: ${job.id}`);
 
 </CodeGroup>
 
-## 4. Wait for completion
+<Note>
+  Passing a URL renders that file once. If you plan to reuse the same media
+  across multiple jobs, [upload it as an asset](/concepts/assets) first and
+  reference the returned `asset_id` instead — it's stored once and reusable.
+</Note>
+
+## 3. Wait for completion
 
 <CodeGroup>
 

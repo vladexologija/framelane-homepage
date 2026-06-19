@@ -10,7 +10,6 @@ export interface WorkspaceUsage {
   render_minutes_used: number;
   render_minutes_limit: number | null;
   renders_count: number | null;
-  tasks_count: number;
   egress_bytes: number;
   period_start: string;
   period_end: string;
@@ -21,13 +20,6 @@ export interface Render {
   status: "queued" | "processing" | "done" | "failed";
   created_at: string;
   duration_ms?: number;
-}
-
-export interface Task {
-  id: string;
-  type: string;
-  status: "queued" | "processing" | "done" | "failed";
-  created_at: string;
 }
 
 export interface ApiKey {
@@ -108,7 +100,6 @@ export async function getUsage(period = "30d") {
     render_minutes_used: (raw.render_minutes_used ?? raw.render_minutes ?? 0) as number,
     render_minutes_limit: (raw.render_minutes_limit ?? null) as number | null,
     renders_count: (raw.renders_count ?? null) as number | null,
-    tasks_count: (raw.tasks_count ?? raw.task_count ?? 0) as number,
     egress_bytes: (raw.egress_bytes ?? 0) as number,
     period_start: raw.period_start as string,
     period_end: raw.period_end as string,
@@ -121,15 +112,6 @@ export async function getRenders(page = 1) {
   );
   const items = extractList<Render>(raw);
   const hasMore = !Array.isArray(raw) && (raw as PagedResponse<Render>).has_more;
-  return { items, total: hasMore ? items.length + 1 : items.length };
-}
-
-export async function getTasksList(page = 1) {
-  const raw = await apiFetch<PagedResponse<Task> | Task[]>(
-    `/v1/tasks?page=${page}&limit=20`
-  );
-  const items = extractList<Task>(raw);
-  const hasMore = !Array.isArray(raw) && (raw as PagedResponse<Task>).has_more;
   return { items, total: hasMore ? items.length + 1 : items.length };
 }
 

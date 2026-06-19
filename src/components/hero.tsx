@@ -25,6 +25,44 @@ function CopyIcon() {
   );
 }
 
+function VolumeOffIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 5 6 9H2v6h4l5 4z" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  );
+}
+
+function VolumeOnIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 5 6 9H2v6h4l5 4z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  );
+}
+
 function LogLine({
   t,
   c,
@@ -69,22 +107,35 @@ function LogLine({
   );
 }
 
+const DEMO_VIDEO_URL =
+  "https://cdn-user.framelane.io/render/029302df-94be-4b1d-a60f-604342794d87.mp4";
+
 function DemoConsole({ aspect }: { aspect: string }) {
-  const [time, setTime] = useState(134);
+  const [time, setTime] = useState(0);
+  const [total, setTotal] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const total = 254;
+  const [muted, setMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!playing) return;
-    const id = setInterval(() => {
-      setTime((t) => (t + 1) % total);
-    }, 1000);
-    return () => clearInterval(id);
+    const video = videoRef.current;
+    if (!video) return;
+    if (playing) {
+      void video.play();
+    } else {
+      video.pause();
+    }
   }, [playing]);
+
+  // The `muted` attribute is only honored on initial mount, so sync it imperatively.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) video.muted = muted;
+  }, [muted]);
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const pct = (time / total) * 100;
+  const pct = total > 0 ? (time / total) * 100 : 0;
 
   const aspectRatio: Record<string, number> = {
     "16:9": 16 / 9,
@@ -147,13 +198,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
         </div>
 
         {/* Body */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 280px",
-            minHeight: 420,
-          }}
-        >
+        <div className="console-body-grid">
           {/* Player */}
           <div
             style={{
@@ -172,8 +217,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 maxHeight: 340,
                 width: aspect === "9:16" ? "auto" : "100%",
                 maxWidth: aspect === "9:16" ? 220 : "100%",
-                background:
-                  "linear-gradient(135deg, #2A2540, #1A1E40, #2A3050)",
+                background: "#0A0E1F",
                 borderRadius: 6,
                 position: "relative",
                 overflow: "hidden",
@@ -181,12 +225,20 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 transition: "all 0.3s ease",
               }}
             >
-              <div
+              <video
+                ref={videoRef}
+                src={DEMO_VIDEO_URL}
+                autoPlay
+                loop
+                muted
+                playsInline
+                onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+                onLoadedMetadata={(e) => setTotal(e.currentTarget.duration)}
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 12px, transparent 12px 24px)",
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
                 }}
               />
               <button
@@ -218,38 +270,6 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 )}
               </button>
 
-              {/* Karaoke captions */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: aspect === "9:16" ? 60 : 40,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  display: "flex",
-                  gap: 4,
-                  fontSize: aspect === "9:16" ? 11 : 14,
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {["Find", "the", "best", "moment"].map((w, i) => (
-                  <span
-                    key={w}
-                    style={{
-                      color:
-                        i === Math.floor((time / 2) % 4)
-                          ? "var(--orange)"
-                          : "white",
-                      transition: "color 0.2s",
-                    }}
-                  >
-                    {w}
-                  </span>
-                ))}
-              </div>
-
               {/* Progress bar */}
               <div
                 style={{
@@ -266,10 +286,33 @@ function DemoConsole({ aspect }: { aspect: string }) {
                     width: `${pct}%`,
                     height: "100%",
                     background: "var(--orange)",
-                    transition: "width 1s linear",
+                    transition: "width 0.1s linear",
                   }}
                 />
               </div>
+
+              {/* Mute / unmute */}
+              <button
+                onClick={() => setMuted((m) => !m)}
+                aria-label={muted ? "Unmute" : "Mute"}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 4,
+                  background: "rgba(0,0,0,0.4)",
+                  color: "rgba(255,255,255,0.85)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {muted ? <VolumeOffIcon /> : <VolumeOnIcon />}
+              </button>
 
               {/* Watermark */}
               <div
@@ -304,7 +347,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
                 color: "var(--fg-mute)",
               }}
             >
-              <span>project_demo.mp4</span>
+              <span>029302df.mp4</span>
               <span>
                 {fmt(time)} / {fmt(total)}
               </span>
@@ -313,6 +356,7 @@ function DemoConsole({ aspect }: { aspect: string }) {
 
           {/* Log panel */}
           <div
+            className="console-log-panel"
             style={{
               borderLeft: "1px solid var(--line)",
               background: "var(--bg-2)",

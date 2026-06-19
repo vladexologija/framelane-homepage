@@ -42,14 +42,7 @@ export function Footer() {
   return (
     <footer style={{ borderTop: "1px solid var(--line)", padding: "80px 0 40px" }}>
       <div className="wrap">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.4fr) repeat(2, minmax(0, 1fr))",
-            gap: 48,
-            marginBottom: 60,
-          }}
-        >
+        <div className="footer-cols-grid">
           <div>
             <Link href="/" aria-label={`${SITE.name} home`}>
               <Logo width={150} />

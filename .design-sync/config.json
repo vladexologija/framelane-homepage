@@ -1,0 +1,9 @@
+{
+  "pkg": "framelane-homepage",
+  "globalName": "FrameLane",
+  "projectId": "d13b68f3-c830-4a2f-8ed5-d24cdb4486d4",
+  "readmeHeader": ".design-sync/conventions.md",
+  "version": "0.1.0",
+  "shape": "package",
+  "note": "Off-converter bespoke extraction: this repo is a Next.js app, not a bundlable component library. Built by .ds-sync/brand-build.mjs (custom orchestrator reusing the skill's emit/bundle/sync-hashes helpers). See .design-sync/NOTES.md."
+}

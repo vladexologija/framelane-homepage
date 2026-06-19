@@ -27,7 +27,7 @@ export default async function WebhooksPage() {
             Webhooks
           </h1>
           <p style={{ fontSize: 13, color: "var(--fg-mute)" }}>
-            Receive HTTP notifications when renders and tasks complete.
+            Receive HTTP notifications when renders complete.
           </p>
         </div>
         <a

@@ -821,19 +821,10 @@ export function Capabilities() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "280px 1fr",
-            gap: 0,
-            border: "1px solid var(--line)",
-            borderRadius: 8,
-            overflow: "hidden",
-            background: "var(--bg-2)",
-          }}
-        >
+        <div className="cap-layout-grid">
           {/* Sidebar */}
           <div
+            className="cap-sidebar"
             style={{
               borderRight: "1px solid var(--line)",
               padding: "14px 0",
@@ -843,6 +834,7 @@ export function Capabilities() {
             {CAPS.map((c, i) => (
               <button
                 key={c.key}
+                data-active={String(active === c.key)}
                 onClick={() => selectCap(c.key)}
                 style={{
                   width: "100%",
@@ -880,7 +872,7 @@ export function Capabilities() {
           {/* Detail panel */}
           <div
             key={cap.key}
-            className="fade-in"
+            className="fade-in cap-detail-panel"
             style={{ padding: "40px 44px", minHeight: 380 }}
           >
             <div
@@ -987,7 +979,7 @@ export function Capabilities() {
                     fontSize: 12,
                     lineHeight: 1.6,
                     whiteSpace: "pre-wrap",
-                    wordBreak: "break-text",
+                    wordBreak: "break-all",
                     fontFamily: "inherit",
                   }}
                 >
