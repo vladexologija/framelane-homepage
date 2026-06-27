@@ -93,7 +93,6 @@ export function Footer() {
             items={[
               { label: "vs Remotion", href: "/compare/remotion" },
               { label: "vs Shotstack", href: "/compare/shotstack" },
-              { label: "vs FFmpeg", href: "/compare/ffmpeg" },
             ]}
           />
           {/* <FooterCol

@@ -63,10 +63,11 @@ export interface Objection {
   source?: { label: string; url: string };
 }
 
-// SOURCE: each `quote` paraphrases or quotes Remotion's own public documentation
-// (Lambda/GPU limitations, CSS-animation guidance, AI-agent guidance, 4K render
-// performance). Keep these grounded in that source, do not "improve" them into
-// claims the source does not support.
+// SOURCE: the GPU, Rendering and Performance quotes paraphrase Remotion's own
+// public documentation (Lambda/GPU limits, CSS-animation guidance, 4K render
+// performance). The AI Agents and Timeline entries describe the open-loop
+// iteration problem agents hit with current stacks. Keep all of these grounded,
+// do not "improve" them into claims the sources do not support.
 export const REMOTION_OBJECTIONS: Objection[] = [
   {
     tag: "GPU",
@@ -90,6 +91,14 @@ export const REMOTION_OBJECTIONS: Objection[] = [
       "No React, no proprietary DSL. AI-first, agents already speak HTML/JSON.",
     counter:
       "FrameLane is JSON-in, video-out. Any agent, any language, one API call.",
+  },
+  {
+    tag: "Timeline",
+    title: "The edit layer is a black box",
+    quote:
+      "Agents can write scripts and captions, but they cannot read or modify the edit, so every pass is a regeneration, not a refinement.",
+    counter:
+      "FrameLane exposes the edit as a JSON timeline your agent reads and patches: tracks, clips, captions, timing.",
   },
   {
     tag: "Performance",

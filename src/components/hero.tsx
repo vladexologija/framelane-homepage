@@ -522,10 +522,10 @@ export function Hero() {
           </h1>
 
           {/* Lede */}
-          <p className="lede" style={{ marginTop: 18, maxWidth: "52ch" }}>
+          <p className="lede" style={{ marginTop: 18, maxWidth: "82ch" }}>
             Your agent writes the edit plan. FrameLane renders the video.
             <br />
-            Built with Rust. GPU native.
+            Built with Rust. GPU native. Timeline as state.
             No React. No browser. No Lambda.
           </p>
 

@@ -4,9 +4,8 @@ import { comparisonFor } from "@/lib/comparison-data";
 import type { LandingPageContent } from "@/lib/landing-pages";
 import { ComparisonTable } from "@/components/comparison-table";
 import { EngineDeepDive } from "@/components/engine-deep-dive";
-import { FaqAccordion } from "@/components/faq-accordion";
 import { JsonLd } from "@/components/json-ld";
-import { breadcrumbLd, faqPageLd, softwareApplicationLd } from "@/lib/seo";
+import { breadcrumbLd, softwareApplicationLd } from "@/lib/seo";
 
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
@@ -66,7 +65,6 @@ export function LandingPage({ content }: { content: LandingPageContent }) {
       <JsonLd
         data={[
           softwareApplicationLd(),
-          faqPageLd(content.faqs),
           breadcrumbLd(content.breadcrumb),
         ]}
       />
@@ -352,28 +350,6 @@ export function LandingPage({ content }: { content: LandingPageContent }) {
 
       {/* How FrameLane renders, the Rust / wgpu / shader pipeline */}
       <EngineDeepDive />
-
-      {/* FAQ */}
-      <section>
-        <div className="section-tag">
-          <span className="num-marker">FAQ</span>
-        </div>
-        <div className="wrap">
-          <div
-            className="two-col-grid"
-            style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)", gap: 80 }}
-          >
-            <h2>
-              Common
-              <br />
-              <span className="serif-i" style={{ color: "var(--fg-2)" }}>
-                questions.
-              </span>
-            </h2>
-            <FaqAccordion items={content.faqs} />
-          </div>
-        </div>
-      </section>
 
       {/* CTA */}
       <section>

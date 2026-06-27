@@ -42,9 +42,6 @@ export interface LandingPageContent {
   issues?: IssueSection;
   comparisonIntro: string;
 
-  // ── FAQ (drives visible accordion + FAQPage JSON-LD) ──
-  faqs: { q: string; a: string }[];
-
   // ── Breadcrumb (drives BreadcrumbList JSON-LD) ──
   breadcrumb: { name: string; path: string }[];
 
@@ -169,24 +166,6 @@ export const COMPARE_PAGES: LandingPageContent[] = [
     },
     comparisonIntro:
       "Capability by capability, FrameLane vs Remotion. Competitor cells reflect Remotion's own current documentation.",
-    faqs: [
-      {
-        q: "Is FrameLane open source like Remotion?",
-        a: "FrameLane is a hosted API and rendering service, not a self-hosted framework. You don't run or scale render infrastructure, you send a JSON edit plan to the API (or via the MCP server) and receive a finished video. Remotion is an open-source React library you bundle and render yourself.",
-      },
-      {
-        q: "Do I have to write React to use FrameLane?",
-        a: "No. A Remotion video is a React composition you author and bundle. FrameLane takes a JSON edit plan, trim, crop, caption, overlay, composite, color-grade and more, over HTTP or MCP. There are no components to build and no bundler step.",
-      },
-      {
-        q: "Why do my Remotion CSS animations flicker, and does FrameLane fix that?",
-        a: "Remotion renders each frame independently and possibly out of order across multiple browser tabs that don't share state, so any animation not derived from the current frame (CSS transitions, @keyframes, timers) can flicker, this is documented in Remotion's own troubleshooting guides. FrameLane animates deterministically on a timeline, so there's nothing to flicker.",
-      },
-      {
-        q: "Can FrameLane render 4K without slowing down?",
-        a: "Yes. FrameLane uses GPU decode, GPU shader effects and hardware encode in parallel, with 4K and HDR tonemapping. A reference 10-second 4K clip with captions, animations and audio renders in about 4 seconds on a GCP L4.",
-      },
-    ],
     breadcrumb: breadcrumb("Remotion", "compare/remotion"),
     ctaHeading: "Give your agent a",
     ctaAccent: "real rendering engine.",
@@ -217,11 +196,11 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "01 / GPU SHADERS",
         heading: "Effects that run as shaders,",
         accent: "not a fixed catalog.",
-        body: "Shotstack's visual effects are a fixed set, transitions, filters, chromakey and luma mattes. FrameLane runs 43 GPU fragment-shader effects with parallel control over every pixel, plus AI background removal and gaze correction inside the render pipeline.",
+        body: "Shotstack's visual effects are a fixed set, transitions, filters, chromakey and luma mattes. FrameLane runs over 40 effects, animations & transitions.",
         bullets: [
-          "43 GPU fragment-shader effects, not a fixed list",
-          "AI subject background removal, no green screen",
-          "Gaze correction and text-behind-people",
+          "Over 40 effects, animations and transitions",
+          "Not a fixed preset list",
+          "Compositing, blends and color grade",
         ],
       },
       {
@@ -266,7 +245,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
           title: "A fixed effect catalog",
           quote:
             "Shotstack's effects are JSON-parameterized presets, transitions, filters, chromakey, luma mattes. The API doesn't let you supply arbitrary GPU fragment-shader (GLSL) programs.",
-          counter: "FrameLane runs 43 GPU shaders with control over every pixel.",
+          counter: "FrameLane runs over 40 effects, animations and transitions.",
           source: SHOTSTACK.mattes,
         },
         {
@@ -282,102 +261,10 @@ export const COMPARE_PAGES: LandingPageContent[] = [
     },
     comparisonIntro:
       "Capability by capability, FrameLane vs Shotstack. Competitor cells reflect Shotstack's own current documentation.",
-    faqs: [
-      {
-        q: "How is FrameLane different from Shotstack?",
-        a: "Both are JSON-driven cloud video APIs, and both offer agent access through an MCP server. The difference is the rendering engine: FrameLane has GPU fragment-shader effects (Shotstack uses a fixed effect catalog), 4K + HDR output (Shotstack tops out at 1080p SDR), AI subject background removal (Shotstack offers colour chromakey), and a WASM preview identical to the render (Shotstack's Studio preview uses a separate Pixi.js engine).",
-      },
-      {
-        q: "Does Shotstack have AI features, and does FrameLane?",
-        a: "Yes, Shotstack offers text-to-speech, text-to-image, text-to-video and transcription. FrameLane focuses its AI inside the render pipeline: subject background removal, text-behind-people and gaze correction, all GPU-accelerated as part of a single render.",
-      },
-      {
-        q: "What input and output formats are supported?",
-        a: "Input: MP4, MOV, WebM, MKV, MXF, ProRes, DNxHR and most codecs FFmpeg understands. Output: H.264, H.265, AV1 and ProRes up to 4K, with HDR. Audio: AAC, Opus, FLAC, WAV.",
-      },
-      {
-        q: "How does pricing work?",
-        a: "Pay per rendered minute. The free tier includes render-minutes plus unlimited preview frames; paid plans add 4K output, no watermark, GPU rendering on every job, and higher limits.",
-      },
-    ],
     breadcrumb: breadcrumb("Shotstack", "compare/shotstack"),
     ctaHeading: "Render past the",
     ctaAccent: "1080p ceiling.",
     ctaBody: "GPU shaders, 4K + HDR, and a preview that's the render, from one JSON API.",
-  },
-  {
-    slug: "compare/ffmpeg",
-    competitor: "FFmpeg",
-    metaTitle: "FFmpeg API alternative for video rendering",
-    ogTitle: "FrameLane vs FFmpeg",
-    metaDescription:
-      "FFmpeg as a managed API. FrameLane gives you GPU rendering, a JSON edit timeline, AI steps, and an MCP server, so you don't hand-build, host, and scale an FFmpeg pipeline yourself.",
-    keywords: [
-      "FFmpeg API",
-      "FFmpeg alternative",
-      "FFmpeg as a service",
-      "managed video rendering API",
-      "video rendering API",
-      "GPU video rendering",
-    ],
-    eyebrow: "FrameLane vs FFmpeg",
-    h1: "FFmpeg power,",
-    h1Accent: "without the pipeline.",
-    lede: "FFmpeg is the C engine under most video tooling, and you wire up, host, and scale it yourself. FrameLane uses FFmpeg for hardware decode and encode, then adds a Rust/wgpu GPU compositor, a JSON edit timeline, and AI steps, so you ship instead of maintaining infrastructure.",
-    benefits: [
-      {
-        eyebrow: "01 / MANAGED",
-        heading: "A managed API,",
-        accent: "not a binary to babysit.",
-        body: "With FFmpeg you own the filtergraphs, the worker fleet, the queue, the retries and the GPU drivers. FrameLane is a hosted API: send a JSON edit plan, get a finished file via download or webhook, no infrastructure to run.",
-        bullets: [
-          "No worker fleet, queue or GPU drivers to manage",
-          "Webhooks per stage: queued → rendering → encoded → delivered",
-          "Per-rendered-minute pricing, not per-server",
-        ],
-      },
-      {
-        eyebrow: "02 / EDIT MODEL",
-        heading: "A real edit timeline,",
-        accent: "not filtergraph strings.",
-        body: "FrameLane expresses edits as structured JSON, layers, captions, overlays, blends, color grade, plus 43 GPU shader effects, AI background removal and gaze correction. No brittle command-line filter chains to assemble by hand.",
-        bullets: [
-          "Layered composition, captions and blends as JSON",
-          "43 GPU shader effects, 4K + HDR",
-          "AI background removal and gaze correction",
-        ],
-      },
-      {
-        eyebrow: "03 / AGENT NATIVE",
-        heading: "Made for agents",
-        accent: "and humans alike.",
-        body: "An MCP server and clean SDKs mean an AI agent can edit and render video with one call, and the WASM preview matches the final render, so there are no surprises after encode.",
-      },
-    ],
-    comparisonIntro:
-      "Capability by capability, FrameLane vs raw FFmpeg, what's built in versus what you assemble yourself.",
-    faqs: [
-      {
-        q: "Does FrameLane use FFmpeg under the hood?",
-        a: "Yes, for what FFmpeg is great at: hardware NVDEC decode and hardware encode. Everything in between, compositing, captions, effects and color, runs on a Rust/wgpu GPU compositor. The point is you don't operate that pipeline yourself; you call an API and receive finished video.",
-      },
-      {
-        q: "Why not just run FFmpeg myself?",
-        a: "You can, if you want to own filtergraphs, a worker fleet, a job queue, GPU drivers, retries and scaling. FrameLane packages all of that behind one JSON API with GPU shader rendering, an edit timeline, AI steps and webhooks.",
-      },
-      {
-        q: "What formats does FrameLane support?",
-        a: "Input: MP4, MOV, WebM, MKV, MXF, ProRes, DNxHR and most codecs FFmpeg understands. Output: H.264, H.265, AV1 and ProRes up to 4K, with HDR. Audio: AAC, Opus, FLAC, WAV.",
-      },
-      {
-        q: "How do I get the finished file?",
-        a: "Poll the jobs endpoint, subscribe to a webhook delivered per stage, or use the streaming SDK that emits events over server-sent events.",
-      },
-    ],
-    breadcrumb: breadcrumb("FFmpeg", "compare/ffmpeg"),
-    ctaHeading: "Ship video features,",
-    ctaAccent: "not an FFmpeg cluster.",
-    ctaBody: "A managed GPU rendering API with a JSON timeline and MCP, one call.",
   },
 ];
 

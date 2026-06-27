@@ -30,7 +30,7 @@ const PIPELINE: { step: string; title: string; body: string }[] = [
   {
     step: "04",
     title: "Fragment shaders",
-    body: "Effects run as fragment shaders with parallel control over every pixel, 43 and counting, so quality holds at 4K instead of degrading.",
+    body: "Effects run as fragment shaders with parallel control over every pixel, more than 40 of them, so quality holds at 4K instead of degrading.",
   },
   {
     step: "05",

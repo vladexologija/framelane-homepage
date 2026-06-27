@@ -82,11 +82,10 @@ describe("comparisonFor", () => {
 });
 
 describe("compare pages", () => {
-  it("exposes three pages, each resolvable by slug with content", () => {
-    expect(COMPARE_PAGES).toHaveLength(3);
+  it("exposes two pages, each resolvable by slug with content", () => {
+    expect(COMPARE_PAGES).toHaveLength(2);
     for (const p of COMPARE_PAGES) {
       expect(getComparePage(p.slug)).toBe(p);
-      expect(p.faqs.length).toBeGreaterThan(0);
       expect(p.benefits.length).toBeGreaterThan(0);
       expect(p.keywords.length).toBeGreaterThan(0);
     }
@@ -99,7 +98,6 @@ describe("sitemap", () => {
   it("includes every compare page", () => {
     expect(urls).toContain(absoluteUrl("/compare/remotion"));
     expect(urls).toContain(absoluteUrl("/compare/shotstack"));
-    expect(urls).toContain(absoluteUrl("/compare/ffmpeg"));
   });
 
   it("includes the core marketing routes", () => {
