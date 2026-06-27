@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getRenders } from "@/lib/api";
+import { NoRenders } from "@/components/no-renders";
 
 export const metadata: Metadata = { title: "Renders — FrameLane Console" };
 
@@ -54,6 +55,22 @@ export default async function RendersPage({
         <p style={{ fontSize: 13, color: "var(--fg-mute)" }}>
           All render jobs and their output artifacts.
         </p>
+        <div
+          style={{
+            padding: "20px 24px",
+            background: "rgba(255,122,26,0.04)",
+            border: "1px solid rgba(255,122,26,0.15)",
+            borderRadius: 6,
+            marginTop: 20,
+          }}
+        >
+        <p style={{ fontSize: 13, color: "var(--fg-2)", lineHeight: 1.6 }}>            
+            You&apos;re on the free plan. Renders are processed in a shared queue with all free users. &nbsp;
+            <a href="/pricing" style={{ color: "var(--orange)" }}>
+              Upgrade →
+            </a>
+          </p>
+        </div>
       </div>
 
       {data && data.items.length > 0 ? (
@@ -151,19 +168,7 @@ export default async function RendersPage({
           )}
         </>
       ) : (
-        <div className="card" style={{ padding: "48px", textAlign: "center" }}>
-          <p style={{ color: "var(--fg-mute)", fontSize: 14, marginBottom: 12 }}>
-            No renders yet.
-          </p>
-          <a
-            href="https://docs.framelane.io/quickstart"
-            target="_blank"
-            rel="noreferrer"
-            style={{ fontSize: 13, color: "var(--orange)" }}
-          >
-            Read the quickstart guide →
-          </a>
-        </div>
+        <NoRenders />
       )}
     </div>
   );

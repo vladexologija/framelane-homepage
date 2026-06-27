@@ -84,8 +84,16 @@ export function Footer() {
           <FooterCol
             title="Resources"
             items={[
-              { label: "Blog", href: "/blog" },              
+              { label: "Blog", href: "/blog" },
               { label: "Status", href: SITE.statusUrl },
+            ]}
+          />
+          <FooterCol
+            title="Compare"
+            items={[
+              { label: "vs Remotion", href: "/compare/remotion" },
+              { label: "vs Shotstack", href: "/compare/shotstack" },
+              { label: "vs FFmpeg", href: "/compare/ffmpeg" },
             ]}
           />
           {/* <FooterCol

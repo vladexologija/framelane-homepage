@@ -1,5 +1,6 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
+import { headers } from "next/headers";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.framelane.io";
@@ -68,14 +69,31 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("fl_api_key")?.value;
+  // First-party console auth: forward the signed-in user's Clerk session token.
+  // The backend accepts either a Clerk JWT (→ maps to the workspace) or an `fl_`
+  // API key. Requires clerkMiddleware, which runs via proxy.ts.
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  // Forward the browser's Origin to the API. This server action runs in Node,
+  // so the browser's Origin would otherwise be lost. The API needs it to bind
+  // GCS resumable-upload sessions to the requesting origin — GCS only emits
+  // Access-Control-Allow-Origin on the direct-to-bucket PUT when the session was
+  // initiated with the eventual client's Origin, so without this the browser's
+  // upload PUT is blocked by CORS. Best-effort: headers() needs a request scope.
+  let browserOrigin: string | null = null;
+  try {
+    browserOrigin = (await headers()).get("origin");
+  } catch {
+    // No request scope (e.g. during build) — nothing to forward.
+  }
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(browserOrigin ? { Origin: browserOrigin } : {}),
       ...(options.headers as Record<string, string> | undefined),
     },
     // Always fetch fresh data in the console
@@ -131,4 +149,46 @@ export async function getWorkspace() {
 
 export async function createBillingPortalSession() {
   return apiFetch<{ url: string }>("/v1/billing/portal", { method: "POST" });
+}
+
+// ---------- playground: workspace media + uploads + renders ----------
+
+export interface WorkspaceAsset {
+  id: string;
+  source_url: string;
+  kind: "video" | "audio";
+  duration: number | null;
+  width: number | null;
+  height: number | null;
+  created_at: string;
+}
+
+/** The signed-in workspace's ready video/audio uploads (GET /v1/workspace/assets). */
+export async function getWorkspaceAssets() {
+  const raw = await apiFetch<
+    PagedResponse<WorkspaceAsset> | WorkspaceAsset[]
+  >("/v1/workspace/assets?limit=100");
+  return extractList<WorkspaceAsset>(raw);
+}
+
+export interface CreateUploadResult {
+  upload_url: string;
+  source_url: string;
+  expires_at: string;
+}
+
+/** Reserve a signed upload URL (POST /v1/uploads); the client PUTs bytes to it. */
+export async function createUpload(contentType: string, filename?: string) {
+  return apiFetch<CreateUploadResult>("/v1/uploads", {
+    method: "POST",
+    body: JSON.stringify({ content_type: contentType, filename }),
+  });
+}
+
+/** Submit a composition to render (POST /v1/renders). */
+export async function createRender(body: unknown) {
+  return apiFetch<{ id: string; status: string }>("/v1/renders", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }

@@ -1,12 +1,12 @@
-import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.framelane.io";
 
 export async function POST() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("fl_api_key")?.value;
+  const { getToken } = await auth();
+  const token = await getToken();
 
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -20,6 +20,31 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Playground (embedded editor)
+
+The `/playground` console page embeds the **FrameTake editor** (canvas + timeline +
+inspector) for composing a scene in-memory and emitting a `POST /v1/renders` request.
+
+The editor lives in the sibling repo `../frametake-frontend` and ships as a prebuilt
+ES-module bundle (Turbopack can't consume its raw Vite source across the repo
+boundary). It's vendored into `./vendor` (gitignored):
+
+```bash
+# Requires ../frametake-frontend and ../frametake-api checked out as siblings.
+./scripts/sync-editor.sh   # builds the editor lib + scene schema, copies into vendor/
+```
+
+Run this after pulling editor changes. Eventually this is replaced by an
+`@frametake/editor` npm dependency. Key pieces:
+
+- `src/components/frametake-editor-client.tsx` — client-only dynamic mount of the bundle.
+- `src/lib/sceneToRenderRequest.ts` — maps the editor `Scene` → the `POST /v1/renders` body.
+- `src/app/(console)/playground/` — the page (seeds the user's workspace uploads),
+  client (render-JSON panel + Render), and server actions (upload/render).
+- `src/lib/editor-types.ts` — the host's view of the editor's props (the bundle ships no `.d.ts`).
+
+Run `npm test` for the Playground unit/component tests.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

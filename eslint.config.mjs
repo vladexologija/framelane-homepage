@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored prebuilt editor + schema bundles (see scripts/sync-editor.sh).
+    "vendor/**",
   ]),
 ]);
 

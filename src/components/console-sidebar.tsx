@@ -4,14 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { Logo } from "@/components/logo";
+import { SITE } from "@/lib/constants";
 import {
   LayoutDashboard,
   BarChart2,
   Film,
+  Library,
+  PlayCircle,
   Key,
   Webhook,
   CreditCard,
   Settings,
+  BookOpen,
+  Mail,
   LogOut,
 } from "lucide-react";
 
@@ -19,6 +24,8 @@ const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Usage", href: "/usage", icon: BarChart2 },
   { label: "Renders", href: "/renders", icon: Film },
+  { label: "Assets", href: "/assets", icon: Library },
+  { label: "Playground", href: "/playground", icon: PlayCircle },
   { label: "API Keys", href: "/api-keys", icon: Key },
   { label: "Webhooks", href: "/webhooks", icon: Webhook },
   { label: "Billing", href: "/billing", icon: CreditCard },
@@ -106,6 +113,55 @@ export function ConsoleSidebar() {
             </Link>
           );
         })}
+
+        {/* External help links, separated from the app navigation. */}
+        <div
+          style={{ height: 1, background: "var(--line)", margin: "10px 6px" }}
+        />
+        {[
+          { label: "Docs", href: SITE.docsUrl, icon: BookOpen, newTab: true },
+          {
+            label: "Contact us",
+            href: "mailto:info@itis.ba",
+            icon: Mail,
+            newTab: false,
+          },
+        ].map(({ label, href, icon: Icon, newTab }) => (
+          <a
+            key={label}
+            href={href}
+            {...(newTab ? { target: "_blank", rel: "noreferrer" } : {})}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "8px 10px",
+              borderRadius: 4,
+              fontSize: 13,
+              fontWeight: 500,
+              letterSpacing: "-0.005em",
+              color: "var(--fg-mute)",
+              background: "transparent",
+              textDecoration: "none",
+              marginBottom: 1,
+              transition: "all 0.12s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--fg)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--fg-mute)";
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <Icon
+              size={15}
+              style={{ color: "var(--fg-dim)", flexShrink: 0 }}
+            />
+            {label}
+          </a>
+        ))}
       </nav>
 
       {/* Logout */}

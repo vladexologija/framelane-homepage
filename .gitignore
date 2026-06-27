@@ -46,3 +46,8 @@ next-env.d.ts
 /.ds-sync/package.json
 /.ds-sync/package-lock.json
 /.design-sync/.cache/
+
+# Vendored FrameTake editor + scene-schema build artifacts are committed so the
+# Vercel build is self-contained (see scripts/sync-editor.sh). Sourcemaps are
+# debug-only and excluded to keep the repo / git history lean.
+vendor/**/*.map

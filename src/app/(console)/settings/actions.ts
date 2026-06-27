@@ -1,7 +1,6 @@
 "use server";
 
 import { apiFetch } from "@/lib/api";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -36,7 +35,5 @@ export async function deleteWorkspace() {
   } catch {
     // continue to sign out even if API call fails
   }
-  const cookieStore = await cookies();
-  cookieStore.delete("fl_api_key");
   redirect("/signup");
 }

@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL =
@@ -51,18 +50,9 @@ export async function POST(request: NextRequest) {
     api_key?: { key: string; [k: string]: unknown };
   };
 
-  // On first signup, persist the FrameLane API key in a server-side cookie.
-  // All subsequent console API calls use this key as Bearer, not the Clerk token.
-  if (data.is_new && data.api_key?.key) {
-    const cookieStore = await cookies();
-    cookieStore.set("fl_api_key", data.api_key.key, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-    });
-  }
-
+  // Sync only ensures a workspace exists for this Clerk user (and returns the
+  // one-time `api_key` for the dashboard banner on first signup). Console API
+  // calls authenticate with the Clerk session token directly (see lib/api.ts),
+  // so there is no cookie to set here.
   return NextResponse.json(data);
 }

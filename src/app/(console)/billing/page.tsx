@@ -127,7 +127,7 @@ export default async function BillingPage() {
           }}
         >
           <p style={{ fontSize: 13, color: "var(--fg-2)", lineHeight: 1.6 }}>
-            You&apos;re on the free plan. Upgrade to Pro to remove watermarks, increase render minutes, and unlock GPU rendering.{" "}
+            You&apos;re on the free plan. Upgrade to Pro for a dedicated render queue, plus no watermarks, more render minutes, and GPU rendering.{" "}
             <a href="/pricing" style={{ color: "var(--orange)" }}>
               View pricing →
             </a>

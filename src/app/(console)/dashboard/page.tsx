@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getUsage, getRenders } from "@/lib/api";
+import { NoRenders } from "@/components/no-renders";
 import { ApiKeyBanner } from "./api-key-banner";
 
 export const metadata: Metadata = { title: "Dashboard — FrameLane Console" };
@@ -231,27 +232,7 @@ export default async function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div
-            style={{
-              border: "1px solid var(--line)",
-              borderRadius: 6,
-              padding: "32px 20px",
-              textAlign: "center",
-              background: "var(--bg-2)",
-            }}
-          >
-            <p style={{ fontSize: 14, color: "var(--fg-mute)" }}>
-              No renders yet.{" "}
-              <a
-                href="https://docs.framelane.io"
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "var(--orange)" }}
-              >
-                Read the quickstart →
-              </a>
-            </p>
-          </div>
+          <NoRenders />
         )}
       </div>
     </div>
