@@ -112,7 +112,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         body: "Remotion's own docs state AWS Lambda has no GPU, and that headless Chromium disables the GPU, a documented “significant slowdown”, falling back to SwiftShader software rendering. FrameLane is built in Rust on wgpu: hardware decode, GPU shader effects, hardware encode, in parallel.",
         bullets: [
           "Rust / wgpu engine, no Chromium in the render loop",
-          "43 GPU fragment-shader effects, not CSS-only",
+          "Over 40 GPU effects and animations, not CSS-only",
           "4K + HDR tonemapping handled natively",
         ],
       },
@@ -135,7 +135,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
           quote:
             "Remotion's docs have a page titled “Don't use CSS animations in Remotion.” CSS transitions, @keyframes and setTimeout all break because each frame is rendered independently and possibly out of order, causing flickering and blank frames.",
           counter:
-            "FrameLane animates on a real timeline: glyph-level text animation and 43 GPU shader effects, rendered deterministically.",
+            "FrameLane animates on a real timeline: glyph-level text animation and over 40 GPU effects, rendered deterministically.",
           source: REMOTION.cssAnimations,
         },
         {

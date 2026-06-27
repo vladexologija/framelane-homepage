@@ -23,7 +23,7 @@ export interface ComparisonRow {
 // see src/lib/landing-pages.ts issue sections for the cited sources.
 export const COMPARISON_ROWS: ComparisonRow[] = [
   { capability: "Timeline editing", cells: [["yes"], ["limited"], ["yes"], ["yes", "Manual"]] },
-  { capability: "GPU shader effects", cells: [["yes", "43+"], ["limited", "No GPU on Lambda"], ["no", "Fixed catalog"], ["no"]] },
+  { capability: "GPU shader effects", cells: [["yes", "40+"], ["limited", "No GPU on Lambda"], ["no", "Fixed catalog"], ["no"]] },
   { capability: "AI background removal", cells: [["yes", "In pipeline"], ["no"], ["no", "Chromakey only"], ["no", "Separate"]] },
   { capability: "Gaze correction", cells: [["yes"], ["no"], ["no"], ["no"]] },
   { capability: "Preview = render output", cells: [["yes", "WASM"], ["yes", "Sometimes wrong"], ["no", "Separate engine"], ["no"]] },
