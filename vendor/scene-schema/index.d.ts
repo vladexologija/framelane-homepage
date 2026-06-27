@@ -141,6 +141,13 @@ interface ElementFilters {
     opacity: number;
 }
 declare const defaultFilters: () => ElementFilters;
+/** Editor effect kernel name (`VideoElement.effects`) → the engine effect-shader
+ * file the C++/render-node path resolves (the wasm-gl `shaderSources` map and the
+ * render-node task `file`). Returns `null` for an empty/non-shader-safe name. The
+ * single spelling mismatch is `posterize` → `effect_posterise.frag`. (The
+ * wasm-gpu/Rust path doesn't use this — it resolves the kernel from the bare name
+ * via `rustScene`.) */
+declare const effectShaderFile: (name: string) => string | null;
 /** The per-element colour/effect adjustments at the render engine's scale,
  * excluding `opacity` (which the engine takes as a separate top-level field).
  * The keys mirror render-node's `Adjustments::Parse`. */
@@ -240,6 +247,11 @@ interface VideoElement extends BaseElement {
     flipX: boolean;
     flipY: boolean;
     loop: boolean;
+    /** Named engine effects applied to the clip, e.g. `['vhs']`. Resolved by the
+     * render engine's effect-kernel registry (render-lib `effect_kernel.rs`) — send
+     * the kernel name (`vhs`, `super8`, `rgb_split`, `night_vision`, …). Empty/absent
+     * = none. Single-effect in the UI today; the engine pipeline takes a list. */
+    effects?: string[];
 }
 interface AudioElement extends BaseElement {
     readonly kind: 'audio';
@@ -686,9 +698,20 @@ interface RustAdjustments {
     noise: number;
     vignette: number;
 }
-/** The kind's `effects` pipeline; v1 carries colour `adjustments` only. */
+/** The kind's `effects` pipeline → render-lib `EffectPipeline`: colour
+ * `adjustments` plus any named effect kernels (resolved by name in the engine). */
 interface RustEffects {
     adjustments: RustAdjustments;
+    /** Named effect kernels (render-lib `EffectDesc`). `shader_id: ''` makes the
+     * engine resolve the kernel from `name`; `intensity`/`props` are sent
+     * explicitly because some shipped engine builds don't `#[serde(default)]`
+     * them — a missing field fails the whole scene deserialization. */
+    effects?: {
+        name: string;
+        shader_id: string;
+        intensity: number;
+        props: Record<string, number>;
+    }[];
 }
 type RustMoveableKind = {
     type: 'video';
@@ -829,4 +852,4 @@ declare const hexToRustColor: (hex: string) => RustColor;
  */
 declare const sceneToRustScene: (scene: Scene) => RustScene;
 
-export { ANIMATION_DURATION, type AnimationChoice, type AnimationData, AnimationSlot, type AnimationSlotKind, type AssetInfo, type AudioElement, CAPTION_ANIMATIONS, CAPTION_PRESETS, CAPTION_PRESET_VISUALS, type CaptionAnimation, type CaptionPreset, type CaptionVisual, type CategoryAnimations, ELEMENT_IN_ANIMATIONS, ELEMENT_LOOP_ANIMATIONS, ELEMENT_OUT_ANIMATIONS, EXPORT_PRESETS, EXPORT_QUALITIES, type ElementAnimation, type ElementFilters, type ElementInAnimation, type ElementKind, type ElementLoopAnimation, type ElementOutAnimation, type EngineAdjustments, type ExportPreset, type ExportQuality, type InvariantOptions, MIN_ANIMATION_DURATION, type MultiAnimations, type NormSize, type NormVec2, type Origin, type ProjectWire, type RenderTask, type RenderTaskOptions, type RustAdjustments, type RustAnimationSpec, type RustColor, type RustCrop, type RustEffects, type RustFontRef, type RustMoveable, type RustMoveableKind, type RustScene, type RustTextAnimationSpec, type RustTextDecoration, type RustTextTiming, type RustTransform, type RustTransition, SCHEMA_VERSION, type Scene, type SceneElement, type StickerElement, type SubtitleCue, type SubtitleStyle, type SubtitleTrack, type SubtitleWord, TEXT_BACKGROUND_STYLES, TEXT_IN_ANIMATIONS, TEXT_LOOP_ANIMATIONS, TEXT_OUT_ANIMATIONS, TRANSITION_KINDS, type TextAlign, type TextBackgroundStyle, type TextElement, type TextInAnimation, type TextLoopAnimation, type TextOutAnimation, type Transform, type Transition, type VideoElement, type Violation, type VisualElement, animationDefaults, animationPaletteFor, backgroundDisplayMode, captionAnimationColor, captionAnimationColorParam, captionAnimationLength, createEmptyScene, decodeProject, defaultCategoryAnimations, defaultFilters, defaultSubtitleStyle, encodeProject, getElementTotalDuration, getEndTime, getStartTime, hexToRustColor, isAnyAnimationSet, isCaptionAnimation, isCaptionPreset, isTextBackgroundStyle, isVisual, mapCategoriesToSavedAnimations, mapSavedAnimationsToCategories, migrateLegacyAnimation, resolveCaptionAnimation, resolveCaptionVisual, resolveEngineAnimations, scaleFiltersToEngine, scaledOutputSize, sceneToRenderTask, sceneToRustScene, subtitleWordCount, transitionTypeFor, updateAnimationStartTime, validateSceneInvariants };
+export { ANIMATION_DURATION, type AnimationChoice, type AnimationData, AnimationSlot, type AnimationSlotKind, type AssetInfo, type AudioElement, CAPTION_ANIMATIONS, CAPTION_PRESETS, CAPTION_PRESET_VISUALS, type CaptionAnimation, type CaptionPreset, type CaptionVisual, type CategoryAnimations, ELEMENT_IN_ANIMATIONS, ELEMENT_LOOP_ANIMATIONS, ELEMENT_OUT_ANIMATIONS, EXPORT_PRESETS, EXPORT_QUALITIES, type ElementAnimation, type ElementFilters, type ElementInAnimation, type ElementKind, type ElementLoopAnimation, type ElementOutAnimation, type EngineAdjustments, type ExportPreset, type ExportQuality, type InvariantOptions, MIN_ANIMATION_DURATION, type MultiAnimations, type NormSize, type NormVec2, type Origin, type ProjectWire, type RenderTask, type RenderTaskOptions, type RustAdjustments, type RustAnimationSpec, type RustColor, type RustCrop, type RustEffects, type RustFontRef, type RustMoveable, type RustMoveableKind, type RustScene, type RustTextAnimationSpec, type RustTextDecoration, type RustTextTiming, type RustTransform, type RustTransition, SCHEMA_VERSION, type Scene, type SceneElement, type StickerElement, type SubtitleCue, type SubtitleStyle, type SubtitleTrack, type SubtitleWord, TEXT_BACKGROUND_STYLES, TEXT_IN_ANIMATIONS, TEXT_LOOP_ANIMATIONS, TEXT_OUT_ANIMATIONS, TRANSITION_KINDS, type TextAlign, type TextBackgroundStyle, type TextElement, type TextInAnimation, type TextLoopAnimation, type TextOutAnimation, type Transform, type Transition, type VideoElement, type Violation, type VisualElement, animationDefaults, animationPaletteFor, backgroundDisplayMode, captionAnimationColor, captionAnimationColorParam, captionAnimationLength, createEmptyScene, decodeProject, defaultCategoryAnimations, defaultFilters, defaultSubtitleStyle, effectShaderFile, encodeProject, getElementTotalDuration, getEndTime, getStartTime, hexToRustColor, isAnyAnimationSet, isCaptionAnimation, isCaptionPreset, isTextBackgroundStyle, isVisual, mapCategoriesToSavedAnimations, mapSavedAnimationsToCategories, migrateLegacyAnimation, resolveCaptionAnimation, resolveCaptionVisual, resolveEngineAnimations, scaleFiltersToEngine, scaledOutputSize, sceneToRenderTask, sceneToRustScene, subtitleWordCount, transitionTypeFor, updateAnimationStartTime, validateSceneInvariants };

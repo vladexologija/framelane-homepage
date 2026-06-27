@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true, // keep PostHog's trailing-slash paths intact
   async rewrites() {
     return [
-      // PostHog reverse proxy (US cloud) — same-origin /ingest avoids ad-blockers.
+      // PostHog reverse proxy (US cloud): same-origin /ingest avoids ad-blockers.
       {
         source: "/ingest/static/:path*",
         destination: "https://us-assets.i.posthog.com/static/:path*",

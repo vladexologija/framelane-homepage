@@ -11,6 +11,11 @@ var defaultFilters = () => ({
   vignette: 0,
   opacity: 1
 });
+var effectShaderFile = (name) => {
+  if (!name) return null;
+  const base = name === "posterize" ? "posterise" : name;
+  return /^[a-z0-9_]+$/.test(base) ? `effect_${base}.frag` : null;
+};
 var scaleFiltersToEngine = (f) => ({
   brightness: f.brightness * 100,
   contrast: f.contrast * 100,
@@ -1001,6 +1006,10 @@ var validateSceneInvariants = (scene, opts = {}) => {
 };
 
 // src/renderTask.ts
+var effectEntries = (names) => {
+  const entries = (names ?? []).map((name) => ({ name, file: effectShaderFile(name) })).filter((e) => !!e.file).map((e, id) => ({ label: e.name, file: e.file, id, icon: null }));
+  return entries.length ? entries : [{ label: "None", file: "", id: 0, icon: null }];
+};
 var sceneToRenderTask = (scene, opts) => {
   const videos = [];
   const audioStreams = [];
@@ -1114,9 +1123,9 @@ var mapVideo = (el, url, zIndex) => ({
   // In/out/loop + fade animations via the shared resolveEngineAnimations —
   // the SAME builder the WebGL preview uses, so export matches the editor.
   ...animationsField(el),
-  // Explicit no-op effect/LUT — omitting these makes the engine try to load
-  // a default LUT's metadata and fail ("Unable to load effect metadata").
-  effects: [{ label: "None", file: "", id: 0, icon: null }],
+  // Named effects (engine kernels by `file`), or the explicit no-op when none —
+  // omitting `effects` makes the engine try a default LUT's metadata and fail.
+  effects: effectEntries(el.effects),
   lutURL: "",
   lutIntensity: 1,
   // Colour correction + effects (brightness/contrast/saturation/exposure/hue/
@@ -1411,7 +1420,19 @@ var adjustmentsOf = (f) => {
     vignette: clamp(f.vignette, 0, 1)
   };
 };
-var effectsOf = (f) => hasFilters(f) ? { effects: { adjustments: adjustmentsOf(f) } } : {};
+var effectsOf = (f, names) => {
+  const named = (names ?? []).filter((n) => !!n);
+  if (!hasFilters(f) && named.length === 0) return {};
+  const effects = { adjustments: adjustmentsOf(f) };
+  if (named.length > 0)
+    effects.effects = named.map((name) => ({
+      name,
+      shader_id: "",
+      intensity: 1,
+      props: {}
+    }));
+  return { effects };
+};
 var textKind = (el, scene, textAnimations) => {
   const { width: W, height: H } = scene.canvas;
   const decoration = {
@@ -1629,7 +1650,7 @@ var sceneToRustScene = (scene) => {
         crop: NO_CROP,
         flip_x: el.flipX,
         flip_y: el.flipY,
-        ...effectsOf(el.filters)
+        ...effectsOf(el.filters, el.effects)
       };
     } else if (el.kind === "sticker") {
       kind = {
@@ -1692,6 +1713,7 @@ export {
   defaultCategoryAnimations,
   defaultFilters,
   defaultSubtitleStyle,
+  effectShaderFile,
   encodeProject,
   getElementTotalDuration,
   getEndTime,

@@ -1,6 +1,6 @@
 import { PlayCircle } from "lucide-react";
 
-const QUICKSTART_URL = "https://docs.framelane.io/quickstart";
+const QUICKSTART_URL = "https://docs.framelane.io/introduction/quickstart";
 // Walkthrough video — paste the Loom embed URL (https://www.loom.com/embed/…)
 // here once recorded; until then a placeholder card is shown. Shared by the
 // Renders page and the Dashboard's empty state.

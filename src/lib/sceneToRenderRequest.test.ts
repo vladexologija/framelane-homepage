@@ -33,6 +33,37 @@ describe("sceneToRenderRequest", () => {
     expect(v.z_index).toBe(0);
   });
 
+  it("maps named effects to API effect types, dropping unmapped", () => {
+    const v = byType(
+      sceneToRenderRequest(
+        sceneWith([video({ effects: ["vhs", "crt", "totally_unknown"] })]),
+      ).elements,
+      "video",
+    );
+    expect(v.effects).toEqual([{ type: "vhs" }, { type: "crt" }]);
+  });
+
+  it("maps the formerly-missing effects + the posterise spelling", () => {
+    const v = byType(
+      sceneToRenderRequest(
+        sceneWith([
+          video({ effects: ["posterise", "dream_vision", "bokeh_blur"] }),
+        ]),
+      ).elements,
+      "video",
+    );
+    expect(v.effects).toEqual([
+      { type: "posterize" },
+      { type: "glow" },
+      { type: "camera_lens_blur_bg" },
+    ]);
+  });
+
+  it("omits effects for a clip with none", () => {
+    const v = byType(sceneToRenderRequest(sceneWith([video()])).elements, "video");
+    expect(v.effects).toBeUndefined();
+  });
+
   it("maps audio volume to 0–100", () => {
     const a = byType(sceneToRenderRequest(sceneWith([audio()])).elements, "audio");
     expect(a.type).toBe("audio");

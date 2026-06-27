@@ -226,6 +226,64 @@ const withMotion = (
   motions: RenderMotion[],
 ): RenderElement => (motions.length ? { ...base, motion: motions } : base);
 
+// ── Effects ──────────────────────────────────────────────────────────────────
+// Editor effect kernel name (scene `effects[]`, render-lib `effect_kernel.rs`) →
+// framelane API EffectType value (inverse of api/translation/maps.py EFFECT_MAP).
+// Unmapped names are dropped (preview-only) rather than risk a 422 — same
+// drop-discipline as MOTION/TRANSITION.
+const EFFECT: Record<string, string> = {
+  old: "vintage",
+  polaroid: "polaroid",
+  portra: "portra",
+  super8: "super8",
+  filmic: "filmic",
+  dusty_film: "add_grain",
+  film_burn: "film_burn",
+  vhs: "vhs",
+  vhs_overlay: "vhs_overlay",
+  glitch_party: "glitch",
+  mpeg_glitch: "compression_glitch",
+  rgb_split: "rgb_split",
+  rgb_split_dream: "chromatic_aberration",
+  ghosting: "ghosting",
+  displacement_nightmare: "displacement_map",
+  crt: "crt",
+  television: "television",
+  scanlines_party: "scanlines",
+  bokeh: "camera_lens_blur",
+  bokeh_blur: "camera_lens_blur_bg",
+  box_blur: "box_blur",
+  pixelate: "mosaic",
+  pixelate_blur: "mosaic_blur",
+  pixelate_posterise: "mosaic_posterize",
+  fish_eye: "optics_compensation",
+  viewfinder: "viewfinder",
+  invert: "invert",
+  posterise: "posterize",
+  halftone: "cc_halftone",
+  halftone_red: "cc_halftone_red",
+  halftone_green: "cc_halftone_green",
+  halftone_blue: "cc_halftone_blue",
+  night_vision: "night_vision",
+  thermal_vision: "thermal",
+  prisma: "prism",
+  light_leaks: "light_leaks",
+  lens_flare: "lens_flare",
+  strobe: "strobe_light",
+  snow: "snow",
+  vignette_sepia: "sepia",
+  dream_vision: "glow",
+  ghost_dream: "echo",
+};
+
+const effectsField = (el: VideoElement): Record<string, unknown> => {
+  const effects = (el.effects ?? [])
+    .map((name) => EFFECT[name])
+    .filter((t): t is string => !!t)
+    .map((type) => ({ type }));
+  return effects.length ? { effects } : {};
+};
+
 // ── Element mappers ──────────────────────────────────────────────────────────
 
 const mapVideo = (el: VideoElement, z: number): RenderElement =>
@@ -253,6 +311,7 @@ const mapVideo = (el: VideoElement, z: number): RenderElement =>
       ...(el.fadeIn ? { fade_in_duration: el.fadeIn } : {}),
       ...(el.fadeOut ? { fade_out_duration: el.fadeOut } : {}),
       ...colorAdjust(el.filters),
+      ...effectsField(el),
     },
     presetMotions(el),
   );

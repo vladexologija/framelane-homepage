@@ -129,7 +129,7 @@ function Brand() {
     <span style={{ display: "inline-flex", gap: 12, alignItems: "baseline" }}>
       <span style={{ fontWeight: 600, color: "var(--fg)" }}>Playground</span>
       <a
-        href="https://docs.framelane.io/quickstart"
+        href="https://docs.framelane.io/introduction/quickstart"
         target="_blank"
         rel="noreferrer"
         style={{ fontSize: 13, fontWeight: 400, color: "var(--orange)" }}
