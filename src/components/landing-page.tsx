@@ -58,7 +58,7 @@ function Ctas() {
 }
 
 export function LandingPage({ content }: { content: LandingPageContent }) {
-  const { cols, rows } = comparisonFor(content.competitor);
+  const { cols, rows } = comparisonFor(content.competitor, content.tableCapabilities);
 
   return (
     <>

@@ -23,28 +23,39 @@ export interface ComparisonRow {
 // see src/lib/landing-pages.ts issue sections for the cited sources.
 export const COMPARISON_ROWS: ComparisonRow[] = [
   { capability: "Timeline editing", cells: [["yes"], ["limited"], ["yes"], ["yes", "Manual"]] },
-  { capability: "GPU shader effects", cells: [["yes", "40+"], ["limited", "No GPU on Lambda"], ["no", "Fixed catalog"], ["no"]] },
+  { capability: "GPU shader effects", cells: [["yes", "40+"], ["limited", "EC2 GPU only, not Lambda"], ["no", "Presets, no GLSL"], ["no"]] },
   { capability: "AI background removal", cells: [["yes", "In pipeline"], ["no"], ["no", "Chromakey only"], ["no", "Separate"]] },
   { capability: "Gaze correction", cells: [["yes"], ["no"], ["no"], ["no"]] },
-  { capability: "Preview = render output", cells: [["yes", "WASM"], ["yes", "Sometimes wrong"], ["no", "Separate engine"], ["no"]] },
-  { capability: "MCP / agent native", cells: [["yes"], ["no"], ["yes"], ["no"]] },
-  { capability: "4K + HDR output", cells: [["yes"], ["no", "Browser bound"], ["no", "1080p SDR"], ["limited", "Manual"]] },
+  { capability: "Preview = render output", cells: [["yes", "WASM"], ["limited", "CSS/WebCodecs drift"], ["no", "Separate engine"], ["no"]] },
+  { capability: "MCP / agent native", cells: [["yes"], ["limited", "Docs MCP only"], ["yes"], ["no"]] },
+  { capability: "4K + HDR output", cells: [["yes"], ["limited", "4K slow/costly, no HDR"], ["limited", "1080p SDR, 4K enterprise"], ["limited", "Manual"]] },
   { capability: "No browser required", cells: [["yes"], ["no", "Core architecture"], ["yes"], ["yes"]] },
-  { capability: "Built with", cells: [["Rust/WGPU"], ["React"], ["Managed cloud"], ["C"]] },
+  { capability: "Managed (no cloud account)", cells: [["yes"], ["no", "Your AWS account"], ["yes"], ["no"]] },
+  { capability: "Built with", cells: [["Rust/WGPU"], ["React"], ["CPU cloud"], ["C"]] },
 ];
 
 /**
  * A two-column slice of the matrix (FrameLane + one competitor) for the
  * dedicated /compare/<competitor> pages.
  */
-export function comparisonFor(competitor: Competitor): {
+export function comparisonFor(
+  competitor: Competitor,
+  only?: readonly string[],
+): {
   cols: string[];
   rows: ComparisonRow[];
 } {
   const idx = COMPARISON_COLS.indexOf(competitor);
+  // When `only` is given, show just those capabilities in that exact order;
+  // otherwise show the full matrix.
+  const source = only
+    ? only
+        .map((cap) => COMPARISON_ROWS.find((r) => r.capability === cap))
+        .filter((r): r is ComparisonRow => Boolean(r))
+    : COMPARISON_ROWS;
   return {
     cols: ["FrameLane", competitor],
-    rows: COMPARISON_ROWS.map((r) => ({
+    rows: source.map((r) => ({
       capability: r.capability,
       cells: [r.cells[0], r.cells[idx]],
     })),
