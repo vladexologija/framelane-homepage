@@ -177,11 +177,29 @@ export interface CreateUploadResult {
   expires_at: string;
 }
 
-/** Reserve a signed upload URL (POST /v1/uploads); the client PUTs bytes to it. */
-export async function createUpload(contentType: string, filename?: string) {
+export interface UploadMeta {
+  duration?: number | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+/** Reserve a signed upload URL (POST /v1/uploads); the client PUTs bytes to it.
+ * Pass client-probed `meta` (duration/width/height) so the asset is immediately
+ * ready/listable instead of waiting on the server-side metadata pipeline. */
+export async function createUpload(
+  contentType: string,
+  filename?: string,
+  meta?: UploadMeta,
+) {
   return apiFetch<CreateUploadResult>("/v1/uploads", {
     method: "POST",
-    body: JSON.stringify({ content_type: contentType, filename }),
+    body: JSON.stringify({
+      content_type: contentType,
+      filename,
+      duration: meta?.duration ?? undefined,
+      width: meta?.width ?? undefined,
+      height: meta?.height ?? undefined,
+    }),
   });
 }
 

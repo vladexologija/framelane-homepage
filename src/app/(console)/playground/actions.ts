@@ -1,7 +1,7 @@
 "use server";
 
 import { createRender, createUpload } from "@/lib/api";
-import type { CreateUploadResult } from "@/lib/api";
+import type { CreateUploadResult, UploadMeta } from "@/lib/api";
 import type { RenderRequest } from "@/lib/sceneToRenderRequest";
 
 /**
@@ -13,8 +13,9 @@ import type { RenderRequest } from "@/lib/sceneToRenderRequest";
 export async function createUploadAction(
   contentType: string,
   filename: string,
+  meta?: UploadMeta,
 ): Promise<CreateUploadResult> {
-  return createUpload(contentType, filename);
+  return createUpload(contentType, filename, meta);
 }
 
 export async function createRenderAction(

@@ -56,14 +56,19 @@ export function PlaygroundClient({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // The host's uploader: probe duration locally, reserve a signed URL server-side,
-  // PUT the bytes, and hand the editor an asset pointing at the resulting CDN URL.
+  // The host's uploader: probe duration/dimensions locally, reserve a signed URL
+  // server-side (forwarding the probed metadata so the asset is immediately
+  // ready/listable), PUT the bytes, and hand the editor an asset pointing at the
+  // resulting CDN URL.
   const onUpload = async (file: File): Promise<EditorAsset> => {
     const kind = file.type.startsWith("audio") ? "AUDIO" : "VIDEO";
-    const durationSec = await probeDuration(file, kind).catch(() => null);
+    const probed = await probeMedia(file, kind).catch(() => null);
     const { upload_url, source_url } = await createUploadAction(
       file.type,
       file.name,
+      probed
+        ? { duration: probed.duration, width: probed.width, height: probed.height }
+        : undefined,
     );
     const res = await fetch(upload_url, {
       method: "PUT",
@@ -76,7 +81,7 @@ export function PlaygroundClient({
       kind,
       filename: file.name,
       status: "READY",
-      durationSec,
+      durationSec: probed?.duration ?? null,
       fileUrl: source_url,
     };
   };
@@ -447,13 +452,20 @@ function highlightCurl(code: string): React.ReactNode[] {
   return out;
 }
 
-/** Read a media file's duration in-browser from a local object URL. Resolves
- * within `timeoutMs` (or rejects) so a file that never loads can't hang upload. */
-function probeDuration(
+interface ProbedMedia {
+  duration: number;
+  width: number | null;
+  height: number | null;
+}
+
+/** Read a media file's duration (and pixel dimensions for video) in-browser from
+ * a local object URL. Resolves within `timeoutMs` (or rejects) so a file that
+ * never loads can't hang upload. */
+function probeMedia(
   file: File,
   kind: "VIDEO" | "AUDIO",
   timeoutMs = 5000,
-): Promise<number> {
+): Promise<ProbedMedia> {
   return new Promise((resolve, reject) => {
     const el = document.createElement(kind === "AUDIO" ? "audio" : "video");
     const url = URL.createObjectURL(file);
@@ -473,9 +485,12 @@ function probeDuration(
     el.preload = "metadata";
     el.onloadedmetadata = () => {
       const d = el.duration;
+      const v = el as HTMLVideoElement;
+      const width = v.videoWidth || null;
+      const height = v.videoHeight || null;
       finish(() =>
         Number.isFinite(d) && d > 0
-          ? resolve(d)
+          ? resolve({ duration: d, width, height })
           : reject(new Error("no duration")),
       );
     };
