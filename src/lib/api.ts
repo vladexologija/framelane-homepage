@@ -105,6 +105,12 @@ export async function apiFetch<T>(
     throw new Error(`API ${res.status}: ${text}`);
   }
 
+  // 204 No Content (e.g. DELETE /v1/api-keys/{id}) has an empty body —
+  // res.json() would throw "Unexpected end of JSON input".
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return res.json() as Promise<T>;
 }
 
@@ -135,7 +141,11 @@ export async function getRenders(page = 1) {
 
 export async function getApiKeys() {
   const raw = await apiFetch<PagedResponse<ApiKey> | ApiKey[]>("/v1/api-keys");
-  return extractList<ApiKey>(raw);
+  // The API returns every key for the workspace, including revoked ones. The
+  // console's "Active keys" list should only show live keys, so drop any that
+  // have been revoked — otherwise a just-revoked key lingers and revoke looks
+  // like a no-op.
+  return extractList<ApiKey>(raw).filter((k) => !k.revoked_at);
 }
 
 export async function getWebhooks() {
