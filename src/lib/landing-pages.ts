@@ -129,14 +129,25 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         ],
       },
       {
-        eyebrow: "04 / GPU NATIVE",
+        eyebrow: "04 / FILM-GRADE EFFECTS",
+        heading: "Film-grade effects,",
+        accent: "not CSS filters.",
+        body: "Remotion composes in the browser with HTML and CSS, so its effects are CSS filters and DOM tricks. The film-grade looks you reach for in After Effects or Premiere, .cube LUT color grades, film grain, lens flare, bokeh blur, chromatic aberration, are not CSS primitives. You can hand-build them in WebGL or Three.js, but on Lambda and Cloud Run there is no GPU, so they fall back to swangle software rendering. FrameLane ships 40+ of these as native GPU fragment shaders in Rust on wgpu, hardware-accelerated on every job, with glyph-level text animation and timeline transitions included.",
+        bullets: [
+          ".cube LUTs, film grain, lens flare, bokeh",
+          "Glyph-level text animation and transitions",
+          "40+ GPU shader effects, not CSS filters",
+        ],
+      },
+      {
+        eyebrow: "05 / GPU NATIVE",
         heading: "GPU on every job,",
         accent: "no headless browser.",
         body: "Remotion's default render path screenshots a headless Chromium browser frame by frame, then stitches the images with FFmpeg, and on Lambda that runs CPU-bound: the docs confirm Lambda has no GPU and that headless Chromium disables the GPU, a documented significant slowdown that falls back to swangle, a SwiftShader software rasterizer. A GPU path exists, but only on self-managed Linux EC2 with Chrome for Testing and Vulkan, never on Lambda or Cloud Run, and you operate it yourself. FrameLane is Rust on wgpu: hardware NVDEC decode, a GPU shader pass per frame, hardware encode, on a managed fleet, about 4 seconds for a 10-second 4K clip with captions, animations and audio.",
         bullets: [
           "Rust / wgpu, no Chromium in the render loop",
-          "40+ GPU effects and animations, not CSS-only",
-          "4K + HDR tonemapping handled natively",
+          "Hardware NVDEC decode and encode",
+          "About 4s for a 10-second 4K clip",
         ],
       },
     ],
