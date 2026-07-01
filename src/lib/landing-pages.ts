@@ -93,13 +93,13 @@ export const COMPARE_PAGES: LandingPageContent[] = [
     eyebrow: "FrameLane vs Remotion",
     h1: "The Remotion alternative",
     h1Accent: "built for agents, not React.",
-    lede: "Agent video today is open-loop: generate, render, watch, prompt again, repeat. A Remotion edit is a React composition, so to change one caption an agent has to rewrite the component, re-bundle it, and re-deploy, every pass a regeneration instead of a refinement. And Remotion renders nothing for you: there is no hosted service, so you stand up the AWS account, the S3 bucket and the concurrency limits yourself, then pay the compute bill. FrameLane is built for the loop and fully managed. Your agent reads and patches the timeline as state, previews on the exact engine that renders the file, and gets finished video back from a managed GPU fleet in seconds. No React, no headless browser, no cloud account to run.",
+    lede: "A Remotion edit is a React composition, so changing one caption means an agent rewrites the component, re-bundles, and redeploys, and Remotion hosts nothing, so the AWS account and compute bill are yours. FrameLane is fully managed and built for the loop: your agent patches a JSON timeline, previews on the exact engine that renders the file, and gets 4K back from a GPU fleet in seconds. No React, no headless browser, no cloud account.",
     benefits: [
       {
         eyebrow: "01 / TIMELINE AS STATE",
         heading: "Your agent edits state,",
         accent: "not a React build.",
-        body: "A Remotion edit is a React composition: a component plus width, height, fps and duration that you author in JSX and bundle with a build step. There is no pure-JSON edit API, so to move one caption an agent has to rewrite the component, re-bundle it with Webpack or esbuild, and re-deploy the serve URL. Every change is a full rebuild. FrameLane exposes the edit as a JSON timeline your agent reads and patches, the way an agentic IDE operates on a file. Tracks, clips, timing and captions are all addressable state, so each pass changes the one field that matters instead of regenerating the whole video.",
+        body: "A Remotion edit is a React composition you author in JSX and bundle, and with no JSON edit API, moving one caption means a full rewrite, re-bundle, and redeploy. FrameLane exposes the edit as a JSON timeline your agent reads and patches, the way an agentic IDE operates on a file: tracks, clips, timing and captions are addressable state, so each pass changes the one field that matters instead of regenerating the whole video.",
         bullets: [
           "Read the timeline as JSON state",
           "Patch one field: no JSX, no bundler",
@@ -110,7 +110,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "02 / PREVIEW FOR AGENTS",
         heading: "A preview your agent",
         accent: "can trust.",
-        body: "FrameLane's preview is the exact Rust/wgpu compositor that renders the final file, compiled to WebAssembly, so an agent can preview a change, see the real frame, and close the loop before it commits a full render. A Remotion preview is not that guarantee. Anything not driven by useCurrentFrame(), a CSS transition or animation, can flicker or land on the wrong frame at render time, and the newer client-side WebCodecs path previews on a canvas emulation rather than the real DOM, with properties like backdrop-filter, mix-blend-mode and mask-image unsupported. On Remotion the only safe check is to re-render.",
+        body: "FrameLane's preview is the exact Rust/wgpu compositor that renders the final file, compiled to WebAssembly, so an agent sees the real frame and closes the loop before it commits a full render. Remotion gives no such guarantee: CSS transitions can land on the wrong frame, and the WebCodecs preview emulates a canvas rather than the real DOM, so the only safe check is to re-render.",
         bullets: [
           "Preview is the render engine, in WASM",
           "The agent sees the true frame",
@@ -121,7 +121,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "03 / MANAGED, NOT DIY",
         heading: "Managed rendering,",
         accent: "not your own AWS.",
-        body: "Remotion does not offer a hosted rendering service. To render server-side at scale you deploy Remotion Lambda into your own AWS account: you create the IAM policies, users and access keys, deploy the render function, and stand up the S3 bucket the output lands in. Concurrency is your problem, the default ceiling is 1,000 per region and you file with AWS for increases yourself, and the compute, storage and egress bill is yours. The plain Node path is heavier still, with queueing, traffic spikes, progress reporting, logging and server provisioning all on you. FrameLane is one API call to a managed GPU fleet. No cloud account, no bucket to own, no concurrency tickets, nothing to babysit.",
+        body: "Remotion has no hosted rendering service. To render at scale you deploy Remotion Lambda into your own AWS account: the IAM setup, the S3 bucket, a 1,000-per-region concurrency ceiling you file with AWS to raise, and the full compute, storage and egress bill. FrameLane is one API call to a managed GPU fleet: no cloud account, no bucket to own, no concurrency tickets.",
         bullets: [
           "No AWS account, no S3 bucket to own",
           "No concurrency limits to file for",
@@ -132,7 +132,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "04 / FILM-GRADE EFFECTS",
         heading: "Film-grade effects,",
         accent: "not CSS filters.",
-        body: "Remotion composes in the browser with HTML and CSS, so its effects are CSS filters and DOM tricks. The film-grade looks you reach for in After Effects or Premiere, .cube LUT color grades, film grain, lens flare, bokeh blur, chromatic aberration, are not CSS primitives. You can hand-build them in WebGL or Three.js, but on Lambda and Cloud Run there is no GPU, so they fall back to swangle software rendering. FrameLane ships 40+ of these as native GPU fragment shaders in Rust on wgpu, hardware-accelerated on every job, with glyph-level text animation and timeline transitions included.",
+        body: "Remotion composes in the browser with HTML and CSS, so its effects are CSS filters. Film-grade looks, .cube LUT grades, film grain, lens flare, bokeh, chromatic aberration, are not CSS primitives, and hand-built WebGL versions fall back to software rendering on GPU-less Lambda. FrameLane ships 40+ as native GPU fragment shaders in Rust on wgpu, with glyph-level text animation and timeline transitions included.",
         bullets: [
           ".cube LUTs, film grain, lens flare, bokeh",
           "Glyph-level text animation and transitions",
@@ -143,7 +143,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "05 / GPU NATIVE",
         heading: "GPU on every job,",
         accent: "no headless browser.",
-        body: "Remotion's default render path screenshots a headless Chromium browser frame by frame, then stitches the images with FFmpeg, and on Lambda that runs CPU-bound: the docs confirm Lambda has no GPU and that headless Chromium disables the GPU, a documented significant slowdown that falls back to swangle, a SwiftShader software rasterizer. A GPU path exists, but only on self-managed Linux EC2 with Chrome for Testing and Vulkan, never on Lambda or Cloud Run, and you operate it yourself. FrameLane is Rust on wgpu: hardware NVDEC decode, a GPU shader pass per frame, hardware encode, on a managed fleet, about 4 seconds for a 10-second 4K clip with captions, animations and audio.",
+        body: "Remotion's default path screenshots a headless Chromium frame by frame, then stitches with FFmpeg, and on Lambda that runs CPU-bound: the docs confirm no GPU, so headless Chromium falls back to swangle, a SwiftShader software rasterizer. A GPU path exists only on self-managed EC2. FrameLane is Rust on wgpu: hardware NVDEC decode, a GPU shader pass per frame, hardware encode, about 4 seconds for a 10-second 4K clip with captions, animations and audio.",
         bullets: [
           "Rust / wgpu, no Chromium in the render loop",
           "Hardware NVDEC decode and encode",
@@ -155,7 +155,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
       heading: "Where browser rendering",
       accent: "and DIY infra hit a wall.",
       intro:
-        "Remotion is a genuinely strong open-source framework: if you want full React control over every frame and you are happy to run the infrastructure yourself, it is excellent at that. The limitations below are the cost of that model, not bugs, and each one is documented in Remotion's own guides.",
+        "Remotion is a strong open-source framework: excellent if you want full React control over every frame and are happy to run the infrastructure yourself. The limitations below are the cost of that model, not bugs, and each is documented in Remotion's own guides.",
       items: [
         {
           tag: "Performance",
@@ -228,13 +228,13 @@ export const COMPARE_PAGES: LandingPageContent[] = [
     eyebrow: "FrameLane vs Shotstack",
     h1: "The Shotstack alternative",
     h1Accent: "built for the iteration loop.",
-    lede: "Agent video today is open-loop: generate, render, watch, prompt again, repeat. The edit itself is a black box, so every change is a full regeneration instead of a refinement. Shotstack is a capable managed API, JSON timeline and an MCP server, but the loop is the same: submit an edit, wait on a CPU render, and preview on a separate engine that does not match the output. FrameLane is built for the loop. Your agent reads and patches the timeline as state, previews on the exact engine that renders the file, and gets it back from the GPU in seconds. Iteration becomes refinement, not regeneration.",
+    lede: "Shotstack is a capable managed API, JSON timeline and an MCP server, but the loop is the same: submit an edit, wait on a CPU render, and preview on a separate engine that does not match the output. FrameLane shares that JSON and MCP workflow but runs it on a real GPU engine: your agent patches the timeline as state, previews on the exact engine that renders the file, and gets it back in seconds. Iteration becomes refinement, not regeneration.",
     benefits: [
       {
         eyebrow: "01 / TIMELINE AS STATE",
         heading: "Your agent edits state,",
         accent: "not prompts.",
-        body: "The edit is a JSON timeline your agent reads and patches, the way an agentic IDE operates on a file. Shift a voiceover by a few frames, swap a clip, retime a caption: the agent changes the one field that matters instead of regenerating the whole video. Tracks, clips, timing and captions are all addressable state, so every pass is a refinement.",
+        body: "The edit is a JSON timeline your agent reads and patches, the way an agentic IDE operates on a file. Shift a voiceover, swap a clip, retime a caption: the agent changes the one field that matters instead of regenerating the whole video. Every pass is a refinement, not a regeneration.",
         bullets: [
           "Read the timeline as JSON state",
           "Patch one field: VO, clip, timing",
@@ -245,7 +245,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "02 / PREVIEW FOR AGENTS",
         heading: "A preview your agent",
         accent: "can trust.",
-        body: "FrameLane's preview is the exact Rust/wgpu compositor that renders the final file, compiled to WebAssembly. So an agent can preview a change and see the real frame, not a lookalike, and close the loop before it commits a full render. Shotstack's preview is a separate Pixi.js engine, and its own team has said text, fonts and filters may not match the output, so the only real check is to re-render.",
+        body: "FrameLane's preview is the exact Rust/wgpu compositor that renders the file, compiled to WebAssembly, so an agent sees the real frame and closes the loop before a full render. Shotstack previews on a separate Pixi.js engine, and its own team has said text, fonts and filters may not match the output, so the only real check is to re-render.",
         bullets: [
           "Preview is the render engine, in WASM",
           "The agent sees the true frame",
@@ -256,7 +256,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "03 / QUALITY",
         heading: "Effects that run as shaders,",
         accent: "not fixed presets.",
-        body: "Shotstack's effects are a closed catalog of named presets: a few motion effects, a few filters, chromakey and luma mattes, with no intensity control, no LUT import, and no way to supply your own shader. FrameLane runs 40+ effects as GPU fragment shaders, with .cube LUT grading, numeric color controls and multi-layer compositing, the things a preset list cannot express.",
+        body: "Shotstack's effects are a closed catalog of named presets: some motion effects, filters, chromakey and luma mattes, with no intensity control, no LUT import, and no custom shaders. FrameLane runs 40+ effects as GPU fragment shaders, with .cube LUT grading, numeric color controls and multi-layer compositing, the things a preset list cannot express.",
         bullets: [
           ".cube LUTs and color grading",
           "Multi-layer compositing",
@@ -267,7 +267,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         eyebrow: "04 / SPEED",
         heading: "Renders back in seconds,",
         accent: "not a CPU queue.",
-        body: "Shotstack renders with multi-threaded, CPU optimised processing, not GPU, by its own benchmark, which puts a minute of video at tens of seconds. FrameLane is Rust on wgpu: hardware NVDEC decode, one GPU pass per frame, hardware encode. Every job runs on the GPU, so the re-render at the end of each iteration comes back fast instead of queuing, which is the whole point when an agent is looping.",
+        body: "By its own benchmark, Shotstack renders CPU-side (multi-threaded, not GPU), putting a minute of video at tens of seconds. FrameLane is Rust on wgpu: hardware NVDEC decode, one GPU pass per frame, hardware encode, so the re-render at the end of each iteration comes back in seconds instead of queuing, which is the whole point when an agent is looping.",
         bullets: [
           "Rust / wgpu, GPU on every job",
           "Hardware decode + encode",
