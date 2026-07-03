@@ -539,8 +539,8 @@ export function Hero() {
               flexWrap: "wrap",
             }}
           >
-            <a className="btn btn-primary" href={SITE.waitlistUrl} target="_blank" rel="noreferrer">
-              Request access →
+            <a className="btn btn-primary" href={SITE.consoleUrl}>
+              Start for free →
             </a>
             <a className="btn btn-ghost" href={SITE.docsUrl}>
               View docs

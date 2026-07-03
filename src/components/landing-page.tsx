@@ -44,11 +44,11 @@ function Ctas() {
     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
       <a
         className="btn btn-primary"
-        href={SITE.waitlistUrl}
+        href={SITE.consoleUrl}
         target="_blank"
         rel="noreferrer"
       >
-        Request access →
+        Start for free →
       </a>
       <a className="btn btn-ghost" href={SITE.docsUrl}>
         View docs

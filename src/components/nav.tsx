@@ -75,11 +75,11 @@ export function Nav() {
           ))}
           <a
             className="btn btn-primary btn-sm"
-            href={SITE.waitlistUrl}
+            href={SITE.consoleUrl}
             target="_blank"
             rel="noreferrer"
           >
-            Request access →
+            Start for free →
           </a>
         </div>
 
@@ -131,12 +131,12 @@ export function Nav() {
           <div style={{ margin: "16px var(--gutter) 0" }}>
             <a
               className="btn btn-primary"
-              href={SITE.waitlistUrl}
+              href={SITE.consoleUrl}
               target="_blank"
               rel="noreferrer"
               style={{ width: "100%", justifyContent: "center" }}
             >
-              Request access →
+              Start for free →
             </a>
           </div>
         </div>

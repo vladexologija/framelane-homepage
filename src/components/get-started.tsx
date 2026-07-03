@@ -246,8 +246,8 @@ export function GetStarted() {
               render in a single API call.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
-              <a className="btn btn-primary" href={SITE.waitlistUrl} target="_blank" rel="noreferrer">
-                Request access →
+              <a className="btn btn-primary" href={SITE.consoleUrl}>
+                Start for free →
               </a>
               <a className="btn btn-ghost" href={SITE.docsUrl}>
                 Read the docs
