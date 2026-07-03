@@ -20,6 +20,7 @@ Free tier: 30 minutes of rendering per month (previews are free and never metere
 - Quickstart: https://docs.framelane.io/introduction/quickstart
 - OpenAPI spec: https://api.framelane.io/openapi.json
 - Capabilities (machine-readable, no auth): https://api.framelane.io/v1/capabilities
+- MCP server (hosted, every endpoint as a tool): https://docs.framelane.io/mcp
 
 ## Notes for agents
 

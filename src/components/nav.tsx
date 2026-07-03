@@ -6,6 +6,7 @@ import { Logo } from "@/components/logo";
 import { SITE } from "@/lib/constants";
 
 const NAV_LINKS = [
+  ["For agents", "/agents"],
   ["Docs", SITE.docsUrl],
   ["Pricing", "/pricing"],
   ["Blog", "/blog"],

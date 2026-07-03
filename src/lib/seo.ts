@@ -44,6 +44,7 @@ export interface RouteEntry {
  */
 export const STATIC_ROUTES: RouteEntry[] = [
   { path: "/", changeFrequency: "weekly", priority: 1.0 },
+  { path: "/agents", changeFrequency: "monthly", priority: 0.9 },
   { path: "/pricing", changeFrequency: "monthly", priority: 0.8 },
   { path: "/blog", changeFrequency: "weekly", priority: 0.6 },
 ];
