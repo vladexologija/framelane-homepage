@@ -45,8 +45,8 @@ const STEPS: Step[] = [
   },
   {
     n: "04",
-    title: "Render",
-    body: "Send the fl_ key as a Bearer token, submit a JSON timeline, poll GET /v1/renders/{id} until completed, then download the artifact.",
+    title: "Render & wait",
+    body: "Send the fl_ key as a Bearer token and submit a JSON timeline. Then wait with GET /v1/renders/{id}?wait=25 — one blocking call, not a poll loop — and download the artifact.",
     code: `curl -X POST https://api.framelane.io/v1/renders \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -H "Content-Type: application/json" -d '{ "width": 1920, ... }'`,

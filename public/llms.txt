@@ -25,5 +25,5 @@ Free tier: 30 minutes of rendering per month (previews are free and never metere
 ## Notes for agents
 
 - Bring remote media by public URL: set `ingest_external: true` on the render and pass the URL as an element `source_url`. FrameLane copies it into your workspace server-side — no separate upload step.
-- Learn when a job finishes by polling `GET /v1/renders/{id}`; webhooks are optional and require a public receiver.
+- Wait for a job with `GET /v1/renders/{id}?wait=25` (same for `/v1/tasks/{id}`): it long-polls, blocking until the job is terminal (or ~25s, then returns the current status to re-call) — one call instead of a poll loop. Webhooks are optional and require a public receiver.
 - Validate for free before spending: `POST /v1/preview` with `dry_run: true` returns violations. Treat any error-severity violation as blocking — it will otherwise be rejected at submit.
