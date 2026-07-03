@@ -2,7 +2,6 @@
 
 import { createRender, createUpload } from "@/lib/api";
 import type { CreateUploadResult, UploadMeta } from "@/lib/api";
-import type { RenderRequest } from "@/lib/sceneToRenderRequest";
 
 /**
  * Server actions the Playground client calls. They run on the server, where
@@ -19,7 +18,7 @@ export async function createUploadAction(
 }
 
 export async function createRenderAction(
-  body: RenderRequest,
+  body: unknown,
 ): Promise<{ id: string; status: string }> {
   return createRender(body);
 }

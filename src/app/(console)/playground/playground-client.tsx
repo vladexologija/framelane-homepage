@@ -1,16 +1,28 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { Captions, Check, Copy, Eraser, Eye, Play, Shapes, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  AlertTriangle,
+  Captions,
+  Check,
+  Copy,
+  Eraser,
+  Eye,
+  Play,
+  Shapes,
+  Sparkles,
+  WrapText,
+  Upload,
+} from "lucide-react";
 import type { Scene } from "@frametake/scene-schema";
 
 import { FrametakeEditorClient } from "@/components/frametake-editor-client";
+import { JsonEditor } from "@/components/json-editor";
 import { DEFAULT_SCENE } from "./default-scene";
 import type { EditorAsset, FrameTakeTheme } from "@/lib/editor-types";
-import {
-  sceneToRenderRequest,
-  type RenderRequest,
-} from "@/lib/sceneToRenderRequest";
+import { sceneToRenderRequest } from "@/lib/sceneToRenderRequest";
+import { renderRequestToScene, collectPreviewIssues } from "@/lib/renderRequestToScene";
+import { validateRenderRequest, type Issue } from "@/lib/renderRequestSchema";
 import { createRenderAction, createUploadAction } from "./actions";
 
 // The console's design tokens handed straight to the editor's public theme API —
@@ -50,11 +62,30 @@ export function PlaygroundClient({
   initialAssets: EditorAsset[];
 }) {
   const [scene, setScene] = useState<Scene>(() => DEFAULT_SCENE);
+  const [jsonDraft, setJsonDraft] = useState<string>(() =>
+    JSON.stringify(sceneToRenderRequest(DEFAULT_SCENE), null, 2),
+  );
+  // Bumped only when JSON is loaded into the editor, to remount it with the new
+  // scene (the editor reads `initialScene` once at mount). Canvas edits don't bump
+  // it, so normal editing never remounts.
+  const [loadKey, setLoadKey] = useState(0);
   const [render, setRender] = useState<{ id: string; status: string } | null>(
     null,
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const applyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (applyTimer.current) clearTimeout(applyTimer.current);
+  }, []);
+
+  // Probed natural source lengths (seconds) keyed by source_url, so a clip with
+  // no `out_point` previews at its real length instead of stretching to the
+  // composition end. `0` marks a failed probe (don't retry). Persists across loads.
+  const sourceDurations = useRef<Map<string, number>>(new Map());
+  // Guards a slow probe from an older load applying its scene over a newer one.
+  const applySeq = useRef(0);
 
   // The host's uploader: probe duration/dimensions locally, reserve a signed URL
   // server-side (forwarding the probed metadata so the asset is immediately
@@ -86,28 +117,122 @@ export function PlaygroundClient({
     };
   };
 
-  const request = useMemo(() => sceneToRenderRequest(scene), [scene]);
-  const json = useMemo(() => JSON.stringify(request, null, 2), [request]);
+  const validation = useMemo(() => validateRenderRequest(jsonDraft), [jsonDraft]);
+  // Schema/invariant issues + a warning per render feature the preview can't show
+  // yet (unsupported motion, chroma_key) so a silently-dropped effect is visible.
+  const issues = useMemo<Issue[]>(() => {
+    if (!validation.jsonOk) return validation.issues;
+    const previewDrops = collectPreviewIssues(validation.value).map(
+      (d): Issue => ({ ...d, severity: "warning" }),
+    );
+    return [...validation.issues, ...previewDrops];
+  }, [validation]);
+  const parsed = validation.jsonOk
+    ? (validation.value as {
+        width?: number;
+        height?: number;
+        duration?: number;
+        elements?: unknown[];
+      })
+    : null;
+  const elementCount = Array.isArray(parsed?.elements) ? parsed!.elements.length : 0;
+  const canRender = !pending && validation.jsonOk && elementCount > 0;
 
-  const onRender = () => {
+  // Load the current JSON into the visual editor + preview (best-effort Scene).
+  // Video/audio elements with no `out_point` play to the end of their source
+  // (renderer `trimEnd -1`); the JSON doesn't carry that length, so probe each
+  // URL's duration (cached) before building, letting the mapper place the clip
+  // at its real end instead of stretching it across the whole composition.
+  const applyJsonToScene = useCallback(async (text: string) => {
+    const v = validateRenderRequest(text);
+    if (!v.jsonOk) return;
+    const seq = ++applySeq.current;
+
+    const req = v.value as { elements?: unknown };
+    const targets = new Map<string, "VIDEO" | "AUDIO">();
+    for (const el of Array.isArray(req.elements) ? req.elements : []) {
+      if (!el || typeof el !== "object") continue;
+      const { type, source_url: url, out_point: out } = el as {
+        type?: unknown;
+        source_url?: unknown;
+        out_point?: unknown;
+      };
+      if (
+        (type === "video" || type === "audio") &&
+        typeof url === "string" &&
+        url &&
+        typeof out !== "number" &&
+        !sourceDurations.current.has(url)
+      ) {
+        targets.set(url, type === "audio" ? "AUDIO" : "VIDEO");
+      }
+    }
+    if (targets.size > 0) {
+      await Promise.all(
+        [...targets].map(async ([url, kind]) => {
+          const d = await probeSourceUrlDuration(url, kind);
+          sourceDurations.current.set(url, d ?? 0); // 0 = failed; skip next time
+        }),
+      );
+      if (seq !== applySeq.current) return; // a newer load superseded this one
+    }
+
+    const next = renderRequestToScene(v.value, undefined, sourceDurations.current);
+    if (next) {
+      setScene(next);
+      setLoadKey((k) => k + 1);
+    }
+  }, []);
+
+  // User edits the JSON → debounce a load into the preview. (Programmatic value
+  // syncs from a canvas edit / Format are tagged `ExternalChange` by
+  // @uiw/react-codemirror and never reach onChange, so there's no echo to guard.)
+  const onJsonChange = useCallback(
+    (text: string) => {
+      setJsonDraft(text);
+      if (applyTimer.current) clearTimeout(applyTimer.current);
+      applyTimer.current = setTimeout(() => void applyJsonToScene(text), 500);
+    },
+    [applyJsonToScene],
+  );
+
+  const onLoad = useCallback(() => {
+    if (applyTimer.current) clearTimeout(applyTimer.current);
+    void applyJsonToScene(jsonDraft);
+  }, [applyJsonToScene, jsonDraft]);
+
+  const onFormat = useCallback(() => {
+    if (!validation.jsonOk) return;
+    setJsonDraft(JSON.stringify(validation.value, null, 2)); // reformat only, no scene reload
+  }, [validation]);
+
+  // User edits the canvas → re-derive the JSON (the editor is truth for that edit).
+  const onSceneChange = useCallback((next: Scene) => {
+    setScene(next);
+    if (applyTimer.current) clearTimeout(applyTimer.current); // cancel a pending JSON load
+    setJsonDraft(JSON.stringify(sceneToRenderRequest(next), null, 2));
+  }, []);
+
+  const onRender = useCallback(() => {
+    if (!validation.jsonOk) return;
+    const body = validation.value;
     setError(null);
     startTransition(async () => {
       try {
-        setRender(await createRenderAction(request));
+        setRender(await createRenderAction(body));
       } catch (e) {
         console.error("[playground] render request failed", e);
         setError(e instanceof Error ? e.message : "Render failed");
       }
     });
-  };
-
-  const canRender = !pending && request.elements.length > 0;
+  }, [validation]);
 
   return (
     <div style={{ height: "100vh", minWidth: 0 }}>
       <FrametakeEditorClient
+        key={loadKey}
         initialScene={scene}
-        onSceneChange={setScene}
+        onSceneChange={onSceneChange}
         media={{ assets: initialAssets, onUpload }}
         theme={CONSOLE_THEME}
         features={{ topbar: { history: false } }}
@@ -115,11 +240,19 @@ export function PlaygroundClient({
         comingSoonTabs={COMING_SOON_TABS}
         asideHeader={
           <RenderRequestPanel
-            request={request}
-            json={json}
+            value={jsonDraft}
+            onChange={onJsonChange}
+            issues={issues}
+            jsonOk={validation.jsonOk}
+            width={parsed?.width}
+            height={parsed?.height}
+            duration={parsed?.duration}
+            elementCount={elementCount}
             render={render}
             error={error}
             onRender={onRender}
+            onFormat={onFormat}
+            onLoad={onLoad}
             canRender={canRender}
             pending={pending}
           />
@@ -191,36 +324,83 @@ function RenderButton({
   );
 }
 
-function CopyButton({
-  copied,
-  onClick,
-}: {
-  copied: boolean;
-  onClick: () => void;
-}) {
+/** Small dark tooltip anchored below-right of its (relatively-positioned) parent.
+ *  Below so the card's `overflow: hidden` top edge never clips it; right-anchored
+ *  (grows leftward) so it stays inside the card for the right-aligned buttons. */
+function Tooltip({ children }: { children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Copy request"
+    <span
+      role="tooltip"
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "6px 12px",
-        borderRadius: 8,
+        position: "absolute",
+        top: "calc(100% + 6px)",
+        right: 0,
+        padding: "4px 8px",
+        borderRadius: 6,
+        background: "var(--bg-elev-2)",
         border: "1px solid var(--line-strong)",
-        background: "var(--bg-elev)",
-        color: copied ? "var(--green)" : "var(--fg)",
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: "pointer",
-        transition: "color 0.15s",
+        color: "var(--fg)",
+        fontSize: 11,
+        fontWeight: 500,
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        boxShadow: "0 6px 18px rgba(0, 0, 0, 0.4)",
+        zIndex: 20,
       }}
     >
-      {copied ? <Check size={13} aria-hidden /> : <Copy size={13} aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
+      {children}
+    </span>
+  );
+}
+
+/** Square icon-only action button with a styled hover tooltip. `label` is both
+ *  the tooltip text and the button's accessible name. */
+function IconButton({
+  onClick,
+  disabled,
+  icon,
+  label,
+  active,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <span
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={label}
+        onFocus={() => setHover(true)}
+        onBlur={() => setHover(false)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          border: "1px solid var(--line-strong)",
+          background: "var(--bg-elev)",
+          color: active ? "var(--green)" : "var(--fg)",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.5 : 1,
+          transition: "color 0.15s",
+        }}
+      >
+        {icon}
+      </button>
+      {hover && <Tooltip>{label}</Tooltip>}
+    </span>
   );
 }
 
@@ -254,40 +434,73 @@ function CopiedToast() {
   );
 }
 
+function IssueRow({ issue }: { issue: Issue }) {
+  const isErr = issue.severity === "error";
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        alignItems: "flex-start",
+        fontSize: 11.5,
+        lineHeight: 1.45,
+        color: isErr ? "var(--red)" : "var(--orange)",
+      }}
+    >
+      <AlertTriangle size={12} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden />
+      <span>
+        {issue.path && (
+          <span className="mono" style={{ opacity: 0.75 }}>
+            {issue.path}:{" "}
+          </span>
+        )}
+        {issue.message}
+      </span>
+    </div>
+  );
+}
+
 function RenderRequestPanel({
-  request,
-  json,
+  value,
+  onChange,
+  issues,
+  jsonOk,
+  width,
+  height,
+  duration,
+  elementCount,
   render,
   error,
   onRender,
+  onFormat,
+  onLoad,
   canRender,
   pending,
 }: {
-  request: RenderRequest;
-  json: string;
+  value: string;
+  onChange: (v: string) => void;
+  issues: Issue[];
+  jsonOk: boolean;
+  width?: number;
+  height?: number;
+  duration?: number;
+  elementCount: number;
   render: { id: string; status: string } | null;
   error: string | null;
   onRender: () => void;
+  onFormat: () => void;
+  onLoad: () => void;
   canRender: boolean;
   pending: boolean;
 }) {
   const [copied, setCopied] = useState(false);
-  const curl = useMemo(
-    () =>
-      [
-        "curl -X POST https://api.framelane.io/v1/renders \\",
-        '  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\',
-        '  -H "Content-Type: application/json" \\',
-        `  -d '${json}'`,
-      ].join("\n"),
-    [json],
-  );
-
   const copy = () => {
-    void navigator.clipboard.writeText(curl);
+    void navigator.clipboard.writeText(value);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   };
+  const errors = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
 
   return (
     <div
@@ -299,7 +512,6 @@ function RenderRequestPanel({
         border: "1px solid var(--line)",
         background: "var(--bg-2)",
         overflow: "hidden",
-        // Fill the remaining sidebar height; the curl <pre> scrolls inside.
         display: "flex",
         flexDirection: "column",
         flex: "1 1 auto",
@@ -316,50 +528,82 @@ function RenderRequestPanel({
           }}
         >
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg)" }}>
-            Request
+            Request body
           </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <RenderButton
-              disabled={!canRender}
-              pending={pending}
-              onClick={onRender}
-            />
-            <CopyButton copied={copied} onClick={copy} />
-          </div>
+          <RenderButton disabled={!canRender} pending={pending} onClick={onRender} />
         </div>
 
-        <div style={{ marginTop: 8 }}>
+        <div
+          style={{
+            marginTop: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
           <span className="mono" style={{ fontSize: 11, color: "var(--fg-dim)" }}>
             POST /v1/renders
           </span>
+          <div style={{ display: "flex", gap: 6 }}>
+            <IconButton onClick={onFormat} disabled={!jsonOk} icon={<WrapText size={14} aria-hidden />} label="Format" />
+            <IconButton onClick={onLoad} disabled={!jsonOk} icon={<Upload size={14} aria-hidden />} label="Load into preview" />
+            <IconButton
+              onClick={copy}
+              active={copied}
+              icon={copied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+              label={copied ? "Copied" : "Copy request"}
+            />
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-          <Chip>{`${request.width} × ${request.height}`}</Chip>
-          <Chip>{`${formatDuration(request.duration)}`}</Chip>
-          <Chip>{`${request.elements.length} element${request.elements.length === 1 ? "" : "s"}`}</Chip>
+          {jsonOk ? (
+            <>
+              <Chip>{width && height ? `${width} × ${height}` : "auto size"}</Chip>
+              <Chip>{formatDuration(duration)}</Chip>
+              <Chip>{`${elementCount} element${elementCount === 1 ? "" : "s"}`}</Chip>
+            </>
+          ) : (
+            <Chip>invalid JSON</Chip>
+          )}
         </div>
       </div>
 
-      <pre
-        className="mono"
+      <div
         style={{
-          margin: 0,
-          padding: 14,
           flex: 1,
           minHeight: 0,
-          overflow: "auto",
           borderTop: "1px solid var(--line)",
+          display: "flex",
+          flexDirection: "column",
           background: "var(--bg)",
-          fontSize: 12,
-          lineHeight: 1.6,
-          color: "var(--fg-2)",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
         }}
       >
-        {highlightCurl(curl)}
-      </pre>
+        <JsonEditor value={value} onChange={onChange} />
+      </div>
+
+      {(errors.length > 0 || warnings.length > 0) && (
+        <div
+          style={{
+            maxHeight: 140,
+            overflow: "auto",
+            borderTop: "1px solid var(--line)",
+            padding: "8px 14px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            flexShrink: 0,
+          }}
+        >
+          {errors.slice(0, 20).map((iss, i) => (
+            <IssueRow key={`e${i}`} issue={iss} />
+          ))}
+          {warnings.slice(0, 20).map((iss, i) => (
+            <IssueRow key={`w${i}`} issue={iss} />
+          ))}
+        </div>
+      )}
 
       {(render || error) && (
         <div
@@ -398,58 +642,12 @@ function Chip({ children }: { children: React.ReactNode }) {
   );
 }
 
-function formatDuration(sec: number): string {
+// `sec` is a raw JSON value (jsonOk only means JSON.parse succeeded, not that the
+// schema passed), so guard the type — a quoted number would otherwise throw on
+// `.toFixed` and crash the whole panel.
+function formatDuration(sec: unknown): string {
+  if (typeof sec !== "number" || !Number.isFinite(sec)) return "auto duration";
   return `${Number.isInteger(sec) ? sec : sec.toFixed(1)}s`;
-}
-
-// Lightweight syntax highlighter for the curl + embedded JSON — no dependency,
-// just tokenises into colored <span>s so the request body reads like a code block.
-const CODE_COLOR: Record<string, string> = {
-  url: "#cfa978",
-  str: "#cfa978",
-  key: "#8b9bd4",
-  num: "var(--green)",
-  lit: "var(--orange-hi)",
-  flag: "var(--orange)",
-  cmd: "var(--fg)",
-  method: "var(--orange-hi)",
-};
-
-function highlightCurl(code: string): React.ReactNode[] {
-  const re =
-    /(https?:\/\/[^\s'"]+)|("(?:[^"\\]|\\.)*")|(?<=\s)(-[A-Za-z])(?=\s)|\b(curl)\b|\b(POST|GET|PUT|PATCH|DELETE)\b|\b(true|false|null)\b|\b(\d+(?:\.\d+)?)\b/g;
-  const out: React.ReactNode[] = [];
-  let last = 0;
-  let key = 0;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    if (m.index > last) out.push(code.slice(last, m.index));
-    let type: string;
-    let val = m[0];
-    if (m[1]) type = "url";
-    else if (m[2]) {
-      val = m[2];
-      type = /^\s*:/.test(code.slice(re.lastIndex)) ? "key" : "str";
-    } else if (m[3]) type = "flag";
-    else if (m[4]) type = "cmd";
-    else if (m[5]) type = "method";
-    else if (m[6]) type = "lit";
-    else type = "num";
-    out.push(
-      <span
-        key={key++}
-        style={{
-          color: CODE_COLOR[type],
-          fontWeight: type === "cmd" || type === "method" ? 600 : undefined,
-        }}
-      >
-        {val}
-      </span>,
-    );
-    last = re.lastIndex;
-  }
-  if (last < code.length) out.push(code.slice(last));
-  return out;
 }
 
 interface ProbedMedia {
@@ -495,6 +693,41 @@ function probeMedia(
       );
     };
     el.onerror = () => finish(() => reject(new Error("probe failed")));
+    el.src = url;
+  });
+}
+
+/** Read a remote media URL's duration (seconds) from its metadata, for clips
+ * pasted into the request that carry no `out_point`. Resolves `null` on error or
+ * timeout (never rejects). No `crossOrigin` — duration needs no CORS, and setting
+ * it would make a CDN without CORS headers fail. */
+function probeSourceUrlDuration(
+  url: string,
+  kind: "VIDEO" | "AUDIO",
+  timeoutMs = 8000,
+): Promise<number | null> {
+  return new Promise((resolve) => {
+    const el = document.createElement(kind === "AUDIO" ? "audio" : "video");
+    let done = false;
+    const finish = (v: number | null) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      el.removeAttribute("src");
+      try {
+        el.load();
+      } catch {
+        /* ignore */
+      }
+      resolve(v);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs);
+    el.preload = "metadata";
+    el.onloadedmetadata = () => {
+      const d = el.duration;
+      finish(Number.isFinite(d) && d > 0 ? d : null);
+    };
+    el.onerror = () => finish(null);
     el.src = url;
   });
 }

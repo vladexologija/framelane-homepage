@@ -86,7 +86,7 @@ const rotation = (deg: number) => (deg ? { z_rotation: `${deg}deg` } : {});
 // animation id → API MotionType value + whether it's the reversed (exit) form.
 // Only geometric, unambiguous presets are included; cinematic/per-glyph ones are
 // intentionally omitted so we never emit an unsupported (type, direction) → 422.
-const MOTION: Record<
+export const MOTION: Record<
   string,
   { type: string; reversed: boolean; scope?: "character" }
 > = {
@@ -231,7 +231,7 @@ const withMotion = (
 // framelane API EffectType value (inverse of api/translation/maps.py EFFECT_MAP).
 // Unmapped names are dropped (preview-only) rather than risk a 422 — same
 // drop-discipline as MOTION/TRANSITION.
-const EFFECT: Record<string, string> = {
+export const EFFECT: Record<string, string> = {
   old: "vintage",
   polaroid: "polaroid",
   portra: "portra",
@@ -406,7 +406,7 @@ const textDisplay = (el: TextElement): Record<string, unknown> => {
 // no API target (linear-blur, rotate, circle-crop, cross-warp, splice,
 // minimise-*, three-stripes, ripple, fold-*) are absent → dropped, since an
 // unmapped value would 422.
-const TRANSITION: Record<string, string> = {
+export const TRANSITION: Record<string, string> = {
   crossfade: "cross_dissolve",
   dissolve: "cross_dissolve",
   "fade-black": "dip_to_black",

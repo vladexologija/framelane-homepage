@@ -17,6 +17,7 @@ import {
   Settings,
   BookOpen,
   Mail,
+  CalendarClock,
   LogOut,
 } from "lucide-react";
 
@@ -125,6 +126,12 @@ export function ConsoleSidebar() {
             href: "mailto:info@itis.ba",
             icon: Mail,
             newTab: false,
+          },
+          {
+            label: "Book a call",
+            href: "https://calendly.com/vladimir-itis/30min",
+            icon: CalendarClock,
+            newTab: true,
           },
         ].map(({ label, href, icon: Icon, newTab }) => (
           <a
