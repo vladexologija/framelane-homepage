@@ -3,9 +3,6 @@
 import { useMemo, useRef, useState } from "react";
 import {
   AudioLines,
-  Check,
-  Copy,
-  ExternalLink,
   Pause,
   Play,
   Search,
@@ -293,47 +290,6 @@ function AssetCard({ asset }: { asset: WorkspaceAsset }) {
         >
           {meta} · {createdLabel}
         </div>
-
-        {/* Actions */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            marginTop: "auto",
-            paddingTop: 4,
-          }}
-        >
-          <CopyButton value={asset.id} label="Copy asset ID">
-            ID
-          </CopyButton>
-          <CopyButton value={asset.source_url} label="Copy source URL">
-            URL
-          </CopyButton>
-          <a
-            href={asset.source_url}
-            target="_blank"
-            rel="noreferrer"
-            title="Open in new tab"
-            aria-label="Open asset in new tab"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-              height: 26,
-              padding: "0 8px",
-              marginLeft: "auto",
-              borderRadius: 4,
-              fontSize: 11,
-              color: "var(--fg-mute)",
-              border: "1px solid var(--line)",
-            }}
-          >
-            <ExternalLink size={12} />
-            Open
-          </a>
-        </div>
       </div>
     </div>
   );
@@ -452,54 +408,6 @@ function AudioPreview({ src, title }: { src: string; title: string }) {
       ) : (
         <AudioLines size={26} style={{ color: "var(--green)" }} />
       )}
-    </button>
-  );
-}
-
-function CopyButton({
-  value,
-  label,
-  children,
-}: {
-  value: string;
-  label: string;
-  children: React.ReactNode;
-}) {
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 1200);
-    } catch {
-      /* clipboard may be unavailable (insecure context) — fail quietly */
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      title={label}
-      aria-label={label}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        height: 26,
-        padding: "0 8px",
-        borderRadius: 4,
-        fontSize: 11,
-        color: copied ? "var(--green)" : "var(--fg-mute)",
-        border: "1px solid var(--line)",
-        background: "transparent",
-      }}
-    >
-      {copied ? <Check size={12} /> : <Copy size={12} />}
-      {children}
     </button>
   );
 }

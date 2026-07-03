@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getWorkspaceAssets, type WorkspaceAsset } from "@/lib/api";
 import { AssetsGrid } from "./assets-grid";
+import { UploadAssetsButton } from "./upload-assets-button";
 
 export const metadata: Metadata = { title: "Assets — FrameLane Console" };
 
@@ -19,20 +20,31 @@ export default async function AssetsPage() {
 
   return (
     <div style={{ padding: "40px 48px", maxWidth: 1100 }}>
-      <div style={{ marginBottom: 32 }}>
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 500,
-            letterSpacing: "-0.02em",
-            marginBottom: 4,
-          }}
-        >
-          Assets
-        </h1>
-        <p style={{ fontSize: 13, color: "var(--fg-mute)" }}>
-          Every video and audio file you&rsquo;ve uploaded to this workspace.
-        </p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 16,
+          marginBottom: 32,
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontSize: 22,
+              fontWeight: 500,
+              letterSpacing: "-0.02em",
+              marginBottom: 4,
+            }}
+          >
+            Assets
+          </h1>
+          <p style={{ fontSize: 13, color: "var(--fg-mute)" }}>
+            Every video and audio file you&rsquo;ve uploaded to this workspace.
+          </p>
+        </div>
+        <UploadAssetsButton />
       </div>
 
       {assets === null ? (
@@ -52,16 +64,19 @@ export default async function AssetsPage() {
       ) : assets.length === 0 ? (
         <div
           className="card"
-          style={{ padding: "48px", textAlign: "center" }}
+          style={{
+            padding: "48px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
         >
-          <p
-            style={{ color: "var(--fg-mute)", fontSize: 14, marginBottom: 12 }}
-          >
-            No assets yet.
+          <p style={{ color: "var(--fg-mute)", fontSize: 14 }}>
+            No assets yet. Upload a video or audio file to get started.
           </p>
-          <a href="/playground" style={{ fontSize: 13, color: "var(--orange)" }}>
-            Upload media in the Playground →
-          </a>
+          <UploadAssetsButton variant="outline" />
         </div>
       ) : (
         <AssetsGrid assets={assets} />

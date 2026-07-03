@@ -8,6 +8,7 @@ import {
   Copy,
   Eraser,
   Eye,
+  Loader2,
   Play,
   Shapes,
   Sparkles,
@@ -23,6 +24,7 @@ import type { EditorAsset, FrameTakeTheme } from "@/lib/editor-types";
 import { sceneToRenderRequest } from "@/lib/sceneToRenderRequest";
 import { renderRequestToScene, collectPreviewIssues } from "@/lib/renderRequestToScene";
 import { validateRenderRequest, type Issue } from "@/lib/renderRequestSchema";
+import { probeMedia, probeSourceUrlDuration } from "@/lib/probe-media";
 import { createRenderAction, createUploadAction } from "./actions";
 
 // The console's design tokens handed straight to the editor's public theme API —
@@ -87,34 +89,45 @@ export function PlaygroundClient({
   // Guards a slow probe from an older load applying its scene over a newer one.
   const applySeq = useRef(0);
 
+  // In-flight uploads, so the playground can show a progress toast (the PUT of a
+  // large clip can take a while and the editor gives no host-visible feedback).
+  const [uploads, setUploads] = useState<{ id: number; name: string }[]>([]);
+  const uploadId = useRef(0);
+
   // The host's uploader: probe duration/dimensions locally, reserve a signed URL
   // server-side (forwarding the probed metadata so the asset is immediately
   // ready/listable), PUT the bytes, and hand the editor an asset pointing at the
-  // resulting CDN URL.
+  // resulting CDN URL. Tracked in `uploads` for the progress toast.
   const onUpload = async (file: File): Promise<EditorAsset> => {
-    const kind = file.type.startsWith("audio") ? "AUDIO" : "VIDEO";
-    const probed = await probeMedia(file, kind).catch(() => null);
-    const { upload_url, source_url } = await createUploadAction(
-      file.type,
-      file.name,
-      probed
-        ? { duration: probed.duration, width: probed.width, height: probed.height }
-        : undefined,
-    );
-    const res = await fetch(upload_url, {
-      method: "PUT",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-    if (!res.ok) throw new Error(`upload failed (${res.status})`);
-    return {
-      id: source_url,
-      kind,
-      filename: file.name,
-      status: "READY",
-      durationSec: probed?.duration ?? null,
-      fileUrl: source_url,
-    };
+    const id = (uploadId.current += 1);
+    setUploads((u) => [...u, { id, name: file.name }]);
+    try {
+      const kind = file.type.startsWith("audio") ? "AUDIO" : "VIDEO";
+      const probed = await probeMedia(file, kind).catch(() => null);
+      const { upload_url, source_url } = await createUploadAction(
+        file.type,
+        file.name,
+        probed
+          ? { duration: probed.duration, width: probed.width, height: probed.height }
+          : undefined,
+      );
+      const res = await fetch(upload_url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!res.ok) throw new Error(`upload failed (${res.status})`);
+      return {
+        id: source_url,
+        kind,
+        filename: file.name,
+        status: "READY",
+        durationSec: probed?.duration ?? null,
+        fileUrl: source_url,
+      };
+    } finally {
+      setUploads((u) => u.filter((x) => x.id !== id));
+    }
   };
 
   const validation = useMemo(() => validateRenderRequest(jsonDraft), [jsonDraft]);
@@ -258,6 +271,53 @@ export function PlaygroundClient({
           />
         }
       />
+      {uploads.length > 0 && <UploadingToast uploads={uploads} />}
+    </div>
+  );
+}
+
+/** Fixed bottom-center toast shown while one or more media uploads are in flight
+ * (the editor gives no host-visible progress for a slow PUT). */
+function UploadingToast({ uploads }: { uploads: { id: number; name: string }[] }) {
+  const label =
+    uploads.length === 1
+      ? `Uploading ${uploads[0].name}…`
+      : `Uploading ${uploads.length} files…`;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: "fixed",
+        bottom: 24,
+        left: "50%",
+        transform: "translateX(-50%)",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 16px",
+        borderRadius: 10,
+        background: "var(--bg-elev-2)",
+        border: "1px solid var(--line-strong)",
+        color: "var(--fg)",
+        fontSize: 13,
+        fontWeight: 500,
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.45)",
+        zIndex: 1000,
+        maxWidth: "min(90vw, 420px)",
+      }}
+    >
+      <Loader2
+        size={15}
+        className="spin"
+        style={{ color: "var(--orange)", flexShrink: 0 }}
+        aria-hidden
+      />
+      <span
+        style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
@@ -650,84 +710,3 @@ function formatDuration(sec: unknown): string {
   return `${Number.isInteger(sec) ? sec : sec.toFixed(1)}s`;
 }
 
-interface ProbedMedia {
-  duration: number;
-  width: number | null;
-  height: number | null;
-}
-
-/** Read a media file's duration (and pixel dimensions for video) in-browser from
- * a local object URL. Resolves within `timeoutMs` (or rejects) so a file that
- * never loads can't hang upload. */
-function probeMedia(
-  file: File,
-  kind: "VIDEO" | "AUDIO",
-  timeoutMs = 5000,
-): Promise<ProbedMedia> {
-  return new Promise((resolve, reject) => {
-    const el = document.createElement(kind === "AUDIO" ? "audio" : "video");
-    const url = URL.createObjectURL(file);
-    let done = false;
-    const finish = (cb: () => void) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      URL.revokeObjectURL(url);
-      el.removeAttribute("src");
-      cb();
-    };
-    const timer = setTimeout(
-      () => finish(() => reject(new Error("probe timed out"))),
-      timeoutMs,
-    );
-    el.preload = "metadata";
-    el.onloadedmetadata = () => {
-      const d = el.duration;
-      const v = el as HTMLVideoElement;
-      const width = v.videoWidth || null;
-      const height = v.videoHeight || null;
-      finish(() =>
-        Number.isFinite(d) && d > 0
-          ? resolve({ duration: d, width, height })
-          : reject(new Error("no duration")),
-      );
-    };
-    el.onerror = () => finish(() => reject(new Error("probe failed")));
-    el.src = url;
-  });
-}
-
-/** Read a remote media URL's duration (seconds) from its metadata, for clips
- * pasted into the request that carry no `out_point`. Resolves `null` on error or
- * timeout (never rejects). No `crossOrigin` — duration needs no CORS, and setting
- * it would make a CDN without CORS headers fail. */
-function probeSourceUrlDuration(
-  url: string,
-  kind: "VIDEO" | "AUDIO",
-  timeoutMs = 8000,
-): Promise<number | null> {
-  return new Promise((resolve) => {
-    const el = document.createElement(kind === "AUDIO" ? "audio" : "video");
-    let done = false;
-    const finish = (v: number | null) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      el.removeAttribute("src");
-      try {
-        el.load();
-      } catch {
-        /* ignore */
-      }
-      resolve(v);
-    };
-    const timer = setTimeout(() => finish(null), timeoutMs);
-    el.preload = "metadata";
-    el.onloadedmetadata = () => {
-      const d = el.duration;
-      finish(Number.isFinite(d) && d > 0 ? d : null);
-    };
-    el.onerror = () => finish(null);
-    el.src = url;
-  });
-}
