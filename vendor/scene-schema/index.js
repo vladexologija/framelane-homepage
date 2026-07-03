@@ -1511,6 +1511,9 @@ var rustTransitionKind = (kind) => {
       return null;
   }
 };
+var RENDERED_TRANSITION_KINDS = TRANSITION_KINDS.filter(
+  (k) => rustTransitionKind(k) !== null
+);
 var resolveTimelinesAndTransitions = (scene) => {
   const timelines = /* @__PURE__ */ new Map();
   for (const id of scene.elementOrder) {
@@ -1696,6 +1699,7 @@ export {
   EXPORT_PRESETS,
   EXPORT_QUALITIES,
   MIN_ANIMATION_DURATION,
+  RENDERED_TRANSITION_KINDS,
   SCHEMA_VERSION,
   TEXT_BACKGROUND_STYLES,
   TEXT_IN_ANIMATIONS,
@@ -1730,6 +1734,7 @@ export {
   resolveCaptionAnimation,
   resolveCaptionVisual,
   resolveEngineAnimations,
+  rustTransitionKind,
   scaleFiltersToEngine,
   scaledOutputSize,
   sceneToRenderTask,

@@ -1,4 +1,4 @@
-import { F as r, c as s, a as c } from "./index-CmU8Ins2.js";
+import { F as r, c as s, a as c } from "./index-Ch-G02b4.js";
 export {
   r as FrameTakeEditor,
   s as createEmptyScene,
