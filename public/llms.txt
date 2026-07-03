@@ -1,0 +1,28 @@
+# FrameLane
+
+> Video editing and rendering API built for AI agents. JSON in, video out. Agents discover the API, provision their own key, render, and download — with no human, no browser, and no dashboard.
+
+## Getting access (self-serve, no human)
+
+Base URL: `https://api.framelane.io`
+
+1. `GET /v1/capabilities` — discover the API, formats, limits, and auth model (no auth). Includes an `onboarding` block describing these exact steps in machine-readable form.
+2. `POST /v1/signup` with `{ "workspace_name": "...", "email": "..." }` — returns an `fl_` API key immediately and emails a 6-digit code. The key is inert until verified.
+3. Read the code from the inbox you signed up with (a programmatic inbox makes this hands-free), then `POST /v1/signup/verify` with `{ "email": "...", "otp_code": "123456" }`. The key works the moment this returns `200`; until then authed calls return `403 email_not_verified`.
+4. Send `Authorization: Bearer fl_...` and call `POST /v1/renders` (or `POST /v1/tasks/*`). Poll `GET /v1/renders/{id}` until `status` is terminal, then `GET /v1/renders/{id}/download`.
+
+Free tier: 30 minutes of rendering per month (previews are free and never metered). Renders past the cap return `402 quota_exceeded`.
+
+## Docs
+
+- Full docs: https://docs.framelane.io/
+- Self-provisioning for agents: https://docs.framelane.io/introduction/self-provisioning
+- Quickstart: https://docs.framelane.io/introduction/quickstart
+- OpenAPI spec: https://api.framelane.io/openapi.json
+- Capabilities (machine-readable, no auth): https://api.framelane.io/v1/capabilities
+
+## Notes for agents
+
+- Bring remote media by public URL: set `ingest_external: true` on the render and pass the URL as an element `source_url`. FrameLane copies it into your workspace server-side — no separate upload step.
+- Learn when a job finishes by polling `GET /v1/renders/{id}`; webhooks are optional and require a public receiver.
+- Validate for free before spending: `POST /v1/preview` with `dry_run: true` returns violations. Treat any error-severity violation as blocking — it will otherwise be rejected at submit.

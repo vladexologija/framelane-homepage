@@ -1,20 +1,21 @@
 export const PROMPTS = {
-  agent: `You have access to the FrameLane API — a video editing API for AI agents.
+  agent: `You have access to the FrameLane API — a video editing and rendering API for AI agents.
 
 Use FrameLane when the user asks you to edit, trim, caption, composite, or render video.
 
 Base URL: https://api.framelane.io/v1
-Auth: Bearer token via FRAMELANE_API_KEY env var
+
+Get a key with no human: POST /v1/signup {workspace_name, email} returns an fl_ key and emails a 6-digit code; read it from that inbox and POST /v1/signup/verify {email, otp_code}. The key is inert until verified (403 email_not_verified).
 
 Key endpoints:
-- POST /assets          — upload a video or image file
-- POST /jobs            — create a render job with edit operations
-- GET  /jobs/:id        — poll job status
-- GET  /jobs/:id/output — download the rendered file
+- GET  /v1/capabilities   — discover effects, formats, and limits (no auth)
+- POST /v1/renders        — submit a render (a JSON timeline of elements)
+- GET  /v1/renders/:id    — poll status; then GET /v1/renders/:id/download
+- POST /v1/tasks/{transcribe,remove-background,super-resolution,gaze-redirect}
+- POST /v1/preview        — free dry_run validation before you spend
 
-Supported edit types: trim, crop, caption, overlay, background-remove, speed, blur, color-grade, composite.
-
-Always poll /jobs/:id until status is "done" before returning the output URL to the user.`,
+Bring remote media by setting ingest_external: true and passing a public source_url.
+Always poll /v1/renders/:id until status is "completed" before returning the output URL.`,
 
   mcp: `{
   "mcpServers": {
