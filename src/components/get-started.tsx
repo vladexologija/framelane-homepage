@@ -44,6 +44,17 @@ curl -X POST https://api.framelane.io/v1/renders \\
 curl https://api.framelane.io/v1/renders/{id} \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY"`,
 
+  mcp: `{
+  "mcpServers": {
+    "framelane": {
+      "url": "https://mcp.framelane.io/mcp",
+      "headers": {
+        "Authorization": "Bearer \${FRAMELANE_API_KEY}"
+      }
+    }
+  }
+}`,
+
   typescript: `import { Framelane } from "framelane";
 
 const client = new Framelane({ apiKey: process.env.FRAMELANE_API_KEY });
@@ -146,6 +157,7 @@ function highlightCode(code: string, lang: Lang): string {
     typescript:
       /\b(import|from|const|let|await|async|new|function|return|if|else|console)\b/g,
     curl: /\b(curl|GET|POST|PUT|DELETE)\b/g,
+    mcp: /\b(true|false|null)\b/g,
   };
 
   // Use placeholder slots so each regex pass can't corrupt previously
@@ -217,7 +229,7 @@ export function GetStarted() {
   };
 
   const installCmd =
-    lang === "python" ? "pip install" : lang !== "curl" ? "npm install" : null;
+    lang === "python" ? "pip install" : lang === "typescript" ? "npm install" : null;
 
   return (
     <section id="get-started">
@@ -302,7 +314,7 @@ export function GetStarted() {
             >
               <div style={{ display: "flex" }}>
                 {(Object.keys(CODE_SAMPLES) as Lang[]).map((k) => {
-                  const disabled = k !== "curl";
+                  const disabled = k !== "curl" && k !== "mcp";
                   const active = lang === k;
                   return (
                     <button
@@ -331,7 +343,7 @@ export function GetStarted() {
                         opacity: disabled ? 0.45 : 1,
                       }}
                     >
-                      {k}
+                      {k === "mcp" ? "MCP" : k}
                       {disabled && (
                         <span
                           style={{

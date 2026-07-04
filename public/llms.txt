@@ -1,29 +1,169 @@
 # FrameLane
 
-> Video editing and rendering API built for AI agents. JSON in, video out. Agents discover the API, provision their own key, render, and download — with no human, no browser, and no dashboard.
+> Video editing and rendering API built for AI agents. JSON in, video out. An agent discovers the API, provisions its own key, renders, and downloads, with no human, no browser, and no dashboard.
+
+FrameLane turns a JSON timeline into a finished video on a managed GPU fleet. Submit a composition of video, audio, text, and image elements with effects, motion, and transitions, and get back an mp4 (or webm, mov, gif, png, jpg). Run AI media tasks (transcription, background removal, super-resolution, gaze redirect) as async jobs. There is no React to bundle, no headless browser, and no AWS to run: one authenticated call renders 4K in seconds.
+
+Base URL: `https://api.framelane.io` (every endpoint lives under `/v1`).
 
 ## Getting access (self-serve, no human)
 
-Base URL: `https://api.framelane.io`
-
-1. `GET /v1/capabilities` — discover the API, formats, limits, and auth model (no auth). Includes an `onboarding` block describing these exact steps in machine-readable form.
-2. `POST /v1/signup` with `{ "workspace_name": "...", "email": "..." }` — returns an `fl_` API key immediately and emails a 6-digit code. The key is inert until verified.
+1. `GET /v1/capabilities` returns the API surface, formats, limits, and auth model (no auth). It includes an `onboarding` block describing these exact steps in machine-readable form.
+2. `POST /v1/signup` with `{ "workspace_name": "...", "email": "..." }` returns an `fl_` API key immediately and emails a 6-digit code. The key is inert until verified.
 3. Read the code from the inbox you signed up with (a programmatic inbox makes this hands-free), then `POST /v1/signup/verify` with `{ "email": "...", "otp_code": "123456" }`. The key works the moment this returns `200`; until then authed calls return `403 email_not_verified`.
-4. Send `Authorization: Bearer fl_...` and call `POST /v1/renders` (or `POST /v1/tasks/*`). Poll `GET /v1/renders/{id}` until `status` is terminal, then `GET /v1/renders/{id}/download`.
+4. Send `Authorization: Bearer fl_...` and call `POST /v1/renders` (or `POST /v1/tasks/*`). Wait with `GET /v1/renders/{id}?wait=25` until `status` is terminal, then `GET /v1/renders/{id}/download`.
 
-Free tier: 30 minutes of rendering per month (previews are free and never metered). Renders past the cap return `402 quota_exceeded`.
+The one thing an agent needs of its own is a readable inbox for the OTP (the AgentMail pattern). Everything up to holding a verified key is unauthenticated.
 
-## Docs
+## Quickstart
 
-- Full docs: https://docs.framelane.io/
-- Self-provisioning for agents: https://docs.framelane.io/introduction/self-provisioning
-- Quickstart: https://docs.framelane.io/introduction/quickstart
-- OpenAPI spec: https://api.framelane.io/openapi.json
-- Capabilities (machine-readable, no auth): https://api.framelane.io/v1/capabilities
-- MCP server (hosted, every endpoint as a tool): https://docs.framelane.io/mcp
+Render a clip with a title, pulling the source from a public URL:
+
+```bash
+curl -X POST https://api.framelane.io/v1/renders \
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1920, "height": 1080, "frame_rate": 30, "duration": 8,
+    "background_color": "#000000",
+    "ingest_external": true,
+    "elements": [
+      { "type": "video", "id": "bg", "source_url": "https://example.com/clip.mp4",
+        "in_point": 0, "out_point": 8 },
+      { "type": "text", "id": "title", "text": "Hello", "time": 1, "duration": 4,
+        "font_family": "Poppins", "font_size": 120, "x": "50%", "y": "50%",
+        "motion": [{ "type": "fade", "time": 1, "duration": 0.5 }] }
+    ]
+  }'
+# => { "id": "rnd_...", "status": "queued" }
+```
+
+Wait for it, then download:
+
+```bash
+curl "https://api.framelane.io/v1/renders/$ID?wait=25" \
+  -H "Authorization: Bearer $FRAMELANE_API_KEY"   # long-polls; re-call until "completed"
+curl -L "https://api.framelane.io/v1/renders/$ID/download" \
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" -o out.mp4
+```
+
+Official SDK (Node / TypeScript):
+
+```bash
+npm install framelane
+```
+```ts
+import { FrameLane } from "framelane";
+const client = new FrameLane({ apiKey: process.env.FRAMELANE_API_KEY });
+```
+
+Authenticated MCP action server (connect after you hold a key — Streamable HTTP, for Claude, Cursor, or any MCP host). Every tool needs your `fl_` key (or OAuth via Clerk):
+
+```json
+{
+  "mcpServers": {
+    "framelane": {
+      "url": "https://mcp.framelane.io/mcp",
+      "headers": { "Authorization": "Bearer <your-api-key>" }
+    }
+  }
+}
+```
+
+## Endpoints
+
+- `GET  /v1/capabilities`: discover effects, formats, fonts, and limits (no auth).
+- `POST /v1/signup`, `POST /v1/signup/verify`: self-provision and verify a key.
+- `POST /v1/preview`: free `dry_run` validation of a render request before you spend.
+- `POST /v1/renders`, `GET /v1/renders/{id}`, `GET /v1/renders/{id}/download`: submit, track, fetch.
+- `POST /v1/tasks/{transcribe,remove-background,super-resolution,gaze-redirect}`, `GET /v1/tasks/{id}`: async AI media jobs.
+- Any job accepts `?wait=25` to long-poll: one blocking call until the job is terminal (or ~25s, then re-call), instead of a poll loop.
+
+## The render request
+
+- Canvas: `width`, `height`, `frame_rate`, `background_color`, and optional `duration` (derived from the elements when omitted).
+- `elements[]`: each has a `type` of `video`, `audio`, `text`, or `image`, an `id`, timing (`time` + `duration`, or `in_point` + `out_point` for media), position (`x`, `y` as a `%` or px), size (`width`, `height`), and `z_index`. Stacking is by `z_index`; within the same z_index the earlier element in the array renders on top.
+- Visual elements carry `effects[]`, `motion[]`, color filters (brightness, contrast, saturation, blur, and more), `opacity`, borders, and shadows. Text adds `font_family`, `font_size`, `text_color`, `stroke_*`, `text_align`, and a background plate. A text element with `word_animation` becomes a caption track.
+- `transitions[]` blend between two elements (cross_dissolve, wipe, iris, page_turn, and more).
+- Set `ingest_external: true` and pass a public `source_url` to bring remote media; FrameLane copies it into your workspace server-side, so there is no separate upload step.
+- Output formats: `mp4`, `webm`, `mov`, `gif`, `png`, `jpg`. The full effect, motion, and transition catalog plus all limits are in `GET /v1/capabilities`.
+
+## AI tasks (async)
+
+Same submit, wait, download lifecycle as renders, at `POST /v1/tasks/{name}`:
+
+- `transcribe`: word-level transcript, the basis for auto-captions.
+- `remove-background`: matte a subject out of a clip.
+- `super-resolution`: upscale a video.
+- `gaze-redirect`: correct eyeline to camera.
+
+## Validate before you spend
+
+`POST /v1/preview` with `dry_run: true` returns violations without rendering. Treat any error-severity violation as blocking, or the submit is rejected. Previews are always free and never metered.
+
+## Common patterns
+
+- Captioned social clip: trim a segment, crop to 9:16, `transcribe`, and burn multi-style karaoke captions.
+- Layered composition: stack video, image, and text by `z_index`, add picture-in-picture overlays and blend modes.
+- Titles and motion graphics: fade, slide, zoom, and per-word text animation.
+- Format conversion and thumbnails: render a single frame to `png`/`jpg`, or transcode to `gif`/`webm`.
+- Batch: submit N renders or tasks in parallel and long-poll each to completion.
+
+## Pricing
+
+- Free: `$0`, 25 render-minutes per month. Previews are always free.
+- Pro: `$99` per month, 2,000 render-minutes, then `$0.08` per render-minute over the limit.
+- Enterprise: custom, unlimited render-minutes.
+
+All plans include the JSON editing API and the MCP server. The live quota is in `GET /v1/capabilities`; full pricing is at https://framelane.io/pricing.
+
+## Errors
+
+- `402 quota_exceeded`: render cap reached for the period (previews stay free).
+- `403 email_not_verified`: the key exists but signup is not verified yet.
+- `400` validation: the request failed a schema or invariant check; run `/v1/preview` first.
+- `429`: rate limited; back off and retry.
 
 ## Notes for agents
 
-- Bring remote media by public URL: set `ingest_external: true` on the render and pass the URL as an element `source_url`. FrameLane copies it into your workspace server-side — no separate upload step.
-- Wait for a job with `GET /v1/renders/{id}?wait=25` (same for `/v1/tasks/{id}`): it long-polls, blocking until the job is terminal (or ~25s, then returns the current status to re-call) — one call instead of a poll loop. Webhooks are optional and require a public receiver.
-- Validate for free before spending: `POST /v1/preview` with `dry_run: true` returns violations. Treat any error-severity violation as blocking — it will otherwise be rejected at submit.
+- Bring remote media by public URL: set `ingest_external: true` on the render and pass the URL as an element `source_url`. FrameLane copies it into your workspace server-side, no separate upload step.
+- Wait for a job with `GET /v1/renders/{id}?wait=25` (same for `/v1/tasks/{id}`): it long-polls, blocking until the job is terminal (or ~25s, then returns the current status to re-call). Webhooks are optional and require a public receiver.
+- Validate for free before spending: `POST /v1/preview` with `dry_run: true` returns violations. Treat any error-severity violation as blocking; it will otherwise be rejected at submit.
+
+## Copy into your agent's system prompt
+
+```
+You have access to the FrameLane API, a video editing and rendering API for AI agents.
+
+Use FrameLane when the user asks you to edit, trim, caption, composite, or render video.
+
+Base URL: https://api.framelane.io/v1
+
+Get a key with no human: POST /v1/signup {workspace_name, email} returns an fl_ key and emails a 6-digit code; read it from that inbox and POST /v1/signup/verify {email, otp_code}. The key is inert until verified (403 email_not_verified).
+
+Key endpoints:
+- GET  /v1/capabilities : discover effects, formats, and limits (no auth)
+- POST /v1/renders       : submit a render (a JSON timeline of elements)
+- GET  /v1/renders/:id   : poll status; then GET /v1/renders/:id/download
+- POST /v1/tasks/{transcribe,remove-background,super-resolution,gaze-redirect}
+- POST /v1/preview       : free dry_run validation before you spend
+
+Bring remote media by setting ingest_external: true and passing a public source_url.
+Wait with GET /v1/renders/:id?wait=25 until status is "completed" before returning the output URL.
+```
+
+## Links
+
+- Agent skill (self-contained, start here): https://framelane.io/skill.md
+- Raw docs as markdown: append `.md` to any docs.framelane.io page URL
+- Full docs: https://docs.framelane.io/
+- Self-provisioning for agents: https://docs.framelane.io/introduction/self-provisioning
+- Quickstart: https://docs.framelane.io/introduction/quickstart
+- API reference: https://docs.framelane.io/api-reference/introduction
+- OpenAPI spec: https://api.framelane.io/openapi.json
+- Capabilities (machine-readable, no auth): https://api.framelane.io/v1/capabilities
+- Action MCP server (authenticated, Streamable HTTP): https://mcp.framelane.io/mcp
+- SDKs: https://docs.framelane.io/sdks
+- Status: https://framelane.betteruptime.com/
+- GitHub: https://github.com/ITIShq
+- Discord: https://discord.gg/framelane

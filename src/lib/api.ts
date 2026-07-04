@@ -16,11 +16,30 @@ export interface WorkspaceUsage {
   period_end: string;
 }
 
+export interface RenderOutput {
+  /** CDN URL to the completed artifact (populated once status is `completed`). */
+  url?: string | null;
+  width?: number | null;
+  height?: number | null;
+  /** Output duration in seconds. */
+  duration?: number | null;
+  size_bytes?: number | null;
+}
+
 export interface Render {
   id: string;
-  status: "queued" | "processing" | "done" | "failed";
+  // Mirrors the API `JobStatus` (models/base.py). `done` kept for back-compat.
+  status:
+    | "ingesting"
+    | "queued"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "done";
   created_at: string;
   duration_ms?: number;
+  output?: RenderOutput | null;
 }
 
 export interface ApiKey {
