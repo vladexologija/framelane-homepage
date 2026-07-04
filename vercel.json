@@ -11,6 +11,16 @@
       "source": "/docs/:path*",
       "destination": "https://docs.framelane.io/:path*",
       "permanent": false
+    },
+    {
+      "source": "/skill.md",
+      "destination": "https://docs.framelane.io/skill.md",
+      "permanent": false
+    },
+    {
+      "source": "/agents",
+      "destination": "/",
+      "permanent": false
     }
   ],
   "headers": [

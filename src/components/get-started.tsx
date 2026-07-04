@@ -387,6 +387,27 @@ export function GetStarted() {
                 }}
               />
             </pre>
+            <div
+              className="mono"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderTop: "1px solid var(--line)",
+                background: "var(--bg-2)",
+                fontSize: 12,
+                color: "var(--fg-mute)",
+              }}
+            >
+              <span>Prefer MCP?</span>
+              <a
+                href={`${SITE.docsUrl}mcp/overview`}
+                style={{ color: "var(--orange)" }}
+              >
+                Connect your agent over MCP →
+              </a>
+            </div>
           </div>
         </div>
       </div>
