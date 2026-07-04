@@ -57,15 +57,14 @@ import { FrameLane } from "framelane";
 const client = new FrameLane({ apiKey: process.env.FRAMELANE_API_KEY });
 ```
 
-Hosted MCP server (every endpoint as a tool, for Claude, Cursor, or any MCP host):
+Authenticated MCP action server (connect after you hold a key — Streamable HTTP, for Claude, Cursor, or any MCP host). Every tool needs your `fl_` key (or OAuth via Clerk):
 
 ```json
 {
   "mcpServers": {
     "framelane": {
-      "command": "npx",
-      "args": ["-y", "@framelane/mcp-server"],
-      "env": { "FRAMELANE_API_KEY": "<your-api-key>" }
+      "url": "https://mcp.framelane.io/mcp",
+      "headers": { "Authorization": "Bearer <your-api-key>" }
     }
   }
 }
@@ -155,14 +154,15 @@ Wait with GET /v1/renders/:id?wait=25 until status is "completed" before returni
 
 ## Links
 
-- Agent skill (short-form usage, start here): https://docs.framelane.io/skill.md
+- Agent skill (self-contained, start here): https://framelane.io/skill.md
+- Raw docs as markdown: append `.md` to any docs.framelane.io page URL
 - Full docs: https://docs.framelane.io/
 - Self-provisioning for agents: https://docs.framelane.io/introduction/self-provisioning
 - Quickstart: https://docs.framelane.io/introduction/quickstart
 - API reference: https://docs.framelane.io/api-reference/introduction
 - OpenAPI spec: https://api.framelane.io/openapi.json
 - Capabilities (machine-readable, no auth): https://api.framelane.io/v1/capabilities
-- MCP server (hosted, every endpoint as a tool): https://docs.framelane.io/mcp
+- Action MCP server (authenticated, Streamable HTTP): https://mcp.framelane.io/mcp
 - SDKs: https://docs.framelane.io/sdks
 - Status: https://framelane.betteruptime.com/
 - GitHub: https://github.com/ITIShq
