@@ -13,11 +13,6 @@
       "permanent": false
     },
     {
-      "source": "/skill.md",
-      "destination": "https://docs.framelane.io/skill.md",
-      "permanent": false
-    },
-    {
       "source": "/agents",
       "destination": "/",
       "permanent": false
