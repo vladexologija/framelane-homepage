@@ -503,7 +503,7 @@ export function Hero() {
           >
             <span className="pill">
               <span className="dot" />
-              v0.1 · closed beta
+              v0.1 · public beta
             </span>
             <span className="eyebrow">Professional video production API for agents</span>
           </div>
@@ -523,7 +523,7 @@ export function Hero() {
 
           {/* Lede */}
           <p className="lede" style={{ marginTop: 18, maxWidth: "82ch" }}>
-            Your agent writes the edit plan. FrameLane renders the video.
+            Your agent writes the plan, previews the result, and renders the video.
             <br />
             Built with Rust. GPU native. Timeline as state.
             No React. No browser. No Lambda.

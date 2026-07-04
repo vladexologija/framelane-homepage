@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import { getRenders } from "@/lib/api";
 import { NoRenders } from "@/components/no-renders";
+import { RenderActions } from "./render-actions";
 
 export const metadata: Metadata = { title: "Renders — FrameLane Console" };
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
+    completed: { color: "var(--green)", bg: "rgba(123,224,170,0.1)" },
     done: { color: "var(--green)", bg: "rgba(123,224,170,0.1)" },
     processing: { color: "var(--orange)", bg: "rgba(255,122,26,0.1)" },
+    ingesting: { color: "var(--orange)", bg: "rgba(255,122,26,0.1)" },
     queued: { color: "var(--fg-mute)", bg: "rgba(255,255,255,0.04)" },
     failed: { color: "var(--red)", bg: "rgba(255,107,107,0.1)" },
+    cancelled: { color: "var(--fg-mute)", bg: "rgba(255,255,255,0.04)" },
   };
   const style = map[status] ?? { color: "var(--fg-mute)", bg: "rgba(255,255,255,0.04)" };
   return (
@@ -80,7 +84,7 @@ export default async function RendersPage({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "2fr 100px 120px 120px 80px",
+                gridTemplateColumns: "2fr 100px 110px 110px 130px",
                 gap: 16,
                 padding: "10px 20px",
                 background: "var(--bg-elev)",
@@ -103,7 +107,7 @@ export default async function RendersPage({
                 key={render.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "2fr 100px 120px 120px 80px",
+                  gridTemplateColumns: "2fr 100px 110px 110px 130px",
                   gap: 16,
                   alignItems: "center",
                   padding: "14px 20px",
@@ -117,22 +121,18 @@ export default async function RendersPage({
                 </span>
                 <StatusBadge status={render.status} />
                 <span style={{ fontSize: 13, color: "var(--fg-2)" }}>
-                  {render.duration_ms
-                    ? `${(render.duration_ms / 1000).toFixed(1)}s`
-                    : "—"}
+                  {render.output?.duration != null
+                    ? `${render.output.duration.toFixed(1)}s`
+                    : render.duration_ms
+                      ? `${(render.duration_ms / 1000).toFixed(1)}s`
+                      : "—"}
                 </span>
                 <span style={{ fontSize: 13, color: "var(--fg-2)" }}>
                   {new Date(render.created_at).toLocaleDateString()}
                 </span>
                 <span>
-                  {render.status === "done" && (
-                    <a
-                      href={`/api/renders/${render.id}/download`}
-                      style={{ fontSize: 12, color: "var(--orange)" }}
-                    >
-                      Download
-                    </a>
-                  )}
+                  {(render.status === "completed" || render.status === "done") &&
+                    render.output?.url && <RenderActions url={render.output.url} />}
                 </span>
               </div>
             ))}

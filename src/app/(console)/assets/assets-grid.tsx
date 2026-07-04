@@ -369,20 +369,36 @@ function AudioPreview({ src, title }: { src: string; title: string }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
 
+  // Play on hover/focus (mirrors the video preview). Some browsers gate
+  // audio-with-sound autoplay behind a gesture, so a click is kept as a reliable
+  // fallback that also toggles play/pause.
+  const play = () => {
+    ref.current?.play().catch(() => {
+      /* blocked until a gesture — clicking the tile will start it */
+    });
+  };
+  const stop = () => {
+    const el = ref.current;
+    if (el) {
+      el.pause();
+      el.currentTime = 0;
+    }
+  };
   const toggle = () => {
     const el = ref.current;
     if (!el) return;
-    if (el.paused) {
-      el.play().catch(() => setPlaying(false));
-    } else {
-      el.pause();
-    }
+    if (el.paused) el.play().catch(() => setPlaying(false));
+    else el.pause();
   };
 
   return (
     <button
       type="button"
       onClick={toggle}
+      onMouseEnter={play}
+      onMouseLeave={stop}
+      onFocus={play}
+      onBlur={stop}
       title={playing ? `Pause ${title}` : `Play ${title}`}
       aria-label={playing ? `Pause ${title}` : `Play ${title}`}
       style={{
