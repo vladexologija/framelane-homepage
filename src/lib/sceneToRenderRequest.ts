@@ -124,6 +124,14 @@ export const MOTION: Record<
   "loop-rotateSmooth": { type: "loop_rotate_smooth", reversed: false },
   "loop-3DSpin": { type: "loop_3d_spin", reversed: false },
   "loop-3DSway": { type: "loop_3d_sway", reversed: false },
+  // F2/F9 element preset pack (api/translation/maps.py). `out-*` are exit-only.
+  swingIn: { type: "swing_in", reversed: false },
+  "out-swingOut": { type: "swing_out", reversed: true },
+  elasticRise: { type: "elastic_rise", reversed: false },
+  "out-elasticDrop": { type: "elastic_drop", reversed: true },
+  tiltZoom: { type: "tilt_zoom", reversed: false },
+  "loop-orbit": { type: "loop_orbit", reversed: false },
+  smoothPop: { type: "smooth_pop", reversed: false },
   // Text glyph (per-character) animations. The API only supports these at
   // character scope (GLYPH_MOTION_MAP in api/translation/maps.py). All three ids
   // are text-only in the editor catalog, so they never collide with the element
@@ -133,6 +141,15 @@ export const MOTION: Record<
   bounce: { type: "bounce", reversed: false, scope: "character" },
   blur: { type: "blur", reversed: false, scope: "character" },
   evaporate: { type: "evaporate", reversed: true, scope: "character" },
+  // F1 text preset pack (per-glyph; GLYPH_MOTION_MAP). `out-*` are exit-only.
+  rubberIn: { type: "rubber_in", reversed: false, scope: "character" },
+  whipUp: { type: "whip_up", reversed: false, scope: "character" },
+  "out-whipDown": { type: "whip_down", reversed: true, scope: "character" },
+  glitchPop: { type: "glitch_pop", reversed: false, scope: "character" },
+  driftIn: { type: "drift_in", reversed: false, scope: "character" },
+  "out-driftOut": { type: "drift_out", reversed: true, scope: "character" },
+  "loop-breathe": { type: "loop_breathe", reversed: false, scope: "character" },
+  "loop-shimmer": { type: "loop_shimmer", reversed: false, scope: "character" },
 };
 
 interface RenderMotion {
@@ -274,6 +291,10 @@ export const EFFECT: Record<string, string> = {
   vignette_sepia: "sepia",
   dream_vision: "glow",
   ghost_dream: "echo",
+  // F6 colour-grade wave (editor kernel name == API EffectType).
+  duotone: "duotone",
+  cross_process: "cross_process",
+  bleach_bypass: "bleach_bypass",
 };
 
 const effectsField = (el: VideoElement): Record<string, unknown> => {
@@ -424,6 +445,22 @@ export const TRANSITION: Record<string, string> = {
   "diagonal-splice": "diagonal_wipe",
   "gradient-fade": "gradient_wipe",
   bullseye: "iris",
+  // F5 dual-build transitions (editor kebab kind -> API snake_case type).
+  swirl: "swirl",
+  "glitch-memories": "glitch_memories",
+  "window-slice": "window_slice",
+  cube: "cube",
+  doorway: "doorway",
+  pinwheel: "pinwheel",
+  "water-drop": "water_drop",
+  crosshatch: "crosshatch",
+  dreamy: "dreamy",
+  angular: "angular",
+  burn: "burn",
+  heart: "heart",
+  "circle-open": "circle_open",
+  "color-phase": "color_phase",
+  "squares-wire": "squares_wire",
 };
 
 export function sceneToRenderRequest(scene: Scene): RenderRequest {

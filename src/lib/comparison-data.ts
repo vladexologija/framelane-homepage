@@ -26,7 +26,8 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   { capability: "GPU shader effects", cells: [["yes", "40+"], ["limited", "EC2 GPU only, not Lambda"], ["no", "Presets, no GLSL"], ["no"]] },
   { capability: "AI background removal", cells: [["yes", "In pipeline"], ["no"], ["no", "Chromakey only"], ["no", "Separate"]] },
   { capability: "Gaze correction", cells: [["yes"], ["no"], ["no"], ["no"]] },
-  { capability: "Preview = render output", cells: [["yes", "WASM"], ["limited", "CSS/WebCodecs drift"], ["no", "Separate engine"], ["no"]] },
+  { capability: "Preview = render output", cells: [["yes", "WASM, free before render"], ["limited", "CSS/WebCodecs drift"], ["no", "Separate engine"], ["no"]] },
+  { capability: "Stateful projects (edit, don't re-render)", cells: [["yes", "Targeted ops + free validation"], ["no", "Regenerate each pass"], ["no", "Resubmit whole job"], ["no"]] },
   { capability: "MCP / agent native", cells: [["yes"], ["limited", "Docs MCP only"], ["yes"], ["no"]] },
   { capability: "4K + HDR output", cells: [["yes"], ["limited", "4K slow/costly, no HDR"], ["limited", "1080p SDR, 4K enterprise"], ["limited", "Manual"]] },
   { capability: "No browser required", cells: [["yes"], ["no", "Core architecture"], ["yes"], ["yes"]] },
@@ -109,7 +110,7 @@ export const REMOTION_OBJECTIONS: Objection[] = [
     quote:
       "Agents can write scripts and captions, but they cannot read or modify the edit, so every pass is a regeneration, not a refinement.",
     counter:
-      "FrameLane exposes the edit as a JSON timeline your agent reads and patches: tracks, clips, captions, timing.",
+      "FrameLane exposes the edit as a stateful JSON project your agent reads and patches with targeted ops: tracks, clips, captions, timing, validated for free before it renders.",
   },
   {
     tag: "Performance",

@@ -14,8 +14,8 @@ const STACK: [string, string][] = [
 const PIPELINE: { step: string; title: string; body: string }[] = [
   {
     step: "01",
-    title: "JSON timeline in",
-    body: "Your agent sends a JSON edit plan to the API. No React to bundle, no DSL to learn, describe the edit, send it.",
+    title: "Project edit in",
+    body: "Your agent applies a targeted edit to a project, validates it for free, and previews it cheaply before this render pipeline ever runs. No React to bundle, no DSL to learn, describe the edit, send it. (One-shot POST /v1/renders is the fast path for a whole timeline in one call.)",
   },
   {
     step: "02",
@@ -64,7 +64,9 @@ export function EngineDeepDive() {
               on <span style={{ color: "var(--fg)" }}>wgpu</span>. The same compositor compiles to a
               native <span style={{ color: "var(--fg)" }}>Vulkan</span> binary on GCP GPU instances
               and to <span style={{ color: "var(--fg)" }}>WebAssembly</span> on WebGPU for the
-              browser, so the preview you approve is the frame that renders.
+              browser, so the preview you approve is the frame that renders. Preview runs this same
+              engine, so it doubles as the free validate-before-you-pay step: edit and preview a
+              project as much as you want, and pay only for the final render once it is valid.
             </p>
 
             <div style={{ marginTop: 30, display: "flex", flexWrap: "wrap", gap: 8 }}>

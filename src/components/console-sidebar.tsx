@@ -8,9 +8,8 @@ import { SITE } from "@/lib/constants";
 import {
   LayoutDashboard,
   BarChart2,
-  Film,
+  Clapperboard,
   Library,
-  PlayCircle,
   Key,
   Webhook,
   CreditCard,
@@ -24,9 +23,8 @@ import {
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Usage", href: "/usage", icon: BarChart2 },
-  { label: "Renders", href: "/renders", icon: Film },
+  { label: "Projects", href: "/projects", icon: Clapperboard },
   { label: "Assets", href: "/assets", icon: Library },
-  { label: "Playground", href: "/playground", icon: PlayCircle },
   { label: "API Keys", href: "/api-keys", icon: Key },
   { label: "Webhooks", href: "/webhooks", icon: Webhook },
   { label: "Billing", href: "/billing", icon: CreditCard },

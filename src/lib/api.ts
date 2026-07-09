@@ -5,6 +5,26 @@ import { headers } from "next/headers";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.framelane.io";
 
+/**
+ * A non-2xx API response. Carries the numeric `status` so callers can branch on
+ * it (404, 409, ...) instead of string-matching the message. The message keeps
+ * the historical `API {status}: {body}` shape for back-compat.
+ *
+ * NB: this is server-side (`server-only`). A thrown ApiError does NOT reach the
+ * browser intact through a Server Action — Next.js redacts thrown action errors
+ * in production — so actions that need the client to see the status must CATCH
+ * it and RETURN a typed outcome (see app/(console)/projects/outcomes.ts).
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly body: string,
+  ) {
+    super(`API ${status}: ${body}`);
+    this.name = "ApiError";
+  }
+}
+
 // ---------- types ----------
 
 export interface WorkspaceUsage {
@@ -121,7 +141,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${text}`);
+    throw new ApiError(res.status, text);
   }
 
   // 204 No Content (e.g. DELETE /v1/api-keys/{id}) has an empty body —
@@ -237,5 +257,119 @@ export async function createRender(body: unknown) {
   return apiFetch<{ id: string; status: string }>("/v1/renders", {
     method: "POST",
     body: JSON.stringify(body),
+  });
+}
+
+// ---------- projects (create → edit → preview → render) ----------
+
+/** One element in a project's token-light summary (ProjectElementSummary). */
+export interface ProjectElementSummary {
+  id: string | null;
+  type: string;
+  time: number | null;
+  duration: number | null;
+  label: string | null;
+  source: string | null;
+}
+
+/** The always-present, render_request-free digest used for list cards. */
+export interface ProjectSummary {
+  width: number | null;
+  height: number | null;
+  duration: number | null;
+  frame_rate: number | null;
+  output_format: string | null;
+  element_count: number;
+  transition_count: number;
+  elements: ProjectElementSummary[];
+}
+
+/** A project (ProjectOut). `render_request` is only populated for view=full. */
+export interface Project {
+  id: string;
+  name: string;
+  version: number;
+  workspace_id: string;
+  created_at: string;
+  updated_at: string;
+  summary: ProjectSummary;
+  render_request?: unknown | null;
+}
+
+/** A validation finding that rides along with ops/preview responses. */
+export interface Violation {
+  code: string;
+  message: string;
+  severity: "error" | "warning";
+  path?: string | null;
+}
+
+/** Result of an ops batch (ApplyOpsResult). */
+export interface ApplyOpsResult {
+  version: number;
+  ok: boolean;
+  changed_ids: string[];
+  diff: {
+    added_ids: string[];
+    removed_ids: string[];
+    transitions_changed: boolean;
+  };
+  violations: Violation[];
+}
+
+/** List the workspace's projects (GET /v1/projects) — summaries only. */
+export async function getProjects() {
+  const raw = await apiFetch<PagedResponse<Project> | Project[]>(
+    "/v1/projects?limit=100",
+  );
+  return extractList<Project>(raw);
+}
+
+/** Fetch one project (GET /v1/projects/{id}). `full` populates render_request. */
+export async function getProject(id: string, view: "summary" | "full" = "full") {
+  return apiFetch<Project>(`/v1/projects/${id}?view=${view}`);
+}
+
+/** Create a project from a RenderRequest (or empty) — POST /v1/projects. */
+export async function createProject(body: {
+  name?: string;
+  render_request?: unknown;
+  author?: "user" | "agent";
+}) {
+  return apiFetch<Project>("/v1/projects", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Soft-delete a project (DELETE /v1/projects/{id}). */
+export async function deleteProject(id: string) {
+  return apiFetch<void>(`/v1/projects/${id}`, { method: "DELETE" });
+}
+
+/**
+ * Persist the whole composition as the project head via a single `replace_request`
+ * op (POST /v1/projects/{id}/ops). Pass `ifVersion` for optimistic concurrency —
+ * a stale version yields an API 409 (surfaced as an Error by apiFetch).
+ */
+export async function saveProject(
+  id: string,
+  renderRequest: unknown,
+  ifVersion?: number,
+) {
+  return apiFetch<ApplyOpsResult>(`/v1/projects/${id}/ops`, {
+    method: "POST",
+    body: JSON.stringify({
+      ops: [{ op: "replace_request", render_request: renderRequest }],
+      ...(ifVersion != null ? { if_version: ifVersion } : {}),
+      author: "user",
+    }),
+  });
+}
+
+/** Render the project's current head (POST /v1/projects/{id}/renders, empty body). */
+export async function createProjectRender(id: string) {
+  return apiFetch<{ id: string; status: string }>(`/v1/projects/${id}/renders`, {
+    method: "POST",
   });
 }

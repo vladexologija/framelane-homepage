@@ -3,6 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["10.0.32.61"],
   skipTrailingSlashRedirect: true, // keep PostHog's trailing-slash paths intact
+  async redirects() {
+    // The Renders list + Playground editor folded into Projects (projects →
+    // preview → render). Keep old bookmarks working.
+    return [
+      { source: "/renders", destination: "/projects", permanent: false },
+      { source: "/playground", destination: "/projects/sample", permanent: false },
+    ];
+  },
   async rewrites() {
     return [
       // PostHog reverse proxy (US cloud): same-origin /ingest avoids ad-blockers.

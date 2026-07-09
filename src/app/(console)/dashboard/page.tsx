@@ -196,7 +196,7 @@ export default async function DashboardPage() {
         >
           <h2 style={{ fontSize: 15, fontWeight: 500 }}>Recent renders</h2>
           <Link
-            href="/renders"
+            href="/projects"
             style={{ fontSize: 13, color: "var(--orange)" }}
           >
             View all →

@@ -20,10 +20,23 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Playground (embedded editor)
+## Projects console (embedded editor)
 
-The `/playground` console page embeds the **FrameTake editor** (canvas + timeline +
-inspector) for composing a scene in-memory and emitting a `POST /v1/renders` request.
+The console follows FrameLane's closed loop: create a project, apply targeted edits,
+validate and preview for free, and pay only for the final render once it is valid
+(projects, then preview, then render). The one-shot `POST /v1/renders` (a whole
+timeline in one call) stays available as a documented fast path.
+
+- `/projects` is the list: create, open, and delete projects, backed by the deployed
+  `/v1/projects` API.
+- `/projects/[id]` is the project editor (formerly the playground): the **FrameTake
+  editor** (canvas + timeline + inspector) with a right-side tabbed panel of "Render
+  body" and "Renders" alongside the editor's native element inspector.
+- `/projects/sample` is a reserved route that opens the editor with the default scene.
+  It is non-persisted and renders via `POST /v1/renders`.
+
+Real projects persist their edits with a `replace_request` op
+(`POST /v1/projects/{id}/ops`) and render via `POST /v1/projects/{id}/renders`.
 
 The editor lives in the sibling repo `../frametake-frontend` and ships as a prebuilt
 ES-module bundle (Turbopack can't consume its raw Vite source across the repo
@@ -38,12 +51,11 @@ Run this after pulling editor changes. Eventually this is replaced by an
 `@frametake/editor` npm dependency. Key pieces:
 
 - `src/components/frametake-editor-client.tsx` — client-only dynamic mount of the bundle.
-- `src/lib/sceneToRenderRequest.ts` — maps the editor `Scene` → the `POST /v1/renders` body.
-- `src/app/(console)/playground/` — the page (seeds the user's workspace uploads),
-  client (render-JSON panel + Render), and server actions (upload/render).
+- `src/lib/sceneToRenderRequest.ts` — maps the editor `Scene` → the render request body.
+- `src/app/(console)/projects/` — the list page plus `[id]` (the project editor: render-JSON panel + Renders) and server actions (upload/ops/render).
 - `src/lib/editor-types.ts` — the host's view of the editor's props (the bundle ships no `.d.ts`).
 
-Run `npm test` for the Playground unit/component tests.
+Run `npm test` for the projects console unit/component tests.
 
 ## Learn More
 

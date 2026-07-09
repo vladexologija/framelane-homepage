@@ -112,7 +112,6 @@ function PreviewModal({ url, onClose }: { url: string; onClose: () => void }) {
         >
           <X size={16} aria-hidden />
         </button>
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           src={url}
           controls

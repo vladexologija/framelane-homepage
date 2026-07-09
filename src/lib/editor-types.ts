@@ -72,6 +72,8 @@ export interface FrameTakeEditorProps {
   initialScene?: Scene;
   scene?: Scene;
   onSceneChange?: (scene: Scene) => void;
+  /** Fires when the focused element changes, with its id (or `null` on deselect). */
+  onSelect?: (focusedId: string | null) => void;
   onExport?: (scene: Scene) => void;
   media?: EditorMedia;
   features?: {

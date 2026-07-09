@@ -1,8 +1,10 @@
 # FrameLane
 
-> Video editing and rendering API built for AI agents. JSON in, video out. An agent discovers the API, provisions its own key, renders, and downloads, with no human, no browser, and no dashboard.
+> Video editing and rendering API built for AI agents. An agent discovers the API, provisions its own key, creates a project, edits it, previews cheaply, and renders when it's valid, with no human, no browser, and no dashboard.
 
 FrameLane turns a JSON timeline into a finished video on a managed GPU fleet. Submit a composition of video, audio, text, and image elements with effects, motion, and transitions, and get back an mp4 (or webm, mov, gif, png, jpg). Run AI media tasks (transcription, background removal, super-resolution, gaze redirect) as async jobs. There is no React to bundle, no headless browser, and no AWS to run: one authenticated call renders 4K in seconds.
+
+The recommended path is a closed loop: create a project, apply targeted edits, validate them for free, preview cheaply, and pay only for the final valid render, so changing one thing never means resubmitting and re-rendering the whole timeline. A single `POST /v1/renders` stays available as the fast path when you already have a complete timeline.
 
 Base URL: `https://api.framelane.io` (every endpoint lives under `/v1`).
 
@@ -11,7 +13,7 @@ Base URL: `https://api.framelane.io` (every endpoint lives under `/v1`).
 1. `GET /v1/capabilities` returns the API surface, formats, limits, and auth model (no auth). It includes an `onboarding` block describing these exact steps in machine-readable form.
 2. `POST /v1/signup` with `{ "workspace_name": "...", "email": "..." }` returns an `fl_` API key immediately and emails a 6-digit code. The key is inert until verified.
 3. Read the code from the inbox you signed up with (a programmatic inbox makes this hands-free), then `POST /v1/signup/verify` with `{ "email": "...", "otp_code": "123456" }`. The key works the moment this returns `200`; until then authed calls return `403 email_not_verified`.
-4. Send `Authorization: Bearer fl_...` and call `POST /v1/renders` (or `POST /v1/tasks/*`). Wait with `GET /v1/renders/{id}?wait=25` until `status` is terminal, then `GET /v1/renders/{id}/download`.
+4. Send `Authorization: Bearer fl_...`. Create a project with `POST /v1/projects`, edit it with `POST /v1/projects/{id}/ops`, preview it (free) with `POST /v1/projects/{id}/preview`, then render it with `POST /v1/projects/{id}/renders`. Wait with `GET /v1/renders/{id}?wait=25` until `status` is terminal, then `GET /v1/renders/{id}/download`. To render a complete timeline in one call instead, `POST /v1/renders` directly.
 
 The one thing an agent needs of its own is a readable inbox for the OTP (the AgentMail pattern). Everything up to holding a verified key is unauthenticated.
 
@@ -70,12 +72,23 @@ Authenticated MCP action server (connect after you hold a key — Streamable HTT
 }
 ```
 
+## Projects (iterate before you render)
+
+A project holds a composition as editable state, so you change one thing without resending the whole timeline:
+
+1. `POST /v1/projects` with `{ "name": "...", "render_request": { ... } }` (or an empty body) returns `{ "id": "proj_...", "version": 1, "summary": { ... } }`.
+2. `POST /v1/projects/{id}/ops` applies an atomic batch of edits addressed by element id, e.g. `{ "ops": [{ "op": "trim_element", "id": "bg", "out_point": 6 }], "if_version": 1 }`. It returns the new `version`, a `diff`, and `violations` (free validation). Pass `if_version` for optimistic concurrency (a stale version returns `409 conflict`). Ops include `shift_element`, `trim_element`, `swap_source`, `set_fields`, `add_element`, `remove_element`, `reorder`, transition ops, and `replace_request` to swap the whole composition.
+3. `POST /v1/projects/{id}/preview` returns a cheap, faithful preview (a frame, a window, or a composition-aware contact sheet); `dry_run: true` validates only, for free. Preview runs the same engine as the render, so what you preview is what renders.
+4. `POST /v1/projects/{id}/renders` renders the current head and returns a job you poll like any other render. You pay only for this step.
+
 ## Endpoints
 
 - `GET  /v1/capabilities`: discover effects, formats, fonts, and limits (no auth).
 - `POST /v1/signup`, `POST /v1/signup/verify`: self-provision and verify a key.
-- `POST /v1/preview`: free `dry_run` validation of a render request before you spend.
-- `POST /v1/renders`, `GET /v1/renders/{id}`, `GET /v1/renders/{id}/download`: submit, track, fetch.
+- `POST /v1/projects`, `GET /v1/projects`, `GET /v1/projects/{id}`, `DELETE /v1/projects/{id}`: create, list, read (`?view=full` for the composition), and delete projects.
+- `POST /v1/projects/{id}/ops`, `POST /v1/projects/{id}/preview`, `POST /v1/projects/{id}/renders`: edit, preview or validate, and render a project.
+- `POST /v1/preview`: preview or free `dry_run` validation of an inline render request before you spend.
+- `POST /v1/renders`, `GET /v1/renders/{id}`, `GET /v1/renders/{id}/download`: submit a whole timeline, track, fetch.
 - `POST /v1/tasks/{transcribe,remove-background,super-resolution,gaze-redirect}`, `GET /v1/tasks/{id}`: async AI media jobs.
 - Any job accepts `?wait=25` to long-poll: one blocking call until the job is terminal (or ~25s, then re-call), instead of a poll loop.
 
@@ -97,12 +110,13 @@ Same submit, wait, download lifecycle as renders, at `POST /v1/tasks/{name}`:
 - `super-resolution`: upscale a video.
 - `gaze-redirect`: correct eyeline to camera.
 
-## Validate before you spend
+## Preview cheaply before you render
 
-`POST /v1/preview` with `dry_run: true` returns violations without rendering. Treat any error-severity violation as blocking, or the submit is rejected. Previews are always free and never metered.
+Iterating is free, and only the final render costs: edits and validation are free and previews are cheap. `POST /v1/projects/{id}/preview` (or `POST /v1/preview` for an inline request) returns a faithful preview from the same engine that renders; add `dry_run: true` for validation only, which returns violations without rendering. Treat any error-severity violation as blocking, or the submit is rejected.
 
 ## Common patterns
 
+- Iterate on a project: create a project, apply one targeted op (trim, shift, swap a source, retime a caption), read the `violations`, preview, and render only when it's valid. No full resubmit to change one field.
 - Captioned social clip: trim a segment, crop to 9:16, `transcribe`, and burn multi-style karaoke captions.
 - Layered composition: stack video, image, and text by `z_index`, add picture-in-picture overlays and blend modes.
 - Titles and motion graphics: fade, slide, zoom, and per-word text animation.
@@ -128,7 +142,8 @@ All plans include the JSON editing API and the MCP server. The live quota is in 
 
 - Bring remote media by public URL: set `ingest_external: true` on the render and pass the URL as an element `source_url`. FrameLane copies it into your workspace server-side, no separate upload step.
 - Wait for a job with `GET /v1/renders/{id}?wait=25` (same for `/v1/tasks/{id}`): it long-polls, blocking until the job is terminal (or ~25s, then returns the current status to re-call). Webhooks are optional and require a public receiver.
-- Validate for free before spending: `POST /v1/preview` with `dry_run: true` returns violations. Treat any error-severity violation as blocking; it will otherwise be rejected at submit.
+- Validate for free before spending: `POST /v1/projects/{id}/preview` (or `POST /v1/preview`) with `dry_run: true` returns violations. Treat any error-severity violation as blocking; it will otherwise be rejected at submit.
+- To change a rendered video, don't re-render from scratch: keep it as a project and apply a targeted op with `POST /v1/projects/{id}/ops`, then preview and render again. Ops responses carry `violations`, so you edit and validate in one call.
 
 ## Copy into your agent's system prompt
 
@@ -141,15 +156,21 @@ Base URL: https://api.framelane.io/v1
 
 Get a key with no human: POST /v1/signup {workspace_name, email} returns an fl_ key and emails a 6-digit code; read it from that inbox and POST /v1/signup/verify {email, otp_code}. The key is inert until verified (403 email_not_verified).
 
+Work in a loop of projects, preview, then render. Iterating is free; only the final render costs.
+
 Key endpoints:
-- GET  /v1/capabilities : discover effects, formats, and limits (no auth)
-- POST /v1/renders       : submit a render (a JSON timeline of elements)
-- GET  /v1/renders/:id   : poll status; then GET /v1/renders/:id/download
+- GET  /v1/capabilities  : discover effects, formats, and limits (no auth)
+- POST /v1/projects       : create a project (name + render_request, or empty)
+- POST /v1/projects/:id/ops     : apply targeted edits (returns version, diff, violations)
+- POST /v1/projects/:id/preview : preview, or dry_run: true to validate for free
+- POST /v1/projects/:id/renders : render the current head; poll like any render
+- POST /v1/renders        : one-shot, submit a whole timeline of elements
+- GET  /v1/renders/:id    : poll status; then GET /v1/renders/:id/download
 - POST /v1/tasks/{transcribe,remove-background,super-resolution,gaze-redirect}
-- POST /v1/preview       : free dry_run validation before you spend
 
 Bring remote media by setting ingest_external: true and passing a public source_url.
 Wait with GET /v1/renders/:id?wait=25 until status is "completed" before returning the output URL.
+To change a video, edit the project with an op and re-preview; don't re-render from scratch.
 ```
 
 ## Links

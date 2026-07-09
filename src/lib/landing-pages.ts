@@ -89,6 +89,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
       "programmatic video without React",
       "GPU video rendering API",
       "video API for AI agents",
+      "stateful video project API",
     ],
     eyebrow: "FrameLane vs Remotion",
     h1: "The Remotion alternative",
@@ -114,7 +115,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         bullets: [
           "Preview is the render engine, in WASM",
           "The agent sees the true frame",
-          "Close the loop before a full render",
+          "Validate for free, render only when valid",
         ],
       },
       {
@@ -200,6 +201,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
       "GPU shader effects",
       "4K + HDR output",
       "Preview = render output",
+      "Stateful projects (edit, don't re-render)",
       "Timeline editing",
       "MCP / agent native",
       "Built with",
@@ -249,7 +251,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
         bullets: [
           "Preview is the render engine, in WASM",
           "The agent sees the true frame",
-          "Check before a full render",
+          "Validate for free, render only when valid",
         ],
       },
       {
@@ -316,6 +318,7 @@ export const COMPARE_PAGES: LandingPageContent[] = [
       "Timeline editing",
       "GPU shader effects",
       "Preview = render output",
+      "Stateful projects (edit, don't re-render)",
       "MCP / agent native",
       "Built with",
     ],

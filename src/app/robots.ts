@@ -10,8 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         "/dashboard",
         "/usage",
-        "/renders",
-        "/playground",
+        "/projects",
         "/api-keys",
         "/webhooks",
         "/billing",

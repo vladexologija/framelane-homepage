@@ -19,7 +19,7 @@ const WORKFLOWS = [
     icon: "⊞",
     title: "Video-ad generation agents",
     desc: "Generate high-volume product, UGC, and paid-social video variants from structured inputs.",
-    tags: ["text overlays", "layouts", "transitions", "audio mix", "render"],
+    tags: ["text overlays", "layouts", "transitions", "audio mix", "preview", "render"],
   },
   {
     icon: "◰",
@@ -31,7 +31,7 @@ const WORKFLOWS = [
     icon: "⇄",
     title: "Localization pipelines",
     desc: "Swap audio tracks, burn translated subtitles, adjust layouts, and render per-locale variants.",
-    tags: ["multi-audio", "TTS dub", "caption burn", "match render"],
+    tags: ["multi-audio", "TTS dub", "caption burn", "iterate", "match render"],
   },
   {
     icon: "↑",
@@ -167,7 +167,7 @@ export function Workflows() {
           </h2>
           <p className="lede" style={{ marginTop: 24 }}>
             From content pipelines to localization workflows, FrameLane enables
-            any agent to produce and deliver video.
+            any agent to produce, preview, and deliver video.
           </p>
         </div>
 

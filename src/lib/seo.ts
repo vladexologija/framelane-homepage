@@ -13,7 +13,7 @@ export const SITE_URL = (
 export const DEFAULT_TITLE = "FrameLane: Video Editing & Rendering API for AI Agents";
 
 export const DEFAULT_DESCRIPTION =
-  "FrameLane is a GPU-native video editing and rendering API for AI agents. Your agent writes the edit plan in JSON; FrameLane renders production-ready video through a single API call or MCP.";
+  "FrameLane is a GPU-native video editing and rendering API for AI agents. Your agent edits a project in JSON, previews it cheaply, and renders production-ready video only when it's valid, through the API or MCP.";
 
 /**
  * Default social-card image (relative; resolved against metadataBase). Repeated

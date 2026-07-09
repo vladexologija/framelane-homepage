@@ -408,11 +408,11 @@ function EngineDiagram({
           IN
         </span>
         <span className="mono" style={{ fontSize: 12, color: "var(--fg-2)" }}>
-          render_job.json
+          project + ops
         </span>
         <span style={{ flex: 1 }} />
         <span className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>
-          {`{ elements, duration, format }`}
+          {`{ edit → validate → preview }`}
         </span>
       </div>
 
@@ -565,7 +565,7 @@ export function HowItWorks() {
                 [
                   ["Rust",   "memory-safe core"],
                   ["wgpu",   "GPU abstraction"],
-                  ["WebGPU", "in-browser preview"],
+                  ["WebGPU", "cheap validate + preview"],
                   ["Vulkan", "Linux / GCP"],
                 ] as [string, string][]
               ).map(([name, sub]) => (
@@ -596,8 +596,10 @@ export function HowItWorks() {
             <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 "GPU-accelerated effects on every platform",
-                "Fragment shaders with parallel control over every pixel",
+                "Preview runs the same engine as the final render",
+                "Edit, validate, and preview for free; pay only for a valid render",
                 'No "looked fine in the browser" surprises',
+                'Embed a WebGPU based video editor inside your application'
               ].map((b) => (
                 <div key={b} style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <span style={{ width: 16, height: 1, background: "var(--orange)", flexShrink: 0 }} />

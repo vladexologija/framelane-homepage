@@ -21,3 +21,15 @@ const FrameTakeEditor = dynamic(
 export function FrametakeEditorClient(props: FrameTakeEditorProps) {
   return <FrameTakeEditor renderer="wasm-gpu" {...props} />;
 }
+
+// The editor's prop-less element inspector, exported standalone so the console can
+// host it as its own panel/tab. It reads the live selection from the editor's
+// store, so it only works when rendered INSIDE a `<FrametakeEditorClient>` subtree
+// (e.g. via the `asideHeader` slot). Client-only, same as the editor.
+export const FrametakeInspector = dynamic(
+  async () => {
+    const m = await import("../../vendor/frametake-editor/index.js");
+    return m.Inspector as unknown as ComponentType;
+  },
+  { ssr: false },
+);

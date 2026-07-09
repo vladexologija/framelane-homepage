@@ -152,7 +152,7 @@ const CAPS: Cap[] = [
           type: "text",
           text: "Hello world",
           word_animation: {
-            style: "karaoke",
+            style: "box",
             words: [
               { text: "Hello", start: 0.0, end: 0.5 },
               { text: "world", start: 0.5, end: 1.0 },
@@ -166,7 +166,7 @@ const CAPS: Cap[] = [
         on: "text element",
         example: {
           word_animation: {
-            style: "box_highlight",
+            style: "scale_pop",
             words: [{ text: "Hello", start: 0.0, end: 0.4 }],
           },
         },
@@ -185,15 +185,15 @@ const CAPS: Cap[] = [
       },
       {
         label: "Letter spacing",
-        param: "tracking",
+        param: "letter_spacing",
         on: "text element",
-        example: { tracking: 2 },
+        example: { letter_spacing: 2 },
       },
       {
         label: "Line height",
-        param: "leading",
+        param: "line_height",
         on: "text element",
-        example: { leading: 1.5 },
+        example: { line_height: 1.5 },
       },
       {
         label: "Text shadow",
@@ -202,10 +202,10 @@ const CAPS: Cap[] = [
         example: { shadow_color: "#00000088", shadow_blur: 8, shadow_x: 4, shadow_y: 4 },
       },
       {
-        label: "Stroke",
-        param: "stroke_color / stroke_width",
+        label: "Text alignment",
+        param: "text_align",
         on: "text element",
-        example: { stroke_color: "#ffffff", stroke_width: 2 },
+        example: { text_align: "center" },
       },
       {
         label: "Text motion",
@@ -222,20 +222,18 @@ const CAPS: Cap[] = [
         },
       },
       {
-        label: "Auto-wrap",
-        param: "text_wrap",
+        label: "Italic",
+        param: "font_style",
         on: "text element",
-        example: { text_wrap: "wrap" },
+        example: { font_style: "italic" },
       },
       {
         label: "Box highlight",
-        param: "word_animation.style: box_highlight",
+        param: "word_animation.style: box",
         on: "text element",
         example: {
           text_color: "#ffffff",
-          background_color: "#8B2FC9",
-          text_effect: "normal",
-          word_animation: { style: "box_highlight", words: [{ text: "word", start: 0, end: 0.5 }] },
+          word_animation: { style: "box", words: [{ text: "word", start: 0, end: 0.5 }] },
         },
       },
     ],
@@ -353,7 +351,7 @@ const CAPS: Cap[] = [
             {
               type: "chroma_key",
               intensity: 100,
-              chroma_props: {
+              chroma_settings: {
                 hue_min: 90,
                 hue_max: 150,
                 sat_min: 0.3,
@@ -411,9 +409,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Film grain",
-        param: "effects[].type: film_grain",
+        param: "effects[].type: add_grain",
         on: "video | image element",
-        example: { effects: [{ type: "film_grain", intensity: 50 }] },
+        example: { effects: [{ type: "add_grain", intensity: 50 }] },
       },
       {
         label: "Invert",
@@ -441,9 +439,9 @@ const CAPS: Cap[] = [
       },
       {
         label: "Bokeh blur",
-        param: "effects[].type: bokeh_blur",
+        param: "effects[].type: camera_lens_blur",
         on: "video | image element",
-        example: { effects: [{ type: "bokeh_blur", intensity: 60 }] },
+        example: { effects: [{ type: "camera_lens_blur", intensity: 60 }] },
       },
       {
         label: "Lens flare",
@@ -452,10 +450,10 @@ const CAPS: Cap[] = [
         example: { effects: [{ type: "lens_flare", intensity: 70 }] },
       },
       {
-        label: "Fisheye",
-        param: "effects[].type: fisheye",
+        label: "VHS",
+        param: "effects[].type: vhs",
         on: "video | image element",
-        example: { effects: [{ type: "fisheye", intensity: 60 }] },
+        example: { effects: [{ type: "vhs", intensity: 60 }] },
       },
       {
         label: "Chromatic aberration",
@@ -465,15 +463,15 @@ const CAPS: Cap[] = [
       },
       {
         label: "Halftone",
-        param: "effects[].type: halftone",
+        param: "effects[].type: cc_halftone",
         on: "video | image element",
-        example: { effects: [{ type: "halftone", intensity: 50 }] },
+        example: { effects: [{ type: "cc_halftone", intensity: 50 }] },
       },
       {
         label: "Pixelate",
-        param: "effects[].type: pixelate",
+        param: "effects[].type: mosaic",
         on: "video | image element",
-        example: { effects: [{ type: "pixelate", intensity: 50 }] },
+        example: { effects: [{ type: "mosaic", intensity: 50 }] },
       },
       {
         label: "Fade",
@@ -507,34 +505,34 @@ const CAPS: Cap[] = [
         },
       },
       {
-        label: "Slide",
-        param: "transitions[].type: sliding_door_horizontal",
+        label: "Barn doors",
+        param: "transitions[].type: barn_doors_horizontal",
         on: "render request",
-        example: { transitions: [{ type: "sliding_door_horizontal", duration: 0.4 }] },
+        example: { transitions: [{ type: "barn_doors_horizontal", duration: 0.4 }] },
       },
       {
         label: "Zoom",
-        param: "transitions[].type: zoom",
+        param: "transitions[].type: cross_zoom",
         on: "render request",
-        example: { transitions: [{ type: "zoom", duration: 0.4 }] },
+        example: { transitions: [{ type: "cross_zoom", duration: 0.4 }] },
       },
       {
-        label: "Spin",
-        param: "transitions[].type: rotate",
+        label: "Pinwheel",
+        param: "transitions[].type: pinwheel",
         on: "render request",
-        example: { transitions: [{ type: "rotate", duration: 0.5 }] },
+        example: { transitions: [{ type: "pinwheel", duration: 0.5 }] },
       },
       {
-        label: "Page flip",
-        param: "transitions[].type: page_flip",
+        label: "Page turn",
+        param: "transitions[].type: page_turn",
         on: "render request",
-        example: { transitions: [{ type: "page_flip", duration: 0.6 }] },
+        example: { transitions: [{ type: "page_turn", duration: 0.6 }] },
       },
       {
-        label: "Ripple",
-        param: "transitions[].type: ripple",
+        label: "Water drop",
+        param: "transitions[].type: water_drop",
         on: "render request",
-        example: { transitions: [{ type: "ripple", duration: 0.5 }] },
+        example: { transitions: [{ type: "water_drop", duration: 0.5 }] },
       },
     ],
   },
@@ -668,8 +666,14 @@ const CAPS: Cap[] = [
     key: "preview",
     label: "Render & preview",
     icon: "▶",
-    desc: "Export production-ready video in multiple formats, resolutions, and delivery modes.  Preview via WASM",
+    desc: "Preview runs the same engine as the final render, so what you preview is what renders. Iterate for free (dry_run validates with no cost), then pay only for the valid final render in production formats, resolutions, and delivery modes.",
     pills: [
+      {
+        label: "Free preview / validate",
+        param: "POST /v1/projects/{id}/preview",
+        on: "project (dry_run: true validates for free)",
+        example: { dry_run: true },
+      },
       {
         label: "MP4 export",
         param: "output_format: mp4",
@@ -724,12 +728,32 @@ const CAPS: Cap[] = [
     key: "delivery",
     label: "Delivery & webhooks",
     icon: "↑",
-    desc: "Submit jobs, track progress, receive completion events, and retrieve final output URLs through a simple event model.",
+    desc: "Run the project lifecycle (create, apply targeted edits, validate, preview, render), track progress, receive completion events, and retrieve final output URLs through a simple event model.",
     pills: [
       {
-        label: "REST API",
+        label: "Projects lifecycle",
+        param: "POST /v1/projects",
+        note: "Create a project, then apply edits and preview against it",
+      },
+      {
+        label: "Targeted edits",
+        param: "POST /v1/projects/{id}/ops",
+        note: "Apply edits; returns violations = free validation",
+      },
+      {
+        label: "Preview",
+        param: "POST /v1/projects/{id}/preview",
+        note: "dry_run: true validates for free before you pay",
+      },
+      {
+        label: "Render project",
+        param: "POST /v1/projects/{id}/renders",
+        note: "Bill the final render once the project is valid",
+      },
+      {
+        label: "One-shot render",
         param: "POST /v1/renders",
-        note: "All operations via standard HTTP + JSON",
+        note: "Fast path: a whole timeline in one call",
       },
       {
         label: "MCP",
@@ -738,8 +762,8 @@ const CAPS: Cap[] = [
       },
       {
         label: "NPM",
-        param: "@framelane/sdk",
-        note: "Official TypeScript/Node.js SDK",
+        param: "framelane",
+        note: "Official TypeScript/Node.js SDK (npm i framelane)",
       },
       {
         label: "Webhook",

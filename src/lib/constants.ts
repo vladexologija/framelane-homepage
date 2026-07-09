@@ -2,7 +2,7 @@ export const SITE = {
   name: "FrameLane",
   tagline: "Give your AI agent a video editor",
   description:
-    "FrameLane lets agents turn raw footage into finished videos. Create edit plans, preview frames, and render production-ready output through API or MCP.",
+    "FrameLane lets agents turn raw footage into finished videos. Edit a project, preview it cheaply, and render production-ready output only when it's valid, through API or MCP.",
   docsUrl: "https://docs.framelane.io/",
   statusUrl: "https://framelane.betteruptime.com/",
   consoleUrl: process.env.NEXT_PUBLIC_CONSOLE_URL ?? "/signup",

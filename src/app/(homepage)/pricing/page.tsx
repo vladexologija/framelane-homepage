@@ -5,7 +5,7 @@ import { SITE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Pricing — FrameLane",
   description:
-    "Simple, predictable pricing based on rendered minutes, concurrent slots, and storage.",
+    "Simple, predictable pricing: editing, validation and previews are free, and you pay only for the minutes you render.",
 };
 
 interface Tier {
@@ -32,9 +32,10 @@ const tiers: Tier[] = [
       "25 render-minutes / month",
       "1080p output",
       "Watermarked exports",
+      "CPU rendering",
+      "1 concurrent render",
       "JSON-based editing API",
       "MCP server included",
-      "CPU rendering",
     ],
     cta: "Start for free",
     href: SITE.consoleUrl,
@@ -49,11 +50,11 @@ const tiers: Tier[] = [
       "2,000 render-minutes / month",
       "4K output",
       "No watermark",
+      "GPU rendering on every job",
       "JSON-based editing API",
       "MCP server included",
       "Background removal",
       "Gaze correction",
-      "GPU rendering on every job",
       "Email support",
     ],
     cta: "Start for free",
@@ -69,7 +70,7 @@ const tiers: Tier[] = [
     features: [
       "Unlimited render-minutes",
       "8K output",
-      "Dedicated GPU instance",
+      "Dedicated GPU instance (no shared queue, no concurrency cap)",
       "Custom overage rate",
       "SLA guarantee",
       "Priority render queue",
@@ -150,7 +151,9 @@ export default function PricingPage() {
               </span>
             </h1>
             <p className="lede" style={{ marginTop: 22 }}>
-              Scale up or down at any time. No seat fees, no surprises.
+              Editing a project, validating it, and previewing are free, so you
+              only pay to render. Scale up or down at any time. No seat fees, no
+              surprises.
             </p>
           </div>
 
@@ -337,8 +340,10 @@ export default function PricingPage() {
               lineHeight: 1.6,
             }}
           >
-            All plans include the JSON-based editing API and MCP server. Pro
-            overages billed at $0.08 / render-minute.{" "}
+            All plans include the JSON-based editing API and MCP server.
+            Projects, edits, validation and previews are always free; you are
+            billed only for the final render. Pro overages billed at $0.08 /
+            render-minute.{" "}
           </p>
 
           {/* FAQ teaser */}
@@ -379,12 +384,16 @@ export default function PricingPage() {
             <div style={{ borderTop: "1px solid var(--line)" }}>
               {[
                 {
+                  q: "Do edits, validation, and previews cost anything?",
+                  a: "No. Creating projects, applying edits, validating them, and previewing are always free. You are billed only for the final render, so iterating never costs.",
+                },
+                {
                   q: "What counts as a rendered minute?",
                   a: "One rendered minute equals one minute of output video produced. A 30-second clip counts as 0.5 rendered minutes regardless of source length or complexity.",
                 },
                 {
                   q: "What happens if I exceed my plan limits?",
-                  a: "Overages are billed automatically at $0.04 per rendered minute (1080p). You can set a monthly cap in your dashboard to avoid surprises.",
+                  a: "Overages are billed automatically at $0.08 per render-minute. You can set a monthly cap in your dashboard to avoid surprises.",
                 },
                 {
                   q: "Can I change plans at any time?",

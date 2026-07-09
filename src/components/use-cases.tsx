@@ -55,7 +55,7 @@ const USE_CASES = [
       "Difference blend",
       "4K export",
     ],
-    desc: "Stack video layers with effects, add a picture-in-picture overlay, and sequence text with blend and dissolve motion — one render job.",
+    desc: "Stack video layers with effects, add a picture-in-picture overlay, and sequence text with blend and dissolve motion, all in one project you edit, preview, then render.",
     videoUrl: "https://cdn-user.framelane.io/render/2b8b409a-b706-4f5a-a2b0-caf391740eae.mp4",
     aspectRatio: "16 / 9",
   },
@@ -73,7 +73,7 @@ const USE_CASES = [
       "Multi-style lines",
       "1080×1920 vertical",
     ],
-    desc: "Word-timed karaoke captions on a vertical clip — opening title, sequential caption lines, and multiple highlight styles in one render job.",
+    desc: "Word-timed karaoke captions on a vertical clip: opening title, sequential caption lines, and multiple highlight styles in one project you edit, preview, then render.",
     videoUrl:
       "https://cdn-user.framelane.io/render/90860287-1407-4090-a025-120cb3b02180.mp4",
     aspectRatio: "9 / 16",
@@ -92,7 +92,7 @@ const USE_CASES = [
       "Logo sting",
       "4K export",
     ],
-    desc: "Giant title text sits behind a cutout speaker, karaoke captions float on top, and a logo sting opens the clip — one render job.",
+    desc: "Giant title text sits behind a cutout speaker, karaoke captions float on top, and a logo sting opens the clip, all in one project you edit, preview, then render.",
     videoUrl: "https://cdn-user.framelane.io/render/029302df-94be-4b1d-a60f-604342794d87.mp4",
     aspectRatio: "16 / 9",
   },
@@ -179,7 +179,7 @@ function VideoPreview({
         }}
       >
         <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>
-          job_01HX5DG
+          proj_01HX5DG
         </span>
         <span className="mono" style={{ fontSize: 11, color: "var(--green)" }}>
           done ●  total 18.2s
@@ -208,8 +208,8 @@ export function UseCases() {
             </span>
           </h2>
           <p className="lede" style={{ marginTop: 24 }}>
-            Start with real footage. Let your agent define the edit. FrameLane
-            renders the final video.
+            Start with real footage. Let your agent edit and preview a project.
+            FrameLane renders the final video.
           </p>
         </div>
 

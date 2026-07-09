@@ -41,13 +41,84 @@ export const WORD_ANIMATION_STYLES = [
  *  default in the preview, though it still renders server-side. Regenerate when the
  *  editor's font faces change (scripts/sync-editor.sh). */
 export const PREVIEW_FONTS: ReadonlySet<string> = new Set([
-  // bundled faces (initWithBundledFonts)
-  "Inter", "Montserrat", "Roboto", "IBM Plex Mono",
-  // FONT_ASSET_FACES (gstatic TTFs fetched into scene.font_assets)
-  "IBM Plex Sans", "Poppins", "Open Sans", "Oswald", "Bebas Neue", "Anton",
-  "Archivo Black", "Alfa Slab One", "Lemon", "Playfair Display", "Merriweather",
-  "Lora", "Lobster", "Pacifico", "Caveat", "Dancing Script", "Bangers",
-  "Permanent Marker", "Roboto Mono", "JetBrains Mono",
+  // Bundled + hand-curated faces, plus the generated popular Google set that
+  // engine/renderer/wasm-gpu/googleFontFaces.ts registers (regenerate via
+  // scripts/sync-editor.sh when the editor's face map changes).
+  "ABeeZee", "Abel", "Abril Fatface", "Acme",
+  "Actor", "Advent Pro", "Alata", "Albert Sans",
+  "Alegreya", "Alegreya Sans", "Aleo", "Alexandria",
+  "Alfa Slab One", "Allura", "Almarai", "Alumni Sans",
+  "Amaranth", "Amatic SC", "Amiri", "Anek Telugu",
+  "Angkor", "Antic Slab", "Anton", "Antonio",
+  "Archivo", "Archivo Black", "Archivo Narrow", "Arimo",
+  "Arvo", "Asap", "Asap Condensed", "Assistant",
+  "Atkinson Hyperlegible", "BIZ UDPGothic", "Baloo 2", "Bangers",
+  "Barlow", "Barlow Condensed", "Barlow Semi Condensed", "Baskervville",
+  "Be Vietnam Pro", "Bebas Neue", "Berkshire Swash", "Bitter",
+  "Black Ops One", "Blinker", "Bodoni Moda", "Bree Serif",
+  "Bungee", "Cabin", "Cairo", "Cantarell",
+  "Cardo", "Catamaran", "Caveat", "Chakra Petch",
+  "Changa", "Changa One", "Chango", "Chelsea Market",
+  "Chivo", "Cinzel", "Comfortaa", "Comic Neue",
+  "Commissioner", "Cookie", "Cormorant", "Cormorant Garamond",
+  "Courgette", "Courier Prime", "Creepster", "Crete Round",
+  "Crimson Pro", "Crimson Text", "DM Mono", "DM Sans",
+  "DM Serif Display", "DM Serif Text", "Dancing Script", "Didact Gothic",
+  "Domine", "Dosis", "EB Garamond", "Encode Sans",
+  "Epilogue", "Exo", "Exo 2", "Figtree",
+  "Fira Code", "Fira Sans", "Fira Sans Condensed", "Fjalla One",
+  "Francois One", "Frank Ruhl Libre", "Fraunces", "Fredoka",
+  "Fugaz One", "Gelasio", "Geologica", "Gilda Display",
+  "Golos Text", "Gothic A1", "Gravitas One", "Great Vibes",
+  "Gruppo", "Hammersmith One", "Hanken Grotesk", "Heebo",
+  "Hind", "Hind Madurai", "Hind Siliguri", "IBM Plex Mono",
+  "IBM Plex Sans", "IBM Plex Sans Arabic", "IBM Plex Sans Condensed", "IBM Plex Serif",
+  "Inconsolata", "Indie Flower", "Instrument Sans", "Instrument Serif",
+  "Inter", "Inter Tight", "JetBrains Mono", "Josefin Sans",
+  "Jost", "Kalam", "Kanit", "Karla",
+  "Kaushan Script", "Khand", "Kosugi Maru", "Kumbh Sans",
+  "Lato", "League Gothic", "League Spartan", "Lemon",
+  "Lexend", "Lexend Deca", "Lexend Giga", "Libre Barcode 39",
+  "Libre Baskerville", "Libre Caslon Text", "Libre Franklin", "Lilita One",
+  "Literata", "Lobster", "Lobster Two", "Lora",
+  "Luckiest Guy", "M PLUS 1p", "M PLUS Rounded 1c", "Manrope",
+  "Marcellus", "Martel", "Material Symbols Outlined", "Material Symbols Rounded",
+  "Material Symbols Sharp", "Maven Pro", "Merriweather", "Merriweather Sans",
+  "Monda", "Montserrat", "Montserrat Alternates", "Mukta",
+  "Mulish", "Nanum Gothic", "Nanum Gothic Coding", "Nanum Myeongjo",
+  "Neuton", "News Cycle", "Newsreader", "Noticia Text",
+  "Noto Kufi Arabic", "Noto Naskh Arabic", "Noto Nastaliq Urdu", "Noto Sans",
+  "Noto Sans Arabic", "Noto Sans Bengali", "Noto Sans Devanagari", "Noto Sans Display",
+  "Noto Sans Hebrew", "Noto Sans JP", "Noto Sans KR", "Noto Sans Khmer",
+  "Noto Sans Mono", "Noto Sans SC", "Noto Sans TC", "Noto Sans Tamil",
+  "Noto Sans Telugu", "Noto Sans Thai", "Noto Serif", "Noto Serif JP",
+  "Noto Serif KR", "Noto Serif TC", "Nunito", "Nunito Sans",
+  "Old Standard TT", "Open Sans", "Orbitron", "Oswald",
+  "Outfit", "Overpass", "Oxanium", "Oxygen",
+  "PT Mono", "PT Sans", "PT Sans Caption", "PT Sans Narrow",
+  "PT Serif", "Pacifico", "Passion One", "Patrick Hand",
+  "Patua One", "Paytone One", "Permanent Marker", "Philosopher",
+  "Play", "Playfair", "Playfair Display", "Plus Jakarta Sans",
+  "Poppins", "Prata", "Press Start 2P", "Prompt",
+  "Public Sans", "Quattrocento", "Questrial", "Quicksand",
+  "Rajdhani", "Raleway", "Ramabhadra", "Readex Pro",
+  "Red Hat Display", "Red Hat Text", "Righteous", "Roboto",
+  "Roboto Condensed", "Roboto Mono", "Roboto Serif", "Roboto Slab",
+  "Rokkitt", "Rowdies", "Rubik", "Rubik Mono One",
+  "Russo One", "STIX Two Text", "Sacramento", "Saira",
+  "Saira Condensed", "Sanchez", "Sarabun", "Satisfy",
+  "Sawarabi Gothic", "Sawarabi Mincho", "Schibsted Grotesk", "Sen",
+  "Shadows Into Light", "Share Tech", "Share Tech Mono", "Shippori Mincho",
+  "Signika", "Signika Negative", "Slabo 27px", "Smooch Sans",
+  "Sofia Sans", "Sofia Sans Condensed", "Sora", "Source Code Pro",
+  "Source Sans 3", "Source Serif 4", "Space Grotesk", "Space Mono",
+  "Special Elite", "Spectral", "Syne", "Tajawal",
+  "Teko", "Tenor Sans", "Tinos", "Titan One",
+  "Titillium Web", "Ubuntu", "Ubuntu Condensed", "Unbounded",
+  "Unica One", "Unna", "Urbanist", "VT323",
+  "Varela Round", "Viga", "Vollkorn", "Work Sans",
+  "Yanone Kaffeesatz", "Yantramanav", "Yellowtail", "Zen Kaku Gothic New",
+  "Zen Maru Gothic", "Zen Old Mincho", "Zeyada", "Zilla Slab",
 ]);
 
 export const MOTION_TYPES = [
@@ -57,6 +128,12 @@ export const MOTION_TYPES = [
   "ken_burns_in", "ken_burns_out", "ken_burns_in_out",
   "loop_wiggle", "loop_rotate", "loop_rotate_smooth", "loop_3d_spin", "loop_3d_sway",
   "blur", "bounce_motion", "explode", "evaporate", "overlay", "difference",
+  // F1 text preset pack (per-glyph)
+  "rubber_in", "whip_up", "whip_down", "glitch_pop", "drift_in", "drift_out",
+  "loop_breathe", "loop_shimmer",
+  // F2/F9 element preset pack
+  "swing_in", "swing_out", "elastic_rise", "elastic_drop", "tilt_zoom",
+  "loop_orbit", "smooth_pop",
 ] as const;
 
 export const TRANSITION_TYPES = [
@@ -64,6 +141,10 @@ export const TRANSITION_TYPES = [
   "wipe_left", "wipe_right", "wipe_up", "wipe_down", "diagonal_wipe",
   "barn_doors_horizontal", "barn_doors_vertical", "iris", "page_turn",
   "cross_zoom", "gradient_wipe", "band_wipe", "box_wipe",
+  // F5 dual-build transitions
+  "swirl", "glitch_memories", "window_slice", "cube", "doorway", "pinwheel",
+  "water_drop", "crosshatch", "dreamy", "angular", "burn", "heart",
+  "circle_open", "color_phase", "squares_wire",
 ] as const;
 
 export const EFFECT_TYPES = [
@@ -76,7 +157,10 @@ export const EFFECT_TYPES = [
   "lens_flare", "strobe_light", "snow", "glow",
   "sepia", "echo", "chromatic_aberration",
   "vhs", "vhs_overlay", "crt", "television", "glitch", "compression_glitch",
-  "scanlines", "prism", "light_leaks", "film_burn", "chroma_key",
+  "scanlines", "prism", "light_leaks", "film_burn",
+  // F6 colour-grade wave
+  "duotone", "cross_process", "bleach_bypass",
+  "chroma_key",
 ] as const;
 
 export type ElementType = (typeof ELEMENT_TYPES)[number];
@@ -118,6 +202,23 @@ export const MOTION_TO_SCENE: Record<MotionType, [string | null, string | null]>
   evaporate: [null, "evaporate"],
   overlay: ["overlay", null],
   difference: ["difference", null],
+  // F1 text preset pack
+  rubber_in: ["rubberIn", null],
+  whip_up: ["whipUp", null],
+  whip_down: [null, "out-whipDown"],
+  glitch_pop: ["glitchPop", null],
+  drift_in: ["driftIn", null],
+  drift_out: [null, "out-driftOut"],
+  loop_breathe: ["loop-breathe", null],
+  loop_shimmer: ["loop-shimmer", null],
+  // F2/F9 element preset pack
+  swing_in: ["swingIn", null],
+  swing_out: [null, "out-swingOut"],
+  elastic_rise: ["elasticRise", null],
+  elastic_drop: [null, "out-elasticDrop"],
+  tilt_zoom: ["tiltZoom", null],
+  loop_orbit: ["loop-orbit", null],
+  smooth_pop: ["smoothPop", null],
 };
 
 /** Mirror of api/translation/maps.py GLYPH_MOTION_MAP (text, character scope). */
@@ -135,6 +236,15 @@ export const GLYPH_MOTION_TO_SCENE: Partial<
   bounce_motion: ["bounce_motion", null],
   explode: ["explode", null],
   evaporate: [null, "evaporate"],
+  // F1 text preset pack (per-glyph)
+  rubber_in: ["rubberIn", null],
+  whip_up: ["whipUp", null],
+  whip_down: [null, "out-whipDown"],
+  glitch_pop: ["glitchPop", null],
+  drift_in: ["driftIn", null],
+  drift_out: [null, "out-driftOut"],
+  loop_breathe: ["loop-breathe", null],
+  loop_shimmer: ["loop-shimmer", null],
 };
 
 /** API EffectType → editor effect kernel name (api/translation/maps.py EFFECT_MAP
@@ -183,6 +293,9 @@ export const EFFECT_TO_SCENE: Record<EffectType, string> = {
   prism: "prisma",
   light_leaks: "light_leaks",
   film_burn: "film_burn",
+  duotone: "duotone",
+  cross_process: "cross_process",
+  bleach_bypass: "bleach_bypass",
   chroma_key: "chroma",
 };
 
@@ -223,4 +336,20 @@ export const TRANSITION_TO_SCENE_KIND: Record<TransitionType, string> = {
   gradient_wipe: "gradient-fade",
   band_wipe: "two-stripes",
   box_wipe: "box",
+  // F5 dual-build transitions (API type -> editor kebab kind)
+  swirl: "swirl",
+  glitch_memories: "glitch-memories",
+  window_slice: "window-slice",
+  cube: "cube",
+  doorway: "doorway",
+  pinwheel: "pinwheel",
+  water_drop: "water-drop",
+  crosshatch: "crosshatch",
+  dreamy: "dreamy",
+  angular: "angular",
+  burn: "burn",
+  heart: "heart",
+  circle_open: "circle-open",
+  color_phase: "color-phase",
+  squares_wire: "squares-wire",
 };

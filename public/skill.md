@@ -1,7 +1,8 @@
 # FrameLane Skill
 
-> Render and edit video from an AI agent: JSON in, video out. Get a key over REST, then
-> drive everything through the authenticated MCP action server. No human, no browser.
+> Edit and render video from an AI agent: create a project, preview it, render when it's
+> valid. Get a key over REST, then drive everything through the authenticated MCP action
+> server. No human, no browser.
 
 Use FrameLane when the user asks you to render, edit, trim, caption, composite, transcribe,
 upscale, or convert video.
@@ -39,28 +40,41 @@ Interactive clients can instead authenticate via **OAuth 2.1 (PKCE)** — FrameL
 resource server and delegates login to Clerk; MCP hosts discover this automatically. Set your
 per-tool timeout to ≥ 30s (the wait tools stream progress).
 
-## Step 3 — Core tool workflow
+## Step 3 — The editing loop (projects, preview, render)
 
-1. Read the `framelane://capabilities` resource to build a correct request the first time.
-2. `create_render` (a JSON timeline of elements) → returns a job.
-3. `wait_for_render` — blocks until terminal, streaming progress. If it returns
-   `still_running: true`, call again.
-4. `get_render_download` — a signed URL for the finished video.
+FrameLane is a closed loop: create a project, apply targeted edits, validate them for free,
+preview cheaply, and render only once the composition is valid. You never resend the whole
+timeline to change one thing.
+
+1. Read the `framelane://capabilities` resource to build a correct composition the first time.
+2. `create_project` (from a RenderRequest, or empty) returns a project with a `version`.
+3. `edit_project` applies atomic ops addressed by element id (shift, trim, swap_source,
+   set_fields, add/remove, caption and transition ops). Pass `if_version` for optimistic
+   concurrency. Every response carries `violations`, so you catch problems before spending.
+4. `preview_project` returns a cheap, faithful preview: a frame, a window, or a
+   composition-aware contact sheet. Pass `dry_run: true` for free validation only. Preview
+   runs the same engine as the final render, so what you preview is what renders.
+5. `render_project` bills only the final, valid render. Poll with `get_render` /
+   `wait_for_render`, then `get_render_download` for a signed URL.
+
+One-shot escape hatch: if you already have a complete timeline and don't need to iterate,
+`create_render` (a JSON timeline of elements) renders it in a single call, then
+`wait_for_render` and `get_render_download`.
 
 AI tasks: `run_task` with `task_type` = `remove_background` | `gaze_redirect` |
 `super_resolution` | `transcribe`, then `wait_for_task` / `get_task_download`.
-
-Iterative editing: `create_project` → `edit_project` (atomic ops, `if_version` for
-concurrency) → `preview_project` (`dry_run` validates free) → `render_project`.
 
 ## Conventions
 
 - **Remote media:** set `ingest_external: true` and pass a public `source_url`; FrameLane
   copies it server-side — no separate upload.
-- **Validate free:** `create_preview` with `dry_run: true` returns violations before you spend.
+- **Iterate for free, pay once:** edits and validation cost nothing and previews are cheap;
+  you're billed only for the final render. `preview_project` (or `create_preview`) with
+  `dry_run: true` returns violations before you spend.
 - **Errors** are `{"error": {"code", "message", "details"}}` — branch on `code`
   (`quota_exceeded`, `email_not_verified`, `conflict`, `invalid_request`, `not_found`).
-- **Free tier:** renders are metered per minute (previews are free); over-cap → `402 quota_exceeded`.
+- **Free tier:** renders are metered per minute (edits, validation, and previews are free);
+  over-cap → `402 quota_exceeded`.
 
 ## More
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PlayCircle } from "lucide-react";
 
 const QUICKSTART_URL = "https://docs.framelane.io/introduction/quickstart";
@@ -31,9 +32,9 @@ export function NoRenders() {
           fontSize: 13,
         }}
       >
-        <a href="/playground" style={{ color: "var(--orange)" }}>
-          Start with playground →
-        </a>
+        <Link href="/projects" style={{ color: "var(--orange)" }}>
+          Create a project →
+        </Link>
         <a
           href={QUICKSTART_URL}
           target="_blank"

@@ -2,566 +2,415 @@
 
 import { SITE } from "@/lib/constants";
 import { useState, useEffect, useRef } from "react";
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <rect
-        x="3.5"
-        y="3.5"
-        width="9"
-        height="9"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      <path
-        d="M5.5 3V2.5C5.5 1.7 6.2 1 7 1H11C11.8 1 12.5 1.7 12.5 2.5V8"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function VolumeOffIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M11 5 6 9H2v6h4l5 4z" />
-      <line x1="23" y1="9" x2="17" y2="15" />
-      <line x1="17" y1="9" x2="23" y2="15" />
-    </svg>
-  );
-}
-
-function VolumeOnIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M11 5 6 9H2v6h4l5 4z" />
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-    </svg>
-  );
-}
-
-function LogLine({
-  t,
-  c,
-  pulse,
-  children,
-}: {
-  t: string;
-  c: "ok" | "active" | "pending" | "warn";
-  pulse?: boolean;
-  children: React.ReactNode;
-}) {
-  const colors = {
-    ok: "var(--green)",
-    active: "var(--orange)",
-    pending: "var(--fg-dim)",
-    warn: "var(--orange)",
-  };
-  const icons = {
-    ok: "✓",
-    active: "▸",
-    pending: "·",
-    warn: "⚠",
-  };
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: 10,
-        color: c === "pending" ? "var(--fg-dim)" : "var(--fg-2)",
-      }}
-    >
-      <span style={{ color: "var(--fg-dim)", minWidth: 36 }}>{t}</span>
-      <span style={{ color: colors[c], minWidth: 8 }}>{icons[c]}</span>
-      <span
-        style={{
-          animation: pulse ? "pulse 1.4s ease-in-out infinite" : "none",
-        }}
-      >
-        {children}
-      </span>
-    </div>
-  );
-}
+import { HeroCanvas } from "@/components/hero-canvas";
 
 const DEMO_VIDEO_URL =
   "https://cdn-user.framelane.io/render/029302df-94be-4b1d-a60f-604342794d87.mp4";
 
-function DemoConsole({ aspect }: { aspect: string }) {
-  const [time, setTime] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
+type Kind = "ok" | "active" | "pending" | "warn";
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (playing) {
-      void video.play();
-    } else {
-      video.pause();
-    }
-  }, [playing]);
+const PALETTE: Record<Kind, string> = {
+  ok: "var(--green)",
+  active: "var(--orange)",
+  pending: "var(--fg-dim)",
+  warn: "var(--orange)",
+};
+const ICONS: Record<Kind, string> = {
+  ok: "✓",
+  active: "▸",
+  pending: "·",
+  warn: "⚠",
+};
 
-  // The `muted` attribute is only honored on initial mount, so sync it imperatively.
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) video.muted = muted;
-  }, [muted]);
+function logLines(p: number) {
+  const st = (a: number, d: number): Kind =>
+    p >= d ? "ok" : p >= a ? "active" : "pending";
+  const done = p >= 1;
+  return [
+    { t: "00:00", text: "edit applied: 0 violations", kind: (p >= 0.03 ? "ok" : "pending") as Kind },
+    { t: "00:01", text: "preview ok: same engine as render", kind: (p >= 0.05 ? "ok" : "pending") as Kind },
+    { t: "00:03", text: "1920×1080 h264 30 fps", kind: (p >= 0.07 ? "ok" : "pending") as Kind },
+    { t: "00:03", text: "gpu: NVIDIA L4", kind: (p >= 0.09 ? "ok" : "pending") as Kind },
+    { t: "00:04", text: "hdr detected", kind: (p >= 0.11 ? "ok" : "pending") as Kind },
+    { t: "00:04", text: "stereo · loudness −14 LUFS", kind: (p >= 0.13 ? "ok" : "pending") as Kind },
+    { t: "00:05", text: "dropped transition (×2)", kind: (p >= 0.14 ? "warn" : "pending") as Kind },
+    { t: "00:05", text: "init decoders · 720 frames", kind: (p >= 0.16 ? "ok" : "pending") as Kind },
+    { t: "00:06", text: "render frame 72 / 720", kind: st(0.16, 0.4) },
+    { t: "00:08", text: "render frame 288 / 720", kind: st(0.4, 0.66) },
+    { t: "00:11", text: "render frame 623 / 720", kind: st(0.66, 0.9) },
+    { t: "00:--", text: "encode mp4 1080p (final render, billed)", kind: st(0.9, 0.97) },
+    { t: "00:--", text: "upload", kind: st(0.97, 1) },
+    { t: done ? "00:12" : "00:--", text: "done · total 4.2s", kind: (done ? "ok" : "pending") as Kind },
+    { t: "00:--", text: "deliver via webhook", kind: (done ? "ok" : "pending") as Kind },
+  ];
+}
 
-  const fmt = (s: number) =>
-    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const pct = total > 0 ? (time / total) * 100 : 0;
+const S = { color: "#A3CFFF" }; // string literal
+const N = { color: "#FFB87A" }; // number
+const K = { color: "var(--orange)" }; // keyword
 
-  const aspectRatio: Record<string, number> = {
-    "16:9": 16 / 9,
-    "9:16": 9 / 16,
-    "1:1": 1,
+const CODE = (
+  <>
+    <span style={K}>curl</span> -X <span style={K}>POST</span> https://api.framelane.io/v1/renders \
+    {"\n"}
+    {"  "}-H <span style={S}>&quot;Authorization: Bearer $FRAMELANE_API_KEY&quot;</span> \{"\n"}
+    {"  "}-H <span style={S}>&quot;Content-Type: application/json&quot;</span> \{"\n"}
+    {"  "}-d {"'{"}
+    {"\n"}
+    {"    "}
+    <span style={S}>&quot;width&quot;</span>: <span style={N}>1920</span>,{"\n"}
+    {"    "}
+    <span style={S}>&quot;height&quot;</span>: <span style={N}>1080</span>,{"\n"}
+    {"    "}
+    <span style={S}>&quot;duration&quot;</span>: <span style={N}>15</span>,{"\n"}
+    {"    "}
+    <span style={S}>&quot;elements&quot;</span>: [{"\n"}
+    {"      {"}
+    {"\n"}
+    {"        "}
+    <span style={S}>&quot;type&quot;</span>: <span style={S}>&quot;video&quot;</span>,{"\n"}
+    {"        "}
+    <span style={S}>&quot;source_url&quot;</span>: <span style={S}>&quot;raw.mp4&quot;</span>
+    {"\n"}
+    {"      },"}
+    {"\n"}
+    {"      {"}
+    {"\n"}
+    {"        "}
+    <span style={S}>&quot;type&quot;</span>: <span style={S}>&quot;text&quot;</span>,{"\n"}
+    {"        "}
+    <span style={S}>&quot;text&quot;</span>: <span style={S}>&quot;Ship day&quot;</span>
+    {"\n"}
+    {"      }"}
+    {"\n"}
+    {"    "}]{"\n"}
+    {"  }'"}
+  </>
+);
+
+function Console() {
+  const [stage, setStage] = useState<"idle" | "rendering" | "done">("idle");
+  const [p, setP] = useState(0);
+  const ivRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startedRef = useRef(false);
+
+  const clear = () => {
+    if (ivRef.current) clearInterval(ivRef.current);
+    ivRef.current = null;
   };
 
+  const start = () => {
+    startedRef.current = true;
+    clear();
+    setStage("rendering");
+    setP(0);
+    const dur = 4800;
+    const tick = 45;
+    let elapsed = 0;
+    ivRef.current = setInterval(() => {
+      elapsed += tick;
+      const np = elapsed / dur;
+      if (np >= 1) {
+        clear();
+        setP(1);
+        setStage("done");
+      } else {
+        setP(np);
+      }
+    }, tick);
+  };
+
+  // Auto-start 5s after mount, unless the visitor already hit Render.
+  useEffect(() => {
+    const auto = setTimeout(() => {
+      if (!startedRef.current) start();
+    }, 5000);
+    return () => {
+      clearTimeout(auto);
+      clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const frame = Math.min(720, Math.round(p * 720));
+
+  // Keep the log pinned to its newest line as the render advances.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && stage !== "idle") el.scrollTop = el.scrollHeight;
+  }, [p, stage]);
+
   return (
-    <div style={{ marginTop: 60, position: "relative" }}>
+    <div
+      className="card"
+      style={{
+        background: "var(--bg-elev)",
+        borderRadius: 9,
+        overflow: "hidden",
+        alignSelf: "start",
+        height: 540,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Header strip */}
       <div
-        className="card"
         style={{
-          padding: 0,
-          overflow: "hidden",
-          borderRadius: 8,
-          background: "var(--bg-elev)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "10px 14px",
+          borderBottom: "1px solid var(--line)",
+          flexShrink: 0,
         }}
       >
-        {/* Header strip */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: "10px 14px",
-            borderBottom: "1px solid var(--line)",
-            gap: 10,
-          }}
-        >
-          <div style={{ display: "flex", gap: 6 }}>
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
+        <div style={{ display: "flex", gap: 6 }}>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              style={{ width: 11, height: 11, borderRadius: "50%", background: "#3b3f55" }}
+            />
+          ))}
+        </div>
+        <span className="mono" style={{ fontSize: 11.5, color: "var(--fg-mute)" }}>
+          <span style={{ color: "var(--green)" }}>POST</span> /v1/renders
+        </span>
+        <span style={{ flex: 1 }} />
+        <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>
+          ⧉ Copy
+        </span>
+      </div>
+
+      {/* Idle: code + Render button */}
+      {stage === "idle" && (
+        <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--line)", background: "var(--bg-2)", flexShrink: 0 }}>
+            {[
+              ["cURL", true],
+              ["TypeScript", false],
+              ["Python", false],
+              ["MCP", false],
+            ].map(([label, active]) => (
+              <span
+                key={label as string}
+                className="mono"
+                title={active ? undefined : "Coming soon"}
                 style={{
-                  width: 11,
-                  height: 11,
-                  borderRadius: "50%",
-                  background: "#3b3f55",
+                  padding: "10px 12px",
+                  fontSize: 11,
+                  color: active ? "var(--fg)" : "var(--fg-mute)",
+                  borderBottom: active ? "2px solid var(--orange)" : "2px solid transparent",
+                  letterSpacing: "0.02em",
+                  opacity: active ? 1 : 0.45,
+                  cursor: active ? "default" : "not-allowed",
                 }}
-              />
+              >
+                {label}
+              </span>
             ))}
           </div>
-          <div
+          <pre
             className="mono"
             style={{
-              flex: 1,
-              textAlign: "center",
+              margin: 0,
+              padding: 16,
               fontSize: 11.5,
-              color: "var(--fg-mute)",
+              lineHeight: 1.75,
+              color: "var(--fg-2)",
+              overflow: "auto",
+              background: "transparent",
+              flex: 1,
+              minHeight: 0,
             }}
           >
-            <span style={{ color: "var(--fg-dim)" }}>
-              console.framelane.io/render/
-            </span>
-            <span style={{ color: "var(--fg-2)" }}>job_01HX5DG</span>
+            {CODE}
+          </pre>
+          <div style={{ borderTop: "1px solid var(--line)", background: "var(--bg-2)", padding: "14px 16px", flexShrink: 0 }}>
+            <button
+              onClick={start}
+              className="btn btn-primary"
+              style={{ width: "100%", justifyContent: "center", height: 42 }}
+            >
+              ▶ Render
+            </button>
           </div>
-          <span className="pill" style={{ padding: "2px 8px" }}>
-            <span className="dot" style={{ background: "var(--green)" }} />
-            live
-          </span>
         </div>
+      )}
 
-        {/* Body */}
-        <div className="console-body-grid">
-          {/* Player */}
-          <div
-            style={{
-              padding: 32,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background:
-                "radial-gradient(circle at 50% 40%, rgba(255,122,26,0.04), transparent 60%)",
-              position: "relative",
-            }}
-          >
-            <div
+      {/* Rendering & done: logs stay visible; video replaces the countdown */}
+      {stage !== "idle" && (
+        <div
+          style={{
+            padding: 16,
+            background: "var(--bg-2)",
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexShrink: 0 }}>
+            <span
+              className="mono"
               style={{
-                aspectRatio: aspectRatio[aspect],
-                maxHeight: 340,
-                width: aspect === "9:16" ? "auto" : "100%",
-                maxWidth: aspect === "9:16" ? 220 : "100%",
-                background: "#0A0E1F",
-                borderRadius: 6,
-                position: "relative",
-                overflow: "hidden",
-                border: "1px solid var(--line)",
-                transition: "all 0.3s ease",
+                fontSize: 9.5,
+                letterSpacing: "0.14em",
+                color: "var(--fg-dim)",
+                textTransform: "uppercase",
               }}
             >
-              <video
-                ref={videoRef}
-                src={DEMO_VIDEO_URL}
-                autoPlay
-                loop
-                muted
-                playsInline
-                onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-                onLoadedMetadata={(e) => setTotal(e.currentTarget.duration)}
+              Project log
+            </span>
+            {stage === "done" ? (
+              <span style={{ color: "var(--green)", fontSize: 12 }}>✓</span>
+            ) : (
+              <span
                 style={{
-                  display: "block",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "var(--orange)",
+                  animation: "pulse 1.2s ease-in-out infinite",
                 }}
               />
-              <button
-                onClick={() => setPlaying((p) => !p)}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: 56,
-                  height: 56,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.92)",
-                  color: "#0A0E1F",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {playing ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14">
-                    <rect x="2" y="1" width="3" height="12" fill="currentColor" />
-                    <rect x="9" y="1" width="3" height="12" fill="currentColor" />
-                  </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 14 14">
-                    <path d="M3 1 L12 7 L3 13 Z" fill="currentColor" />
-                  </svg>
-                )}
-              </button>
-
-              {/* Progress bar */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 3,
-                  background: "rgba(255,255,255,0.15)",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${pct}%`,
-                    height: "100%",
-                    background: "var(--orange)",
-                    transition: "width 0.1s linear",
-                  }}
-                />
-              </div>
-
-              {/* Mute / unmute */}
-              <button
-                onClick={() => setMuted((m) => !m)}
-                aria-label={muted ? "Unmute" : "Mute"}
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  left: 10,
-                  width: 26,
-                  height: 26,
-                  borderRadius: 4,
-                  background: "rgba(0,0,0,0.4)",
-                  color: "rgba(255,255,255,0.85)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {muted ? <VolumeOffIcon /> : <VolumeOnIcon />}
-              </button>
-
-              {/* Watermark */}
-              <div
-                className="mono"
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  fontSize: 9,
-                  color: "rgba(255,255,255,0.6)",
-                  background: "rgba(0,0,0,0.4)",
-                  padding: "2px 6px",
-                  borderRadius: 2,
-                  letterSpacing: "0.05em",
-                }}
-              >
-                FRAMELANE
-              </div>
-            </div>
-
-            {/* Timecode */}
-            <div
-              className="mono"
-              style={{
-                position: "absolute",
-                bottom: 14,
-                left: 32,
-                right: 32,
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 11,
-                color: "var(--fg-mute)",
-              }}
-            >
-              <span>029302df.mp4</span>
-              <span>
-                {fmt(time)} / {fmt(total)}
-              </span>
-            </div>
+            )}
+            <span style={{ flex: 1 }} />
+            <span className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>
+              {stage === "done" ? "total 4.2s" : `frame ${frame} / 720`}
+            </span>
           </div>
-
-          {/* Log panel */}
-          <div
-            className="console-log-panel"
-            style={{
-              borderLeft: "1px solid var(--line)",
-              background: "var(--bg-2)",
-              padding: "14px 16px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              className="mono"
-              style={{
-                fontSize: 10,
-                color: "var(--fg-dim)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: 10,
-              }}
-            >
-              Render log
+          <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+            <div className="mono" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {logLines(p).map((ln, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", gap: 9, fontSize: 11.5, lineHeight: 1.4, alignItems: "flex-start" }}
+                >
+                  <span style={{ color: "var(--fg-dim)", minWidth: 40 }}>{ln.t}</span>
+                  <span style={{ color: PALETTE[ln.kind], minWidth: 10 }}>{ICONS[ln.kind]}</span>
+                  <span style={{ color: ln.kind === "pending" ? "var(--fg-dim)" : "var(--fg-2)" }}>
+                    {ln.text}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div className="mono" style={{ fontSize: 11, lineHeight: 1.65 }}>
-              {(() => {
-                const stage = pct < 33 ? 0 : pct < 66 ? 1 : 2;
-                return (
-                  <>
-                    <LogLine t="00:00" c="ok">
-                      downloading assets: 1.2 GB
-                    </LogLine>
-                    <LogLine t="00:03" c="ok">
-                      1920×1080 h264 30 fps
-                    </LogLine>
-                    <LogLine t="00:03" c="ok">
-                      gpu: NVIDIA L4 
-                    </LogLine>
-                    <LogLine t="00:04" c="ok">
-                      hdr detected
-                    </LogLine>
-                    <LogLine t="00:04" c="ok">
-                      stereo · loudness −14 LUFS
-                    </LogLine>
-                    <LogLine t="00:05" c="warn">
-                      dropped transition (×2)
-                    </LogLine>
-                    <LogLine t="00:05" c="ok">
-                      init decoders · 720 frames
-                    </LogLine>
-                    <LogLine
-                      t="00:06"
-                      c={stage > 0 ? "ok" : "active"}
-                      pulse={stage === 0}
-                    >
-                      render frame 72 / 720
-                    </LogLine>
-                    <LogLine
-                      t="00:08"
-                      c={stage > 1 ? "ok" : stage === 1 ? "active" : "pending"}
-                      pulse={stage === 1}
-                    >
-                      render frame 288 / 720
-                    </LogLine>
-                    <LogLine
-                      t="00:11"
-                      c={stage === 2 ? "active" : "pending"}
-                      pulse={stage === 2}
-                    >
-                      render frame 623 / 720
-                    </LogLine>
-                    <LogLine t="00:--" c="pending">
-                      encode → mp4 1080p
-                    </LogLine>
-                    <LogLine t="00:--" c="pending">
-                      upload
-                    </LogLine>
-                    <LogLine t="00:--" c="pending">
-                      done · total 38.2s 
-                    </LogLine>
-                    <LogLine t="00:--" c="pending">
-                      deliver via webhook
-                    </LogLine>
-                  </>
-                );
-              })()}
-            </div>
-            <div
-              style={{
-                marginTop: "auto",
-                paddingTop: 14,
-                borderTop: "1px solid var(--line)",
-              }}
-            >
+            {/* Video preview — only after the render completes */}
+            {stage === "done" && (
+              <div style={{ marginTop: 14 }}>
               <div
-                className="mono"
                 style={{
-                  fontSize: 10,
-                  color: "var(--fg-dim)",
-                  letterSpacing: "0.08em",
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "16 / 9",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  border: "1px solid var(--line-strong)",
+                  background: "#0A0E1F",
                 }}
               >
-                EST. COMPLETION
-              </div>
-              <div style={{ fontSize: 22, letterSpacing: "-0.02em", marginTop: 4 }}>
-                00:18s
+                <video
+                  src={DEMO_VIDEO_URL}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                <div style={{ position: "absolute", top: 8, left: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    className="mono"
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 10,
+                      letterSpacing: "0.03em",
+                      color: "#fff",
+                      background: "rgba(0,0,0,.45)",
+                      padding: "1px 6px",
+                      borderRadius: 2,
+                    }}
+                  >
+                    00:12:04
+                  </span>
+                </div>
               </div>
             </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 export function Hero() {
-  const [aspect, setAspect] = useState("16:9");
-  const [copied, setCopied] = useState(false);
-
-  const promptText =
-    "Find the best 45-second moment, crop to vertical, add karaoke captions, blur the background, add a progress bar, and render for TikTok.";
-
-  const copyPrompt = () => {
-    navigator.clipboard?.writeText(promptText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1600);
-  };
-
   return (
-    <section style={{ paddingTop: 80, paddingBottom: 60, overflow: "hidden" }}>
-      <div className="wrap">
+    <section style={{ position: "relative", overflow: "hidden", padding: "64px 0 72px" }}>
+      {/* Shader render-pass backdrop */}
+      <HeroCanvas mode="subtle" />
+      {/* Left playhead rail */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: 2,
+          background: "linear-gradient(180deg, var(--orange), transparent)",
+          opacity: 0.55,
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+      <div className="wrap" style={{ position: "relative", zIndex: 2 }}>
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr)",
-            gap: 24,
-            alignItems: "start",
-          }}
+          className="two-col-grid"
+          style={{ gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)", gap: 44, alignItems: "start" }}
         >
-          {/* Eyebrow */}
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <span className="pill">
-              <span className="dot" />
-              v0.1 · public beta
-            </span>
-            <span className="eyebrow">Professional video production API for agents</span>
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ maxWidth: "14ch" }}>
-            Give your AI agent
-            <br />a professional{" "}
-            <span
-              className="serif-i"
-              style={{ color: "var(--orange-hi)" }}
+          {/* Left: copy */}
+          <div>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
+              <span className="pill">
+                <span className="dot" />
+                v0.1 · public beta
+              </span>
+              <span className="eyebrow">Professional video production API for agents</span>
+            </div>
+            <h1
+              style={{
+                margin: 0,
+                maxWidth: "18ch",
+                fontSize: "clamp(42px, 5vw, 66px)",
+                lineHeight: 1.0,
+                letterSpacing: "-0.035em",
+                fontWeight: 500,
+              }}
             >
-              video production engine
-            </span>
-            .
-          </h1>
-
-          {/* Lede */}
-          <p className="lede" style={{ marginTop: 18, maxWidth: "82ch" }}>
-            Your agent writes the plan, previews the result, and renders the video.
-            <br />
-            Built with Rust. GPU native. Timeline as state.
-            No React. No browser. No Lambda.
-          </p>
-
-          {/* CTAs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              marginTop: 28,
-              flexWrap: "wrap",
-            }}
-          >
-            <a className="btn btn-primary" href={SITE.consoleUrl}>
-              Start for free →
-            </a>
-            <a className="btn btn-ghost" href={SITE.docsUrl}>
-              View docs
-            </a>
+              Give your AI agent a professional{" "}
+              <span style={{ color: "var(--orange-hi)" }}>video production engine</span>.
+            </h1>
+            <p className="lede" style={{ marginTop: 22, maxWidth: "56ch" }}>
+              Your agent writes the plan, previews the result, and renders the video.
+              <br />
+              Built with Rust. GPU native. Timeline as state. No React. No browser. No
+              Lambda.
+            </p>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 26, flexWrap: "wrap" }}>
+              <a className="btn btn-primary" href={SITE.consoleUrl}>
+                Start rendering free →
+              </a>
+              <a className="btn btn-ghost" href={SITE.docsUrl}>
+                View docs
+              </a>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 13, color: "var(--fg-mute)" }}>
+              No credit card required · API + MCP · Preview before render
+            </div>
           </div>
 
-          <div
-            style={{
-              marginTop: 18,
-              fontSize: 13,
-              color: "var(--fg-mute)",
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <span>No credit card required · API + MCP · Preview before render </span>
-          </div>
+          {/* Right: stateful console */}
+          <Console />
         </div>
-
-        <DemoConsole aspect={aspect} />
       </div>
     </section>
   );

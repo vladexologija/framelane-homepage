@@ -2,45 +2,45 @@
 
 import { SITE } from "@/lib/constants";
 import { useState } from "react";
+import { ShaderBackdrop } from "@/components/shader-backdrop";
 
 const CODE_SAMPLES = {
-  curl: `# 1. Create render
-curl -X POST https://api.framelane.io/v1/renders \\
+  curl: `# 1. Create a project from a composition
+curl -X POST https://api.framelane.io/v1/projects \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "width": 1920,
-    "height": 1080,
-    "duration": 30,
-    "elements": [
-      {
-        "type": "video",
-        "source_url": "https://storage.example.com/raw-footage.mp4",
-        "in_point": 0, "out_point": 30
-      },
-      {
-        "type": "text",
-        "text": "Hello World",
-        "font_family": "Inter",
-        "font_size": 48,
-        "text_color": "#ffffff",
-        "animation_preset": "typewriter",
-        "time": 0, "duration": 30,
-        "x": "50%", "y": "90%"
-      },
-      {
-        "type": "image",
-        "id": "logo",
-        "source_url": "https://storage.example.com/logo.png",
-        "time": 0, "duration": 30,
-        "x": "90%", "y": "10%",
-        "width": "10%", "height": "10%",
-        "z_index": 1
-      }
-    ]
+    "name": "Launch teaser",
+    "render_request": {
+      "width": 1920, "height": 1080, "duration": 30,
+      "elements": [
+        { "type": "video", "id": "bg",
+          "source_url": "https://storage.example.com/raw-footage.mp4",
+          "in_point": 0, "out_point": 30 },
+        { "type": "text", "id": "title", "text": "Hello World",
+          "font_family": "Inter", "font_size": 48, "text_color": "#ffffff",
+          "animation_preset": "typewriter",
+          "time": 0, "duration": 30, "x": "50%", "y": "90%" }
+      ]
+    }
   }'
+# => { "id": "proj_...", "version": 1 }
 
-# 2. Poll until completed and download the result
+# 2. Edit with a targeted op (free validation rides along)
+curl -X POST https://api.framelane.io/v1/projects/$PROJECT/ops \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "ops": [{ "op": "set_fields", "id": "title",
+        "fields": { "text": "Ship day" } }], "if_version": 1 }'
+
+# 3. Preview cheaply, or dry_run: true to validate for free
+curl -X POST https://api.framelane.io/v1/projects/$PROJECT/preview \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY" \\
+  -H "Content-Type: application/json" -d '{ "at": 1.0 }'
+
+# 4. Render when it's valid, then poll and download
+curl -X POST https://api.framelane.io/v1/projects/$PROJECT/renders \\
+  -H "Authorization: Bearer $FRAMELANE_API_KEY"
 curl https://api.framelane.io/v1/renders/{id} \\
   -H "Authorization: Bearer $FRAMELANE_API_KEY"`,
 
@@ -55,98 +55,194 @@ curl https://api.framelane.io/v1/renders/{id} \\
   }
 }`,
 
-  typescript: `import { Framelane } from "framelane";
+  typescript: `const options = {
+  method: 'POST',
+  headers: {Authorization: 'Bearer <token>', 'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    width: 1920,
+    height: 1080,
+    duration: 15,
+    frame_rate: 30,
+    output_format: 'mp4',
+    output_filename: 'my-render',
+    background_color: '#000000ff',
+    background_image_url: 'https://cdn.example.com/bg.jpg',
+    alpha: false,
+    elements: [
+      {
+        source_url: 'https://cdn.example.com/clip.mp4',
+        lut_url: '<string>',
+        lut_intensity: 100,
+        brightness: 0,
+        contrast: 0,
+        saturation: 0,
+        exposure: 0,
+        sharpness: 0,
+        blur: 0,
+        noise: 0,
+        vignette: 0,
+        hue_rotate: 0,
+        crop_top: 0,
+        crop_bottom: 0,
+        crop_left: 0,
+        crop_right: 0,
+        border_radius: 0,
+        border_color: '<string>',
+        border_width: 0,
+        shadow_color: '<string>',
+        shadow_blur: 0,
+        shadow_x: 0,
+        shadow_y: 0,
+        x: '50%',
+        y: '50%',
+        width: '100%',
+        height: '100%',
+        aspect_ratio: 123,
+        x_anchor: '50%',
+        y_anchor: '50%',
+        x_rotation: '0°',
+        y_rotation: '0°',
+        z_rotation: '0°',
+        x_scale: '100%',
+        y_scale: '100%',
+        flip_horizontal: false,
+        flip_vertical: false,
+        opacity: 100,
+        z_index: 123,
+        blend_mode: 'none',
+        clip: false,
+        color_overlay: '<string>',
+        type: 'video',
+        id: 'clip_01',
+        name: '<string>',
+        track: 127,
+        time: 0,
+        visible: true,
+        in_point: 0,
+        out_point: 6,
+        speed: 1,
+        volume: 100,
+        fade_in_duration: 0,
+        fade_out_duration: 0,
+        effects: [],
+        motion: []
+      }
+    ],
+    transitions: [
+      {
+        type: 'fade',
+        duration: 0.5,
+        from_id: 'video_01',
+        to_id: 'video_02',
+        z_index: 1
+      }
+    ],
+    metadata: {project_id: 'proj_123'},
+    webhook_url: 'https://app.example.com/hooks/framelane',
+    ingest_external: true
+  })
+};
 
-const client = new Framelane({ apiKey: process.env.FRAMELANE_API_KEY });
+fetch('https://api.framelane.io/v1/renders', options)
+  .then(res => res.json())
+  .then(res => console.log(res))
+  .catch(err => console.error(err));`,
 
-const render = await client.renders.create({
-  width: 1920,
-  height: 1080,
-  duration: 30,
-  elements: [
-    {
-      type: "video",
-      source_url: "https://cdn.framelane.io/raw-footage.mp4",
-      in_point: 0,
-      out_point: 30,
-    },
-    {
-      type: "text",
-      text: "Hello World",
-      font_family: "Inter",
-      font_size: 48,
-      text_color: "#ffffff",
-      animation_preset: "typewriter",
-      time: 0,
-      duration: 30,
-      x: "50%",
-      y: "90%",
-    },
-    {
-      type: "image",
-      id: "logo",
-      source_url: "https://cdn.framelane.io/logo.png",
-      time: 0,
-      duration: 30,
-      x: "90%",
-      y: "10%",
-      width: "10%",
-      height: "10%",
-      z_index: 1,
-    },
-  ],
-});
+  python: `import requests
 
-const downloadUrl = await client.renders.download(render.id);
-console.log(downloadUrl);`,
+url = "https://api.framelane.io/v1/renders"
 
-  python: `import asyncio, os
-from framelane import AsyncFramelane
+payload = {
+    "width": 1920,
+    "height": 1080,
+    "duration": 15,
+    "frame_rate": 30,
+    "output_format": "mp4",
+    "output_filename": "my-render",
+    "background_color": "#000000ff",
+    "background_image_url": "https://cdn.example.com/bg.jpg",
+    "alpha": False,
+    "elements": [
+        {
+            "source_url": "https://cdn.example.com/clip.mp4",
+            "lut_url": "<string>",
+            "lut_intensity": 100,
+            "brightness": 0,
+            "contrast": 0,
+            "saturation": 0,
+            "exposure": 0,
+            "sharpness": 0,
+            "blur": 0,
+            "noise": 0,
+            "vignette": 0,
+            "hue_rotate": 0,
+            "crop_top": 0,
+            "crop_bottom": 0,
+            "crop_left": 0,
+            "crop_right": 0,
+            "border_radius": 0,
+            "border_color": "<string>",
+            "border_width": 0,
+            "shadow_color": "<string>",
+            "shadow_blur": 0,
+            "shadow_x": 0,
+            "shadow_y": 0,
+            "x": "50%",
+            "y": "50%",
+            "width": "100%",
+            "height": "100%",
+            "aspect_ratio": 123,
+            "x_anchor": "50%",
+            "y_anchor": "50%",
+            "x_rotation": "0°",
+            "y_rotation": "0°",
+            "z_rotation": "0°",
+            "x_scale": "100%",
+            "y_scale": "100%",
+            "flip_horizontal": False,
+            "flip_vertical": False,
+            "opacity": 100,
+            "z_index": 123,
+            "blend_mode": "none",
+            "clip": False,
+            "color_overlay": "<string>",
+            "type": "video",
+            "id": "clip_01",
+            "name": "<string>",
+            "track": 127,
+            "time": 0,
+            "visible": True,
+            "in_point": 0,
+            "out_point": 6,
+            "speed": 1,
+            "volume": 100,
+            "fade_in_duration": 0,
+            "fade_out_duration": 0,
+            "effects": [],
+            "motion": []
+        }
+    ],
+    "transitions": [
+        {
+            "type": "fade",
+            "duration": 0.5,
+            "from_id": "video_01",
+            "to_id": "video_02",
+            "z_index": 1
+        }
+    ],
+    "metadata": { "project_id": "proj_123" },
+    "webhook_url": "https://app.example.com/hooks/framelane",
+    "ingest_external": True
+}
+headers = {
+    "Authorization": "Bearer <token>",
+    "Content-Type": "application/json"
+}
 
-async def main():
-    client = AsyncFramelane(api_key=os.environ["FRAMELANE_API_KEY"])
-    render = await client.renders.create(
-        width=1920,
-        height=1080,
-        duration=30,
-        elements=[
-            {
-                "type": "video",
-                "source_url": "https://cdn.framelane.io/raw-footage.mp4",
-                "in_point": 0,
-                "out_point": 30,
-            },
-            {
-                "type": "text",
-                "text": "Hello World",
-                "font_family": "Inter",
-                "font_size": 48,
-                "text_color": "#ffffff",
-                "animation_preset": "typewriter",
-                "time": 0,
-                "duration": 30,
-                "x": "50%",
-                "y": "90%",
-            },
-            {
-                "type": "image",
-                "id": "logo",
-                "source_url": "https://cdn.framelane.io/logo.png",
-                "time": 0,
-                "duration": 30,
-                "x": "90%",
-                "y": "10%",
-                "width": "10%",
-                "height": "10%",
-                "z_index": 1,
-            },
-        ],
-    )
+response = requests.post(url, json=payload, headers=headers)
 
-    download_url = await client.renders.download(render.id)
-    print(download_url)
-
-asyncio.run(main())`,
+print(response.text)`,
 } as const;
 
 type Lang = keyof typeof CODE_SAMPLES;
@@ -228,15 +324,15 @@ export function GetStarted() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const installCmd =
-    lang === "python" ? "pip install" : lang === "typescript" ? "npm install" : null;
+  const installCmd = lang === "python" ? "pip install requests" : null;
 
   return (
-    <section id="get-started">
-      <div className="section-tag">
+    <section id="get-started" style={{ overflow: "hidden" }}>
+      <ShaderBackdrop mode="subtle" />
+      <div className="section-tag" style={{ zIndex: 1 }}>
         <span className="num-marker">06 / GET STARTED</span>
       </div>
-      <div className="wrap">
+      <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
         <div
           className="two-col-grid"
           style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.3fr)" }}
@@ -254,8 +350,8 @@ export function GetStarted() {
               className="lede"
               style={{ marginTop: 22, maxWidth: "42ch" }}
             >
-              Install the SDK and start building with FrameLane — from ingest to
-              render in a single API call.
+              Install the SDK and start building with FrameLane: edit a project,
+              preview it cheaply, and render when it&apos;s valid.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
               <a className="btn btn-primary" href={SITE.consoleUrl}>
@@ -289,8 +385,7 @@ export function GetStarted() {
                 className="mono"
                 style={{ fontSize: 13, marginTop: 4, color: "var(--fg)" }}
               >
-                <span style={{ color: "var(--orange)" }}>{installCmd}</span>{" "}
-                framelane
+                <span style={{ color: "var(--orange)" }}>{installCmd}</span>
               </div>
             </div>)}
           </div>
@@ -314,7 +409,7 @@ export function GetStarted() {
             >
               <div style={{ display: "flex" }}>
                 {(Object.keys(CODE_SAMPLES) as Lang[]).map((k) => {
-                  const disabled = k !== "curl" && k !== "mcp";
+                  const disabled = false;
                   const active = lang === k;
                   return (
                     <button
