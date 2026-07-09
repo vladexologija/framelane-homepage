@@ -1,7 +1,8 @@
-import { F as r, c as s, a as c } from "./index-Ch-G02b4.js";
+import { F as r, I as s, c, a as o } from "./index-BW4pCVUy.js";
 export {
   r as FrameTakeEditor,
-  s as createEmptyScene,
-  c as sceneToRenderTask
+  s as Inspector,
+  c as createEmptyScene,
+  o as sceneToRenderTask
 };
 //# sourceMappingURL=index.js.map

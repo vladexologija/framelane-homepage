@@ -6,7 +6,7 @@
  * active-word highlight; full animation fidelity arrives with the render-lib
  * text path at export time.
  */
-declare const CAPTION_PRESETS: readonly ["default", "plain", "block", "outline", "highlight", "boxHighlight", "karaoke", "social"];
+declare const CAPTION_PRESETS: readonly ["default", "plain", "block", "outline", "highlight", "boxHighlight", "karaoke", "social", "impact", "neon", "contrast", "mint", "bubblegum"];
 type CaptionPreset = (typeof CAPTION_PRESETS)[number];
 declare const CAPTION_ANIMATIONS: readonly ["none", "karaoke", "highlight", "boxHighlight", "reveal", "impactPop"];
 type CaptionAnimation = (typeof CAPTION_ANIMATIONS)[number];
@@ -49,6 +49,17 @@ interface CaptionVisual {
     animationColor?: string;
 }
 declare const CAPTION_PRESET_VISUALS: Record<CaptionPreset, CaptionVisual>;
+/**
+ * The word-motion a caption preset ships with, so choosing a Style also sets a
+ * sensible Animation. Style + Animation used to be two independent dropdowns
+ * with overlapping value names (highlight/boxHighlight/karaoke in both), which
+ * confused users; now the Style picker bundles both and the Animation control is
+ * a secondary "Word motion" override. Derived from the preset's own active-word
+ * design so it can't drift from the look: a preset that paints a box behind the
+ * active word → `boxHighlight`; one that only recolours it → `highlight`;
+ * karaoke/impact carry their signature motion; the plain looks stay static.
+ */
+declare const defaultCaptionAnimation: (preset: CaptionPreset) => CaptionAnimation;
 declare const isCaptionPreset: (v: unknown) => v is CaptionPreset;
 declare const isCaptionAnimation: (v: unknown) => v is CaptionAnimation;
 declare const isTextBackgroundStyle: (v: unknown) => v is TextBackgroundStyle;
@@ -122,6 +133,9 @@ interface Transform {
     size: NormSize;
     /** Rotation in degrees, clockwise. */
     rotation: number;
+    /** Rotation pivot, normalised within the element's box
+     * ({x: 0.5, y: 0.5} = centre — the default). */
+    anchor?: NormVec2;
 }
 interface ElementFilters {
     /** Colour correction. Scene units −1..1, 0 = neutral (engine ±100 scale). */
@@ -139,6 +153,13 @@ interface ElementFilters {
     vignette: number;
     /** 0..1. */
     opacity: number;
+    /** F3: colour-grade LUT look. `name` keys the bundled tiled hald-CLUT
+     * (512x512, 8x8 blue-slice tiles) served as texture `lut-<name>`;
+     * intensity 0..1. Absent/null = no look. */
+    lut?: {
+        name: string;
+        intensity: number;
+    } | null;
 }
 declare const defaultFilters: () => ElementFilters;
 /** Editor effect kernel name (`VideoElement.effects`) → the engine effect-shader
@@ -252,6 +273,10 @@ interface VideoElement extends BaseElement {
      * the kernel name (`vhs`, `super8`, `rgb_split`, `night_vision`, …). Empty/absent
      * = none. Single-effect in the UI today; the engine pipeline takes a list. */
     effects?: string[];
+    /** F7: static blend-mode fill against the canvas below (both engines). */
+    blendMode?: 'normal' | 'overlay' | 'difference';
+    /** F8: analytic shape mask cropping the media quad (both engines). */
+    maskShape?: 'none' | 'circle' | 'diamond' | 'hexagon' | 'star' | 'heart' | 'triangle';
 }
 interface AudioElement extends BaseElement {
     readonly kind: 'audio';
@@ -288,6 +313,10 @@ interface TextElement extends BaseElement {
     shadowColor: string;
 }
 interface StickerElement extends BaseElement {
+    /** F7: static blend-mode fill against the canvas below (both engines). */
+    blendMode?: 'normal' | 'overlay' | 'difference';
+    /** F8: analytic shape mask cropping the media quad (both engines). */
+    maskShape?: 'none' | 'circle' | 'diamond' | 'hexagon' | 'star' | 'heart' | 'triangle';
     readonly kind: 'sticker';
     /** Set when the sticker is a stored asset (e.g. generated image). */
     assetId?: string | null;
@@ -358,6 +387,24 @@ interface Scene {
     elementOrder: string[];
     subtitleTracks: Record<string, SubtitleTrack>;
     transitions: Record<string, Transition>;
+    /** F15: single-level transform groups — memberIds transform together
+     * (pivot/translate normalized to canvas, uniform scale, degrees). */
+    groups?: Record<string, ElementGroup>;
+}
+interface ElementGroup {
+    id: string;
+    memberIds: string[];
+    pivot?: {
+        x: number;
+        y: number;
+    };
+    translate?: {
+        x: number;
+        y: number;
+    };
+    scale?: number;
+    rotationDegrees?: number;
+    opacity?: number;
 }
 declare const SCHEMA_VERSION = 1;
 declare const createEmptyScene: () => Scene;
@@ -456,12 +503,12 @@ declare const resolveEngineAnimations: (el: Timed & {
  * `textAnimationsLoop/`). `'none'` is a valid empty slot. Shared by the inspector
  * UI (option lists) and validation.
  */
-declare const ELEMENT_IN_ANIMATIONS: readonly ["none", "fade", "slideLeft", "slideRight", "slideUp", "slideDown", "slideBounceLeft", "slideBounceRight", "slideBounceUp", "slideBounceDown", "floatLeft", "floatRight", "floatUp", "floatDown", "gentleFloatLeft", "gentleFloatRight", "gentleFloatUp", "gentleFloatDown", "wipeLeft", "wipeRight", "wipeUp", "wipeDown", "zoomIn", "pop", "drop", "bounceIn", "spinClockwise", "spinAntiClockwise", "kenBurnsIn", "kenBurnsOut", "kenBurnsInOut"];
-declare const ELEMENT_OUT_ANIMATIONS: readonly ["none", "out-fade", "out-slideLeft", "out-slideRight", "out-slideUp", "out-slideDown", "out-slideBounceLeft", "out-slideBounceRight", "out-slideBounceUp", "out-slideBounceDown", "out-floatLeft", "out-floatRight", "out-floatUp", "out-floatDown", "out-gentleFloatLeft", "out-gentleFloatRight", "out-gentleFloatUp", "out-gentleFloatDown", "out-wipeLeft", "out-wipeRight", "out-wipeUp", "out-wipeDown", "out-zoomOut", "out-pop", "out-dropOut", "out-bounceOut", "out-spinClockwise", "out-spinAntiClockwise"];
-declare const ELEMENT_LOOP_ANIMATIONS: readonly ["none", "loop-bounce", "loop-heartBeat", "loop-jiggle", "loop-sway", "loop-squeezy", "loop-rotateBasic", "loop-rotateSmooth", "loop-3DSpin", "loop-3DSway"];
-declare const TEXT_IN_ANIMATIONS: readonly ["none", "fade", "slideLeft", "slideRight", "slideUp", "slideDown", "block", "compress", "stomp", "zoomIn", "scale", "ascent", "burst", "bounce", "wave", "wavey", "fall", "roll", "skid", "vogue", "billboard", "blur", "dragonfly", "evaporate", "flipboard", "typewriter", "verticalStretch"];
-declare const TEXT_OUT_ANIMATIONS: readonly ["none", "out-fade", "out-slideLeft", "out-slideRight", "out-slideUp", "out-slideDown", "out-block", "out-decompress", "out-stomp", "out-zoomOut", "out-scale", "out-burst", "out-fall", "out-roll", "out-skid", "out-sink", "out-vogue", "out-billboard", "out-dragonfly", "out-flipboard", "out-verticalStretch", "out-wavey"];
-declare const TEXT_LOOP_ANIMATIONS: readonly ["none", "loop-heartBeat", "loop-scale", "loop-slide", "loop-stretch", "loop-verticalStretch", "loop-roll", "loop-rotateBasic", "loop-vogue", "loop-wavey", "loop-billboard", "loop-dragonfly", "loop-flipboard"];
+declare const ELEMENT_IN_ANIMATIONS: readonly ["none", "fade", "slideLeft", "slideRight", "slideUp", "slideDown", "slideBounceLeft", "slideBounceRight", "slideBounceUp", "slideBounceDown", "floatLeft", "floatRight", "floatUp", "floatDown", "gentleFloatLeft", "gentleFloatRight", "gentleFloatUp", "gentleFloatDown", "wipeLeft", "wipeRight", "wipeUp", "wipeDown", "zoomIn", "pop", "drop", "bounceIn", "spinClockwise", "spinAntiClockwise", "kenBurnsIn", "kenBurnsOut", "kenBurnsInOut", "swingIn", "elasticRise", "tiltZoom", "smoothPop", "arcRise", "springPop"];
+declare const ELEMENT_OUT_ANIMATIONS: readonly ["none", "out-fade", "out-slideLeft", "out-slideRight", "out-slideUp", "out-slideDown", "out-slideBounceLeft", "out-slideBounceRight", "out-slideBounceUp", "out-slideBounceDown", "out-floatLeft", "out-floatRight", "out-floatUp", "out-floatDown", "out-gentleFloatLeft", "out-gentleFloatRight", "out-gentleFloatUp", "out-gentleFloatDown", "out-wipeLeft", "out-wipeRight", "out-wipeUp", "out-wipeDown", "out-zoomOut", "out-pop", "out-dropOut", "out-bounceOut", "out-spinClockwise", "out-spinAntiClockwise", "out-swingOut", "out-elasticDrop"];
+declare const ELEMENT_LOOP_ANIMATIONS: readonly ["none", "loop-bounce", "loop-heartBeat", "loop-jiggle", "loop-sway", "loop-squeezy", "loop-rotateBasic", "loop-rotateSmooth", "loop-3DSpin", "loop-3DSway", "loop-orbit"];
+declare const TEXT_IN_ANIMATIONS: readonly ["none", "fade", "slideLeft", "slideRight", "slideUp", "slideDown", "block", "compress", "stomp", "zoomIn", "scale", "ascent", "burst", "bounce", "wave", "wavey", "fall", "roll", "skid", "vogue", "billboard", "blur", "dragonfly", "evaporate", "flipboard", "typewriter", "verticalStretch", "rubberIn", "whipUp", "glitchPop", "driftIn"];
+declare const TEXT_OUT_ANIMATIONS: readonly ["none", "out-fade", "out-slideLeft", "out-slideRight", "out-slideUp", "out-slideDown", "out-block", "out-decompress", "out-stomp", "out-zoomOut", "out-scale", "out-burst", "out-fall", "out-roll", "out-skid", "out-sink", "out-vogue", "out-billboard", "out-dragonfly", "out-flipboard", "out-verticalStretch", "out-wavey", "out-whipDown", "out-driftOut"];
+declare const TEXT_LOOP_ANIMATIONS: readonly ["none", "loop-heartBeat", "loop-scale", "loop-slide", "loop-stretch", "loop-verticalStretch", "loop-roll", "loop-vogue", "loop-wavey", "loop-billboard", "loop-dragonfly", "loop-flipboard", "loop-breathe", "loop-shimmer"];
 type ElementInAnimation = (typeof ELEMENT_IN_ANIMATIONS)[number];
 type ElementOutAnimation = (typeof ELEMENT_OUT_ANIMATIONS)[number];
 type ElementLoopAnimation = (typeof ELEMENT_LOOP_ANIMATIONS)[number];
@@ -661,6 +708,8 @@ interface RustCrop {
     bottom: number;
 }
 interface RustTransform {
+    /** Rotation pivot, normalized in-box; omitted = center. */
+    anchor?: [number, number];
     /** Centre position, normalised — `[x, y]`. */
     position: [number, number];
     /** Size, normalised to canvas — `[w, h]`. */
@@ -712,6 +761,11 @@ interface RustEffects {
         intensity: number;
         props: Record<string, number>;
     }[];
+    /** F3: colour-grade LUT (engine `LutDesc`). */
+    lut?: {
+        texture_id: string;
+        intensity: number;
+    };
 }
 type RustMoveableKind = {
     type: 'video';
@@ -721,6 +775,8 @@ type RustMoveableKind = {
     flip_x: boolean;
     flip_y: boolean;
     effects?: RustEffects;
+    blend_mode?: 'overlay' | 'difference' | 'multiply' | 'screen' | 'add' | 'lighten' | 'darken' | 'soft_light';
+    mask_shape?: 'circle' | 'diamond' | 'hexagon' | 'star' | 'heart' | 'triangle';
 } | {
     type: 'image';
     texture_id: string;
@@ -729,6 +785,8 @@ type RustMoveableKind = {
     flip_x: boolean;
     flip_y: boolean;
     effects?: RustEffects;
+    blend_mode?: 'overlay' | 'difference' | 'multiply' | 'screen' | 'add' | 'lighten' | 'darken' | 'soft_light';
+    mask_shape?: 'circle' | 'diamond' | 'hexagon' | 'star' | 'heart' | 'triangle';
 } | {
     type: 'text';
     text: string;
@@ -802,6 +860,14 @@ interface RustTextAnimationSpec {
         delay?: number;
     };
     loop?: boolean;
+    /** E6c: explicit per-word windows (moveable-local seconds, word order) for
+     * speech-synced caption animations. Newer engines sample word `i` over
+     * `word_windows[i]`; older binaries ignore the field and use the uniform
+     * `delay·i` stagger from `params` (which stays emitted as the fallback). */
+    word_windows?: Array<{
+        from: number;
+        to: number;
+    }>;
 }
 interface RustMoveable {
     id: string;
@@ -840,15 +906,49 @@ interface RustScene {
     transitions: RustTransition[];
     /** TODO(v2): custom fonts; v1 relies on the renderer's bundled font faces. */
     fontAssets: unknown[];
+    /** F15: single-level transform groups (renderer applies group ∘ member). */
+    groups?: RustGroup[];
 }
-/** Parse a CSS hex colour (`#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa`) → 0–1 rgba. */
+/** F15: a transform group — pivot/translate are canvas-normalized, scale is
+ * a uniform factor, rotation in degrees; the renderer transforms members
+ * about the pivot and multiplies opacity. No nesting (v1). */
+interface RustGroup {
+    id: string;
+    members: string[];
+    pivot?: [number, number];
+    translate?: [number, number];
+    scale?: number;
+    rotation_degrees?: number;
+    opacity?: number;
+}
+/** Parse a CSS hex colour (`#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa`) or a
+ * basic named colour → 0–1 rgba. Unknown values → opaque black + a warning. */
 declare const hexToRustColor: (hex: string) => RustColor;
 /**
- * FrameTake transition kind → Rust `TransitionKind` enum value, mirroring the
- * render-node C++→Rust bridge (`rust_scene_bridge.cpp`) which wires exactly these
- * SEVEN. Anything else returns null and the transition is skipped — so the Rust
- * preview supports precisely what the Rust EXPORT does (preview == export). Friendly
- * names, `transition_`-prefixed shader names, and raw Rust names are all accepted.
+ * Names the Rust engine resolves as TEXT (per-glyph) animations — render-lib
+ * `text.rs` BUILTIN_TEXT_ANIMATIONS_JSON. A text element's animation routes to the
+ * text `kind`'s `text_animations` (the glyph version) when its name is one of
+ * these; otherwise it falls back to the moveable-level `element_animations` (the
+ * transform version — e.g. `out-slide*`/`out-fade`, which have no text builtin but
+ * do have an element one). Non-text elements always use `element_animations`.
+ * Keep in sync with the engine's text builtin palette.
+ */
+declare const RUST_TEXT_ANIMATIONS: ReadonlySet<string>;
+/**
+ * The Rust `TransitionKind` serde wire names the engine allow-lists
+ * (render-lib-rs `supported_features.toml` `[transitions]`, 32 names; `iris`
+ * is enum-only and gated off). Snake_case for the un-renamed variants,
+ * camelCase for the production serde renames.
+ */
+declare const RUST_TRANSITION_WIRE_KINDS: ReadonlySet<string>;
+/**
+ * FrameTake transition kind → Rust `TransitionKind` wire name, kept in
+ * lockstep with the render-node C++→Rust bridge (`rust_scene_bridge.cpp`) so
+ * the Rust preview supports precisely what the Rust EXPORT does
+ * (preview == export). E4 (rollout §2E): the full editor catalog now maps —
+ * friendly kebab names, `transition_`-prefixed shader names, and raw Rust
+ * wire names are all accepted. Unknown kinds return null and the transition
+ * is skipped by the converter.
  */
 declare const rustTransitionKind: (kind: string) => string | null;
 /**
@@ -858,6 +958,9 @@ declare const rustTransitionKind: (kind: string) => string | null;
  * lets a user PICK a transition (e.g. the inspector dropdown) should offer only
  * these — otherwise the chosen transition no-ops in both preview and export.
  */
+/** F7/F8: media compositing option lists (editor dropdowns). */
+declare const MEDIA_BLEND_MODES: readonly ["normal", "overlay", "difference", "multiply", "screen", "add", "lighten", "darken", "soft_light"];
+declare const MEDIA_MASK_SHAPES: readonly ["none", "circle", "diamond", "hexagon", "star", "heart", "triangle"];
 declare const RENDERED_TRANSITION_KINDS: string[];
 /**
  * Convert a FrameTake {@link Scene} into the Rust renderer's native scene JSON
@@ -866,6 +969,10 @@ declare const RENDERED_TRANSITION_KINDS: string[];
  * renderer loads each sticker's image and supplies each video's frame keyed by
  * that id. Subtitle cues are burned as styled text moveables.
  */
+/** Texture id for the scene-level background image (D-9): the host loads
+ * `scene.backgroundImage.url` under this id (WasmGpu: `loadTextureFromUrl`,
+ * same lifecycle as stickers). */
+declare const BACKGROUND_IMAGE_TEXTURE_ID = "__background-image";
 declare const sceneToRustScene: (scene: Scene) => RustScene;
 
-export { ANIMATION_DURATION, type AnimationChoice, type AnimationData, AnimationSlot, type AnimationSlotKind, type AssetInfo, type AudioElement, CAPTION_ANIMATIONS, CAPTION_PRESETS, CAPTION_PRESET_VISUALS, type CaptionAnimation, type CaptionPreset, type CaptionVisual, type CategoryAnimations, ELEMENT_IN_ANIMATIONS, ELEMENT_LOOP_ANIMATIONS, ELEMENT_OUT_ANIMATIONS, EXPORT_PRESETS, EXPORT_QUALITIES, type ElementAnimation, type ElementFilters, type ElementInAnimation, type ElementKind, type ElementLoopAnimation, type ElementOutAnimation, type EngineAdjustments, type ExportPreset, type ExportQuality, type InvariantOptions, MIN_ANIMATION_DURATION, type MultiAnimations, type NormSize, type NormVec2, type Origin, type ProjectWire, RENDERED_TRANSITION_KINDS, type RenderTask, type RenderTaskOptions, type RustAdjustments, type RustAnimationSpec, type RustColor, type RustCrop, type RustEffects, type RustFontRef, type RustMoveable, type RustMoveableKind, type RustScene, type RustTextAnimationSpec, type RustTextDecoration, type RustTextTiming, type RustTransform, type RustTransition, SCHEMA_VERSION, type Scene, type SceneElement, type StickerElement, type SubtitleCue, type SubtitleStyle, type SubtitleTrack, type SubtitleWord, TEXT_BACKGROUND_STYLES, TEXT_IN_ANIMATIONS, TEXT_LOOP_ANIMATIONS, TEXT_OUT_ANIMATIONS, TRANSITION_KINDS, type TextAlign, type TextBackgroundStyle, type TextElement, type TextInAnimation, type TextLoopAnimation, type TextOutAnimation, type Transform, type Transition, type VideoElement, type Violation, type VisualElement, animationDefaults, animationPaletteFor, backgroundDisplayMode, captionAnimationColor, captionAnimationColorParam, captionAnimationLength, createEmptyScene, decodeProject, defaultCategoryAnimations, defaultFilters, defaultSubtitleStyle, effectShaderFile, encodeProject, getElementTotalDuration, getEndTime, getStartTime, hexToRustColor, isAnyAnimationSet, isCaptionAnimation, isCaptionPreset, isTextBackgroundStyle, isVisual, mapCategoriesToSavedAnimations, mapSavedAnimationsToCategories, migrateLegacyAnimation, resolveCaptionAnimation, resolveCaptionVisual, resolveEngineAnimations, rustTransitionKind, scaleFiltersToEngine, scaledOutputSize, sceneToRenderTask, sceneToRustScene, subtitleWordCount, transitionTypeFor, updateAnimationStartTime, validateSceneInvariants };
+export { ANIMATION_DURATION, type AnimationChoice, type AnimationData, AnimationSlot, type AnimationSlotKind, type AssetInfo, type AudioElement, BACKGROUND_IMAGE_TEXTURE_ID, CAPTION_ANIMATIONS, CAPTION_PRESETS, CAPTION_PRESET_VISUALS, type CaptionAnimation, type CaptionPreset, type CaptionVisual, type CategoryAnimations, ELEMENT_IN_ANIMATIONS, ELEMENT_LOOP_ANIMATIONS, ELEMENT_OUT_ANIMATIONS, EXPORT_PRESETS, EXPORT_QUALITIES, type ElementAnimation, type ElementFilters, type ElementGroup, type ElementInAnimation, type ElementKind, type ElementLoopAnimation, type ElementOutAnimation, type EngineAdjustments, type ExportPreset, type ExportQuality, type InvariantOptions, MEDIA_BLEND_MODES, MEDIA_MASK_SHAPES, MIN_ANIMATION_DURATION, type MultiAnimations, type NormSize, type NormVec2, type Origin, type ProjectWire, RENDERED_TRANSITION_KINDS, RUST_TEXT_ANIMATIONS, RUST_TRANSITION_WIRE_KINDS, type RenderTask, type RenderTaskOptions, type RustAdjustments, type RustAnimationSpec, type RustColor, type RustCrop, type RustEffects, type RustFontRef, type RustGroup, type RustMoveable, type RustMoveableKind, type RustScene, type RustTextAnimationSpec, type RustTextDecoration, type RustTextTiming, type RustTransform, type RustTransition, SCHEMA_VERSION, type Scene, type SceneElement, type StickerElement, type SubtitleCue, type SubtitleStyle, type SubtitleTrack, type SubtitleWord, TEXT_BACKGROUND_STYLES, TEXT_IN_ANIMATIONS, TEXT_LOOP_ANIMATIONS, TEXT_OUT_ANIMATIONS, TRANSITION_KINDS, type TextAlign, type TextBackgroundStyle, type TextElement, type TextInAnimation, type TextLoopAnimation, type TextOutAnimation, type Transform, type Transition, type VideoElement, type Violation, type VisualElement, animationDefaults, animationPaletteFor, backgroundDisplayMode, captionAnimationColor, captionAnimationColorParam, captionAnimationLength, createEmptyScene, decodeProject, defaultCaptionAnimation, defaultCategoryAnimations, defaultFilters, defaultSubtitleStyle, effectShaderFile, encodeProject, getElementTotalDuration, getEndTime, getStartTime, hexToRustColor, isAnyAnimationSet, isCaptionAnimation, isCaptionPreset, isTextBackgroundStyle, isVisual, mapCategoriesToSavedAnimations, mapSavedAnimationsToCategories, migrateLegacyAnimation, resolveCaptionAnimation, resolveCaptionVisual, resolveEngineAnimations, rustTransitionKind, scaleFiltersToEngine, scaledOutputSize, sceneToRenderTask, sceneToRustScene, subtitleWordCount, transitionTypeFor, updateAnimationStartTime, validateSceneInvariants };

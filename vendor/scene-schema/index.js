@@ -260,7 +260,17 @@ var ELEMENT_IN_ANIMATIONS = [
   "spinAntiClockwise",
   "kenBurnsIn",
   "kenBurnsOut",
-  "kenBurnsInOut"
+  "kenBurnsInOut",
+  // F2 dual-build element preset pack (2026-07-05):
+  "swingIn",
+  "elasticRise",
+  "tiltZoom",
+  // F9: bezier-eased preset.
+  "smoothPop",
+  // F14: spatial-path preset (arc entrance).
+  "arcRise",
+  // Spring-eased preset (scale pop with physical overshoot).
+  "springPop"
 ];
 var ELEMENT_OUT_ANIMATIONS = [
   "none",
@@ -290,7 +300,10 @@ var ELEMENT_OUT_ANIMATIONS = [
   "out-dropOut",
   "out-bounceOut",
   "out-spinClockwise",
-  "out-spinAntiClockwise"
+  "out-spinAntiClockwise",
+  // F2 dual-build element preset pack (2026-07-05):
+  "out-swingOut",
+  "out-elasticDrop"
 ];
 var ELEMENT_LOOP_ANIMATIONS = [
   "none",
@@ -302,7 +315,9 @@ var ELEMENT_LOOP_ANIMATIONS = [
   "loop-rotateBasic",
   "loop-rotateSmooth",
   "loop-3DSpin",
-  "loop-3DSway"
+  "loop-3DSway",
+  // F2 dual-build element preset pack (2026-07-05):
+  "loop-orbit"
 ];
 var TEXT_IN_ANIMATIONS = [
   "none",
@@ -331,7 +346,12 @@ var TEXT_IN_ANIMATIONS = [
   "evaporate",
   "flipboard",
   "typewriter",
-  "verticalStretch"
+  "verticalStretch",
+  // F1 dual-build preset pack (2026-07-05):
+  "rubberIn",
+  "whipUp",
+  "glitchPop",
+  "driftIn"
 ];
 var TEXT_OUT_ANIMATIONS = [
   "none",
@@ -355,7 +375,10 @@ var TEXT_OUT_ANIMATIONS = [
   "out-dragonfly",
   "out-flipboard",
   "out-verticalStretch",
-  "out-wavey"
+  "out-wavey",
+  // F1 dual-build preset pack (2026-07-05):
+  "out-whipDown",
+  "out-driftOut"
 ];
 var TEXT_LOOP_ANIMATIONS = [
   "none",
@@ -365,12 +388,18 @@ var TEXT_LOOP_ANIMATIONS = [
   "loop-stretch",
   "loop-verticalStretch",
   "loop-roll",
-  "loop-rotateBasic",
+  // 'loop-rotateBasic' removed (E6b): the glyphon text engine never rotates
+  // glyphs (ADR-0001), so on text it routed to the element engine and rendered
+  // NOTHING. Re-add when text rotation exists. Legacy docs that still carry it
+  // stay a harmless no-op.
   "loop-vogue",
   "loop-wavey",
   "loop-billboard",
   "loop-dragonfly",
-  "loop-flipboard"
+  "loop-flipboard",
+  // F1 dual-build preset pack (2026-07-05):
+  "loop-breathe",
+  "loop-shimmer"
 ];
 var animationPaletteFor = (family, slot) => {
   if (family === "text") {
@@ -388,7 +417,14 @@ var CAPTION_PRESETS = [
   "highlight",
   "boxHighlight",
   "karaoke",
-  "social"
+  "social",
+  // F10 dual-build caption variants (2026-07-05) — data-only combos of the
+  // proven engine mechanisms (plate, outline, active-word box/colour):
+  "impact",
+  "neon",
+  "contrast",
+  "mint",
+  "bubblegum"
 ];
 var CAPTION_ANIMATIONS = [
   "none",
@@ -499,7 +535,77 @@ var CAPTION_PRESET_VISUALS = {
     outlineColor: "#000000",
     activeWordColor: "#ff4d4d",
     activeWordBackground: null
+  },
+  // F10: the creator-economy "impact" look — big yellow uppercase, heavy
+  // outline, red hot word.
+  impact: {
+    fontFamily: "IBM Plex Sans",
+    fontSize: 0.065,
+    bold: true,
+    uppercase: true,
+    color: "#ffd60a",
+    backgroundColor: null,
+    outlineWidth: 0.01,
+    outlineColor: "#000000",
+    activeWordColor: "#ff3131",
+    activeWordBackground: null
+  },
+  neon: {
+    fontFamily: "IBM Plex Sans",
+    fontSize: 0.055,
+    bold: true,
+    uppercase: false,
+    color: "#00f0ff",
+    backgroundColor: "#000000aa",
+    outlineWidth: 0,
+    outlineColor: "#000000",
+    activeWordColor: "#ff00e5",
+    activeWordBackground: null
+  },
+  contrast: {
+    fontFamily: "IBM Plex Sans",
+    fontSize: 0.05,
+    bold: true,
+    uppercase: false,
+    color: "#0a0a0a",
+    backgroundColor: "#ffffffe6",
+    outlineWidth: 0,
+    outlineColor: "#000000",
+    activeWordColor: "#d90429",
+    activeWordBackground: null
+  },
+  mint: {
+    fontFamily: "IBM Plex Sans",
+    fontSize: 0.05,
+    bold: true,
+    uppercase: false,
+    color: "#eafff5",
+    backgroundColor: "#0c3b2ecc",
+    outlineWidth: 0,
+    outlineColor: "#000000",
+    activeWordColor: "#0c3b2e",
+    activeWordBackground: "#7df9aa"
+  },
+  bubblegum: {
+    fontFamily: "IBM Plex Sans",
+    fontSize: 0.055,
+    bold: true,
+    uppercase: false,
+    color: "#ffffff",
+    backgroundColor: null,
+    outlineWidth: 5e-3,
+    outlineColor: "#7a1e5c",
+    activeWordColor: "#ffffff",
+    activeWordBackground: "#ff5fa2"
   }
+};
+var defaultCaptionAnimation = (preset) => {
+  if (preset === "karaoke") return "karaoke";
+  if (preset === "impact") return "impactPop";
+  const v = CAPTION_PRESET_VISUALS[preset];
+  if (v.activeWordBackground != null) return "boxHighlight";
+  if (v.activeWordColor !== v.color) return "highlight";
+  return "none";
 };
 var isCaptionPreset = (v) => typeof v === "string" && CAPTION_PRESETS.includes(v);
 var isCaptionAnimation = (v) => typeof v === "string" && CAPTION_ANIMATIONS.includes(v);
@@ -646,7 +752,12 @@ var decodeElement = (raw) => {
         trimEnd: num(o.trimEnd, base.endTime),
         flipX: bool(o.flipX, false),
         flipY: bool(o.flipY, false),
-        loop: bool(o.loop, false)
+        loop: bool(o.loop, false),
+        ...Array.isArray(o.effects) ? {
+          effects: o.effects.filter(
+            (e) => typeof e === "string"
+          )
+        } : {}
       };
     case "audio":
       return {
@@ -1016,6 +1127,19 @@ var sceneToRenderTask = (scene, opts) => {
   const texts = [];
   const stickers = [];
   const zIndexOf = new Map(scene.elementOrder.map((id, i) => [id, i]));
+  if (scene.backgroundImage?.url) {
+    stickers.push({
+      uuid: "__background-image",
+      onlineURL: scene.backgroundImage.url,
+      startTime: 0,
+      endTime: scene.duration,
+      position: { x: 0.5, y: 0.5 },
+      size: { width: 1, height: 1 },
+      rotation: 0,
+      zIndex: -1,
+      opacity: 100
+    });
+  }
   for (const id of scene.elementOrder) {
     const el = scene.elements[id];
     if (!el) continue;
@@ -1264,6 +1388,22 @@ var TRANSITION_TYPES = {
   "minimise-bottom-left": "transition_minimiseBottomLeft",
   "minimise-bottom-right": "transition_minimiseBottomRight",
   "two-stripes": "transition_twoStripes",
+  // F5 dual-build gl-transitions ports (2026-07-05):
+  swirl: "transition_swirl",
+  "glitch-memories": "transition_glitchMemories",
+  "window-slice": "transition_windowSlice",
+  cube: "transition_cube",
+  doorway: "transition_doorway",
+  pinwheel: "transition_pinwheel",
+  "water-drop": "transition_waterDrop",
+  crosshatch: "transition_crosshatch",
+  dreamy: "transition_dreamy",
+  angular: "transition_angular",
+  burn: "transition_burn",
+  heart: "transition_heart",
+  "circle-open": "transition_circleOpen",
+  "color-phase": "transition_colorPhase",
+  "squares-wire": "transition_squaresWire",
   "three-stripes": "transition_threeStripes",
   box: "transition_box",
   "sliding-door-horizontal": "transition_slidingDoorHorizontal",
@@ -1284,9 +1424,38 @@ var animationsField = (el) => {
 
 // src/rustScene.ts
 var BLACK = { r: 0, g: 0, b: 0, a: 1 };
+var CSS_NAMED_COLORS = {
+  black: "#000000",
+  silver: "#c0c0c0",
+  gray: "#808080",
+  grey: "#808080",
+  white: "#ffffff",
+  maroon: "#800000",
+  red: "#ff0000",
+  purple: "#800080",
+  fuchsia: "#ff00ff",
+  magenta: "#ff00ff",
+  green: "#008000",
+  lime: "#00ff00",
+  olive: "#808000",
+  yellow: "#ffff00",
+  navy: "#000080",
+  blue: "#0000ff",
+  teal: "#008080",
+  aqua: "#00ffff",
+  cyan: "#00ffff",
+  orange: "#ffa500",
+  transparent: "#00000000"
+};
 var hexToRustColor = (hex) => {
-  const h = /^#?([0-9a-fA-F]{3,8})$/.exec(hex.trim())?.[1];
-  if (h === void 0) return BLACK;
+  const named = CSS_NAMED_COLORS[hex.trim().toLowerCase()];
+  const h = /^#?([0-9a-fA-F]{3,8})$/.exec(named ?? hex.trim())?.[1];
+  if (h === void 0) {
+    if (hex.trim() !== "") {
+      console.warn(`[scene-schema] unparseable colour '${hex}' \u2014 using black`);
+    }
+    return BLACK;
+  }
   const at = (i) => h[i] ?? "0";
   const dup = (i) => parseInt(at(i) + at(i), 16) / 255;
   const pair = (i) => parseInt(h.slice(i, i + 2), 16) / 255;
@@ -1300,6 +1469,7 @@ var hexToRustColor = (hex) => {
     case 8:
       return { r: pair(0), g: pair(2), b: pair(4), a: pair(6) };
     default:
+      console.warn(`[scene-schema] unparseable colour '${hex}' \u2014 using black`);
       return BLACK;
   }
 };
@@ -1312,7 +1482,8 @@ var transformOf = (el, scene) => {
       el.transform.position.y * scene.canvas.height - h / 2
     ],
     size: [w, h],
-    rotation_degrees: el.transform.rotation
+    rotation_degrees: el.transform.rotation,
+    ...el.transform.anchor ? { anchor: [el.transform.anchor.x, el.transform.anchor.y] } : {}
   };
 };
 var RUST_TEXT_ANIMATIONS = /* @__PURE__ */ new Set([
@@ -1383,7 +1554,19 @@ var RUST_TEXT_ANIMATIONS = /* @__PURE__ */ new Set([
   "out-block",
   "out-decompress",
   "out-sink",
-  "out-stomp"
+  "out-stomp",
+  // E6b: text-native block-group reverse of zoomIn (previously element-routed,
+  // which shrank the layout box without zooming the glyphs).
+  "out-zoomOut",
+  // F1 dual-build preset pack (2026-07-05):
+  "rubberIn",
+  "whipUp",
+  "glitchPop",
+  "driftIn",
+  "out-whipDown",
+  "out-driftOut",
+  "loop-breathe",
+  "loop-shimmer"
 ]);
 var animationsOf = (el, timelineFrom) => {
   const isText = el.kind === "text";
@@ -1404,7 +1587,7 @@ var animationsOf = (el, timelineFrom) => {
 };
 var NO_CROP = { left: 0, top: 0, right: 0, bottom: 0 };
 var clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-var hasFilters = (f) => f.brightness !== 0 || f.contrast !== 0 || f.saturation !== 0 || f.exposure !== 0 || f.hue !== 0 || f.sharpen !== 0 || f.blur !== 0 || f.noise !== 0 || f.vignette !== 0;
+var hasFilters = (f) => f.lut != null && f.lut.intensity > 0 || f.brightness !== 0 || f.contrast !== 0 || f.saturation !== 0 || f.exposure !== 0 || f.hue !== 0 || f.sharpen !== 0 || f.blur !== 0 || f.noise !== 0 || f.vignette !== 0;
 var adjustmentsOf = (f) => {
   const s = clamp(f.saturation, -1, 1);
   const e = clamp(f.exposure, -1, 1);
@@ -1431,6 +1614,12 @@ var effectsOf = (f, names) => {
       intensity: 1,
       props: {}
     }));
+  if (f.lut != null && f.lut.intensity > 0) {
+    effects.lut = {
+      texture_id: `lut-${f.lut.name}`,
+      intensity: clamp(f.lut.intensity, 0, 1)
+    };
+  }
   return { effects };
 };
 var textKind = (el, scene, textAnimations) => {
@@ -1475,42 +1664,153 @@ var textKind = (el, scene, textAnimations) => {
     ...textAnimations.length > 0 ? { text_animations: textAnimations } : {}
   };
 };
-var rustTransitionKind = (kind) => {
-  switch (kind) {
-    case "crossfade":
-    case "dissolve":
-    case "crossDissolve":
-    case "cross_dissolve":
-    case "transition_crossDissolve":
-      return "dissolve";
-    case "slide-left":
-    case "directional_left":
-    case "transition_directionalLeft":
-    case "transition_directionalHorizontal":
-      return "directional_left";
-    case "slide-right":
-    case "directional_right":
-    case "transition_directionalRight":
-      return "directional_right";
-    case "slide-up":
-    case "directional_up":
-    case "transition_directionalUp":
-      return "directional_up";
-    case "slide-down":
-    case "directional_down":
-    case "transition_directionalVertical":
-    case "transition_directionalDown":
-      return "directional_down";
-    case "blur_reveal":
-    case "transition_blurReveal":
-      return "blur_reveal";
-    case "displacement":
-    case "transition_displacement":
-      return "displacement";
-    default:
-      return null;
-  }
+var RUST_TRANSITION_WIRE_KINDS = /* @__PURE__ */ new Set([
+  "dissolve",
+  "box",
+  "bullseye",
+  "circleCrop",
+  "crossDissolve",
+  "crossWarp",
+  "diagonalSplice",
+  "blur_reveal",
+  "directional_left",
+  "directional_right",
+  "directional_up",
+  "directional_down",
+  "displacement",
+  "fadeColorBlack",
+  "fadeColorWhite",
+  "foldHorizontal",
+  "foldVertical",
+  "gradientFade",
+  "linearBlur",
+  "minimiseBottomLeft",
+  "minimiseBottomRight",
+  "minimiseTopLeft",
+  "minimiseTopRight",
+  "pageFlip",
+  "ripple",
+  "rotate",
+  "simpleZoom",
+  "slidingDoorHorizontal",
+  "slidingDoorVertical",
+  "splice",
+  "threeStripes",
+  "twoStripes",
+  // F5 dual-build gl-transitions ports (2026-07-05):
+  "swirl",
+  "glitchMemories",
+  "windowSlice",
+  "cube",
+  "doorway",
+  "pinwheel",
+  "waterDrop",
+  "crosshatch",
+  "dreamy",
+  "angular",
+  "burn",
+  "heart",
+  "circleOpen",
+  "colorPhase",
+  "squaresWire"
+]);
+var EDITOR_TRANSITION_TO_WIRE = {
+  crossfade: "dissolve",
+  dissolve: "dissolve",
+  "fade-black": "fadeColorBlack",
+  "fade-white": "fadeColorWhite",
+  "slide-left": "directional_left",
+  "slide-right": "directional_right",
+  "slide-up": "directional_up",
+  "slide-down": "directional_down",
+  "simple-zoom": "simpleZoom",
+  "linear-blur": "linearBlur",
+  rotate: "rotate",
+  "circle-crop": "circleCrop",
+  "cross-warp": "crossWarp",
+  splice: "splice",
+  "page-flip": "pageFlip",
+  "minimise-top-left": "minimiseTopLeft",
+  "minimise-top-right": "minimiseTopRight",
+  "minimise-bottom-left": "minimiseBottomLeft",
+  "minimise-bottom-right": "minimiseBottomRight",
+  "two-stripes": "twoStripes",
+  "three-stripes": "threeStripes",
+  box: "box",
+  "sliding-door-horizontal": "slidingDoorHorizontal",
+  "sliding-door-vertical": "slidingDoorVertical",
+  "diagonal-splice": "diagonalSplice",
+  ripple: "ripple",
+  "fold-horizontal": "foldHorizontal",
+  "fold-vertical": "foldVertical",
+  "gradient-fade": "gradientFade",
+  bullseye: "bullseye",
+  // F5 dual-build gl-transitions ports (2026-07-05):
+  swirl: "swirl",
+  "glitch-memories": "glitchMemories",
+  "window-slice": "windowSlice",
+  cube: "cube",
+  doorway: "doorway",
+  pinwheel: "pinwheel",
+  "water-drop": "waterDrop",
+  crosshatch: "crosshatch",
+  dreamy: "dreamy",
+  angular: "angular",
+  burn: "burn",
+  heart: "heart",
+  "circle-open": "circleOpen",
+  "color-phase": "colorPhase",
+  "squares-wire": "squaresWire"
 };
+var TRANSITION_WIRE_ALIASES = {
+  crossDissolve: "dissolve",
+  cross_dissolve: "dissolve",
+  directionalLeft: "directional_left",
+  directionalHorizontal: "directional_left",
+  directionalRight: "directional_right",
+  directionalUp: "directional_up",
+  directionalDown: "directional_down",
+  directionalVertical: "directional_down",
+  blurReveal: "blur_reveal"
+};
+var rustTransitionKind = (kind) => {
+  const mapped = EDITOR_TRANSITION_TO_WIRE[kind];
+  if (mapped) return mapped;
+  const raw = kind.startsWith("transition_") ? kind.slice("transition_".length) : kind;
+  const alias = TRANSITION_WIRE_ALIASES[raw];
+  if (alias) return alias;
+  return RUST_TRANSITION_WIRE_KINDS.has(raw) ? raw : null;
+};
+var MEDIA_BLEND_MODES = [
+  "normal",
+  "overlay",
+  "difference",
+  "multiply",
+  "screen",
+  "add",
+  "lighten",
+  "darken",
+  "soft_light"
+];
+var MEDIA_MASK_SHAPES = [
+  "none",
+  "circle",
+  "diamond",
+  "hexagon",
+  "star",
+  "heart",
+  "triangle"
+];
+function mediaCompositing(el) {
+  const out = {};
+  if (el.blendMode && el.blendMode !== "normal" && MEDIA_BLEND_MODES.includes(el.blendMode)) {
+    out.blend_mode = el.blendMode;
+  }
+  if (el.maskShape === "circle" || el.maskShape === "diamond" || el.maskShape === "hexagon" || el.maskShape === "star" || el.maskShape === "heart" || el.maskShape === "triangle") {
+    out.mask_shape = el.maskShape;
+  }
+  return out;
+}
 var RENDERED_TRANSITION_KINDS = TRANSITION_KINDS.filter(
   (k) => rustTransitionKind(k) !== null
 );
@@ -1595,25 +1895,41 @@ var captionMoveables = (scene) => {
           ).key,
           params: {
             start_time: 0,
-            // length = veed per-word window; delay = same so words reveal
-            // SEQUENTIALLY across the cue (the Rust per-word stagger). The
-            // builtin delay is dropped once a custom window is set, so it
-            // MUST be emitted or the reveal collapses to a uniform fade —
-            // the reported "caption animations don't work".
+            // Fallback for OLDER engine binaries (no word_windows):
+            // length = uniform per-word window; delay = same so words
+            // reveal SEQUENTIALLY across the cue. The explicit delay is
+            // required — hydration only inherits the builtin stagger
+            // when delay is ABSENT, and the builtin stagger is a glyph
+            // cascade, not the per-word cadence captions need.
             length: captionAnimationLength(cue.start, cue.end, cue.text),
             delay: captionAnimationLength(cue.start, cue.end, cue.text)
-          }
+          },
+          // E6c: real spoken word windows (moveable-local) — newer
+          // engines sample each word over ITS OWN window, so karaoke/
+          // highlight/reveal track speech instead of ticking uniformly.
+          word_windows: cue.words.map((w) => ({
+            from: w.start - cue.start,
+            to: w.end - cue.start
+          }))
         }
       ] : [];
       const kind = textKind(el, scene, captionAnims);
       if (kind.type === "text" && captionAnimationColorParam(track.style.animation) === "boxColour" && cue.words.length > 0) {
         const boxColor = visual.animationColor ?? visual.activeWordColor;
+        const textChars = [...el.text];
         let cursor = 0;
+        const findWord = (wordChars) => {
+          for (let i = cursor; i + wordChars.length <= textChars.length; i++) {
+            if (wordChars.every((c, j) => textChars[i + j] === c)) return i;
+          }
+          return -1;
+        };
         const words = cue.words.map((w) => {
           const wtext = visual.uppercase ? w.text.toUpperCase() : w.text;
-          const idx = el.text.indexOf(wtext, cursor);
+          const wordChars = [...wtext];
+          const idx = findWord(wordChars);
           const start = idx >= 0 ? idx : cursor;
-          const end = start + wtext.length;
+          const end = start + wordChars.length;
           cursor = end;
           return {
             start,
@@ -1635,14 +1951,43 @@ var captionMoveables = (scene) => {
   }
   return out;
 };
+var BACKGROUND_IMAGE_TEXTURE_ID = "__background-image";
 var sceneToRustScene = (scene) => {
   const { timelines, transitions } = resolveTimelinesAndTransitions(scene);
   const moveables = [];
+  if (scene.backgroundImage?.url) {
+    const to = Math.max(
+      scene.duration,
+      ...Object.values(scene.elements).map((el) => el.endTime),
+      ...Object.values(scene.subtitleTracks).flatMap(
+        (t) => t.cues.map((c) => c.end)
+      )
+    );
+    moveables.push({
+      id: BACKGROUND_IMAGE_TEXTURE_ID,
+      timeline: { from: 0, to: Math.max(to, 1) },
+      transform: {
+        position: [0, 0],
+        size: [scene.canvas.width, scene.canvas.height],
+        rotation_degrees: 0
+      },
+      z_index: -1,
+      kind: {
+        type: "image",
+        texture_id: BACKGROUND_IMAGE_TEXTURE_ID,
+        opacity: 1,
+        crop: NO_CROP,
+        flip_x: false,
+        flip_y: false
+      }
+    });
+  }
   const zIndexOf = new Map(scene.elementOrder.map((id, i) => [id, i]));
   for (const id of scene.elementOrder) {
     const el = scene.elements[id];
     if (!el || el.kind === "audio") continue;
     const timeline = timelines.get(id);
+    if (!timeline) continue;
     const { element, text } = animationsOf(el, timeline.from);
     let kind;
     if (el.kind === "video") {
@@ -1653,7 +1998,8 @@ var sceneToRustScene = (scene) => {
         crop: NO_CROP,
         flip_x: el.flipX,
         flip_y: el.flipY,
-        ...effectsOf(el.filters, el.effects)
+        ...effectsOf(el.filters, el.effects),
+        ...mediaCompositing(el)
       };
     } else if (el.kind === "sticker") {
       kind = {
@@ -1663,7 +2009,8 @@ var sceneToRustScene = (scene) => {
         crop: NO_CROP,
         flip_x: false,
         flip_y: false,
-        ...effectsOf(el.filters)
+        ...effectsOf(el.filters),
+        ...mediaCompositing(el)
       };
     } else {
       kind = textKind(el, scene, text);
@@ -1684,12 +2031,22 @@ var sceneToRustScene = (scene) => {
     background: hexToRustColor(scene.backgroundColor),
     moveables,
     transitions,
-    fontAssets: []
+    fontAssets: [],
+    groups: Object.values(scene.groups ?? {}).map((group) => ({
+      id: group.id,
+      members: group.memberIds,
+      ...group.pivot ? { pivot: [group.pivot.x, group.pivot.y] } : {},
+      ...group.translate ? { translate: [group.translate.x, group.translate.y] } : {},
+      ...group.scale !== void 0 ? { scale: group.scale } : {},
+      ...group.rotationDegrees !== void 0 ? { rotation_degrees: group.rotationDegrees } : {},
+      ...group.opacity !== void 0 ? { opacity: group.opacity } : {}
+    }))
   };
 };
 export {
   ANIMATION_DURATION,
   AnimationSlot,
+  BACKGROUND_IMAGE_TEXTURE_ID,
   CAPTION_ANIMATIONS,
   CAPTION_PRESETS,
   CAPTION_PRESET_VISUALS,
@@ -1698,8 +2055,12 @@ export {
   ELEMENT_OUT_ANIMATIONS,
   EXPORT_PRESETS,
   EXPORT_QUALITIES,
+  MEDIA_BLEND_MODES,
+  MEDIA_MASK_SHAPES,
   MIN_ANIMATION_DURATION,
   RENDERED_TRANSITION_KINDS,
+  RUST_TEXT_ANIMATIONS,
+  RUST_TRANSITION_WIRE_KINDS,
   SCHEMA_VERSION,
   TEXT_BACKGROUND_STYLES,
   TEXT_IN_ANIMATIONS,
@@ -1714,6 +2075,7 @@ export {
   captionAnimationLength,
   createEmptyScene,
   decodeProject,
+  defaultCaptionAnimation,
   defaultCategoryAnimations,
   defaultFilters,
   defaultSubtitleStyle,

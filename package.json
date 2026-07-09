@@ -18,7 +18,7 @@
     "@codemirror/lint": "^6.9.7",
     "@codemirror/state": "^6.7.0",
     "@codemirror/view": "^6.43.4",
-    "@itishq/framelane-renderer": "0.0.1-ab.8997e455",
+    "@itishq/framelane-renderer": "0.0.1-ab.c3aa9827",
     "@reduxjs/toolkit": "^2.5.0",
     "@remixicon/react": "^4.9.0",
     "@uiw/react-codemirror": "^4.25.10",

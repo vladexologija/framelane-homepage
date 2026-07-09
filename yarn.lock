@@ -1146,10 +1146,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@itishq/framelane-renderer@npm:0.0.1-ab.8997e455":
-  version: 0.0.1-ab.8997e455
-  resolution: "@itishq/framelane-renderer@npm:0.0.1-ab.8997e455::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40itishq%2Fframelane-renderer%2F0.0.1-ab.8997e455%2Fa8d0dbe856b49083d9d004e1ccba0e82e01bfef6"
-  checksum: 10c0/0c59be51260170cada6fe40713bf9d184157559bd9019144abbdae86de0659e8d54063d519884490e159c97d18a33c7ebd32e0f1591bca21af93f2143f9bcb05
+"@itishq/framelane-renderer@npm:0.0.1-ab.c3aa9827":
+  version: 0.0.1-ab.c3aa9827
+  resolution: "@itishq/framelane-renderer@npm:0.0.1-ab.c3aa9827::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40itishq%2Fframelane-renderer%2F0.0.1-ab.c3aa9827%2F5c55a827d029ad0e7a724a0d58ac1f646ad9d6f6"
+  checksum: 10c0/62bd6388dffb5fde580bca37c6920cdf572ee3c91da33bdc4412bb92a63fbb10345f5123449abee850865bf4e2c885a6bf9ed00ee1a38c66cddf788253529956
   languageName: node
   linkType: hard
 
@@ -4865,7 +4865,7 @@ __metadata:
     "@codemirror/lint": "npm:^6.9.7"
     "@codemirror/state": "npm:^6.7.0"
     "@codemirror/view": "npm:^6.43.4"
-    "@itishq/framelane-renderer": "npm:0.0.1-ab.8997e455"
+    "@itishq/framelane-renderer": "npm:0.0.1-ab.c3aa9827"
     "@reduxjs/toolkit": "npm:^2.5.0"
     "@remixicon/react": "npm:^4.9.0"
     "@tailwindcss/postcss": "npm:^4"
